@@ -1,4 +1,4 @@
-package collection
+package aws
 
 import (
 	"encoding/json"

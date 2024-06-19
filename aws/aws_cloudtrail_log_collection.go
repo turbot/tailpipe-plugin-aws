@@ -1,139 +1,98 @@
-package collection
+package aws
 
 import (
-	"compress/gzip"
 	"context"
-	"encoding/json"
-	"os"
-	"strings"
-	"sync"
-	"time"
-
-	"github.com/rs/xid"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
-	sdkconfig "github.com/turbot/tailpipe-plugin-sdk/config"
-	"github.com/turbot/tailpipe-plugin-sdk/source"
-
-	"github.com/turbot/tailpipe-plugin-aws/util"
+	//"github.com/turbot/tailpipe-plugin-sdk/collection"
+	//sdkconfig "github.com/turbot/tailpipe-plugin-sdk/config"
+	//"github.com/turbot/tailpipe-plugin-sdk/source"
 )
 
 type AwsCloudTrailLogCollectionConfig struct{}
 
 type AwsCloudTrailLogCollection struct {
 	Config AwsCloudTrailLogCollectionConfig
-
-	ctx context.Context
-
-	// observers is a list of observers that will be notified of events.
-	observers      []collection.CollectionObserver
-	observersMutex sync.RWMutex
 }
 
 func (c *AwsCloudTrailLogCollection) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-func (c *AwsCloudTrailLogCollection) Init(ctx context.Context) error {
-	c.ctx = ctx
-	return nil
-}
+//func (c *AwsCloudTrailLogCollection) LoadConfig(configRaw []byte) error {
+//	return sdkconfig.Load(configRaw, &c.Config)
+//}
+//
+//func (c *AwsCloudTrailLogCollection) ValidateConfig() error {
+//	return nil
+//}
+//
+//func (c *AwsCloudTrailLogCollection) Schema() collection.Row {
+//	return &AWSCloudTrail{}
+//}
 
-func (c *AwsCloudTrailLogCollection) Context() context.Context {
-	return c.ctx
-}
+func (c *AwsCloudTrailLogCollection) ExtractArtifactRows(ctx context.Context, a any /**source.Artifact*/) error {
 
-func (c *AwsCloudTrailLogCollection) AddObserver(observer collection.CollectionObserver) {
-	c.observersMutex.Lock()
-	defer c.observersMutex.Unlock()
-	c.observers = append(c.observers, observer)
-}
-
-func (c *AwsCloudTrailLogCollection) RemoveObserver(observer collection.CollectionObserver) {
-	c.observersMutex.Lock()
-	defer c.observersMutex.Unlock()
-	for i, o := range c.observers {
-		if o == observer {
-			c.observers = append(c.observers[:i], c.observers[i+1:]...)
-			break
-		}
-	}
-}
-
-func (c *AwsCloudTrailLogCollection) LoadConfig(configRaw []byte) error {
-	return sdkconfig.Load(configRaw, &c.Config)
-}
-
-func (c *AwsCloudTrailLogCollection) ValidateConfig() error {
-	return nil
-}
-
-func (c *AwsCloudTrailLogCollection) Schema() collection.Row {
-	return &AWSCloudTrail{}
-}
-
-func (c *AwsCloudTrailLogCollection) ExtractArtifactRows(ctx context.Context, a *source.Artifact) error {
-
-	inputPath := a.Name
-
-	gzFile, err := os.Open(inputPath)
-	if err != nil {
-		return err
-	}
-	defer gzFile.Close()
-
-	gzReader, err := gzip.NewReader(gzFile)
-	if err != nil {
-		return err
-	}
-	defer gzReader.Close()
-
-	var log AWSCloudTrailBatch
-	if err := json.NewDecoder(gzReader).Decode(&log); err != nil {
-		return err
-	}
-
-	for _, record := range log.Records {
-
-		// Record standardization
-		record.TpID = xid.New().String()
-		record.TpSourceType = "aws_cloudtrail_log"
-		record.TpTimestamp = record.EventTime
-		record.TpSourceLocation = &inputPath
-		record.TpIngestTimestamp = UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
-		if record.SourceIPAddress != nil {
-			record.TpSourceIP = record.SourceIPAddress
-			record.TpIps = append(record.TpIps, *record.SourceIPAddress)
-		}
-		for _, resource := range record.Resources {
-			if resource.ARN != nil {
-				newAkas := util.AwsAkasFromArn(*resource.ARN)
-				record.TpAkas = append(record.TpAkas, newAkas...)
-			}
-		}
-		// If it's an AKIA, then record that as an identity. Do not record ASIA*
-		// keys etc.
-		if record.UserIdentity.AccessKeyId != nil {
-			if strings.HasPrefix(*record.UserIdentity.AccessKeyId, "AKIA") {
-				record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.AccessKeyId)
-			}
-		}
-		if record.UserIdentity.UserName != nil {
-			record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.UserName)
-		}
-
-		// Hive fields
-		record.TpCollection = "default" // TODO - should be based on the definition in HCL
-		record.TpConnection = record.RecipientAccountId
-		record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
-		record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
-		record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
-
-		//c.Collection.NotifyRow(a, &record)
-		for _, o := range c.observers {
-			o.NotifyRow(a, &record)
-		}
-
-	}
+	// TODO implement
+	//inputPath := a.Name
+	//
+	//gzFile, err := os.Open(inputPath)
+	//if err != nil {
+	//	return err
+	//}
+	//defer gzFile.Close()
+	//
+	//gzReader, err := gzip.NewReader(gzFile)
+	//if err != nil {
+	//	return err
+	//}
+	//defer gzReader.Close()
+	//
+	//var log AWSCloudTrailBatch
+	//if err := json.NewDecoder(gzReader).Decode(&log); err != nil {
+	//	return err
+	//}
+	//
+	//for _, record := range log.Records {
+	//
+	//	// Record standardization
+	//	record.TpID = xid.New().String()
+	//	record.TpSourceType = "aws_cloudtrail_log"
+	//	record.TpTimestamp = record.EventTime
+	//	record.TpSourceLocation = &inputPath
+	//	record.TpIngestTimestamp = UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	//	if record.SourceIPAddress != nil {
+	//		record.TpSourceIP = record.SourceIPAddress
+	//		record.TpIps = append(record.TpIps, *record.SourceIPAddress)
+	//	}
+	//	for _, resource := range record.Resources {
+	//		if resource.ARN != nil {
+	//			newAkas := util.AwsAkasFromArn(*resource.ARN)
+	//			record.TpAkas = append(record.TpAkas, newAkas...)
+	//		}
+	//	}
+	//	// If it's an AKIA, then record that as an identity. Do not record ASIA*
+	//	// keys etc.
+	//	if record.UserIdentity.AccessKeyId != nil {
+	//		if strings.HasPrefix(*record.UserIdentity.AccessKeyId, "AKIA") {
+	//			record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.AccessKeyId)
+	//		}
+	//	}
+	//	if record.UserIdentity.UserName != nil {
+	//		record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.UserName)
+	//	}
+	//
+	//	// Hive fields
+	//	record.TpCollection = "default" // TODO - should be based on the definition in HCL
+	//	record.TpConnection = record.RecipientAccountId
+	//	record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
+	//	record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
+	//	record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
+	//
+	//	//c.Collection.NotifyRow(a, &record)
+	//	for _, o := range c.observers {
+	//		o.NotifyRow(a, &record)
+	//	}
+	//
+	//}
 
 	return nil
 
@@ -201,30 +160,6 @@ type AWSCloudTrail struct {
 	SessionCredentialFromConsole *string     `json:"sessionCredentialFromConsole,omitempty" parquet:"name=session_credential_from_console, type=BYTE_ARRAY, convertedtype=UTF8"`
 	EdgeDeviceDetails            *JSONString `json:"edgeDeviceDetails,omitempty" parquet:"name=edge_device_details, type=BYTE_ARRAY, convertedtype=UTF8"`
 	TLSDetails                   *TLSDetails `json:"tlsDetails,omitempty" parquet:"name=tls_details, type=STRUCT"`
-}
-
-func (a *AWSCloudTrail) GetTpID() string {
-	return a.TpID
-}
-
-func (a *AWSCloudTrail) GetTpTimestamp() int64 {
-	return int64(a.TpTimestamp)
-}
-
-func (a *AWSCloudTrail) GetConnection() string {
-	return a.TpConnection
-}
-
-func (a *AWSCloudTrail) GetYear() int {
-	return int(a.TpYear)
-}
-
-func (a *AWSCloudTrail) GetMonth() int {
-	return int(a.TpMonth)
-}
-
-func (a *AWSCloudTrail) GetDay() int {
-	return int(a.TpDay)
 }
 
 type UserIdentity struct {
