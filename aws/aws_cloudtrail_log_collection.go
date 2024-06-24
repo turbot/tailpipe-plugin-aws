@@ -1,7 +1,15 @@
 package aws
 
 import (
+	"compress/gzip"
 	"context"
+	"encoding/json"
+	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/util"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 	//"github.com/turbot/tailpipe-plugin-sdk/collection"
 	//sdkconfig "github.com/turbot/tailpipe-plugin-sdk/config"
 	//"github.com/turbot/tailpipe-plugin-sdk/source"
@@ -11,6 +19,8 @@ type AwsCloudTrailLogCollectionConfig struct{}
 
 type AwsCloudTrailLogCollection struct {
 	Config AwsCloudTrailLogCollectionConfig
+
+	paths []string
 }
 
 func (c *AwsCloudTrailLogCollection) Identifier() string {
@@ -29,70 +39,88 @@ func (c *AwsCloudTrailLogCollection) Identifier() string {
 //	return &AWSCloudTrail{}
 //}
 
-func (c *AwsCloudTrailLogCollection) ExtractArtifactRows(ctx context.Context, a any /**source.Artifact*/) error {
+func (c *AwsCloudTrailLogCollection) Collect(ctx context.Context, onRow func(row any)) error {
+	// tactical List all gz files in each path directory and call ExtractArtifactRows for each
+	for _, path := range c.paths {
+		// list gz files on path
+		files, err := filepath.Glob(filepath.Join(path, "*.gz"))
+		if err != nil {
+			return err
+		}
 
-	// TODO implement
-	//inputPath := a.Name
-	//
-	//gzFile, err := os.Open(inputPath)
-	//if err != nil {
-	//	return err
-	//}
-	//defer gzFile.Close()
-	//
-	//gzReader, err := gzip.NewReader(gzFile)
-	//if err != nil {
-	//	return err
-	//}
-	//defer gzReader.Close()
-	//
-	//var log AWSCloudTrailBatch
-	//if err := json.NewDecoder(gzReader).Decode(&log); err != nil {
-	//	return err
-	//}
-	//
-	//for _, record := range log.Records {
-	//
-	//	// Record standardization
-	//	record.TpID = xid.New().String()
-	//	record.TpSourceType = "aws_cloudtrail_log"
-	//	record.TpTimestamp = record.EventTime
-	//	record.TpSourceLocation = &inputPath
-	//	record.TpIngestTimestamp = UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
-	//	if record.SourceIPAddress != nil {
-	//		record.TpSourceIP = record.SourceIPAddress
-	//		record.TpIps = append(record.TpIps, *record.SourceIPAddress)
-	//	}
-	//	for _, resource := range record.Resources {
-	//		if resource.ARN != nil {
-	//			newAkas := util.AwsAkasFromArn(*resource.ARN)
-	//			record.TpAkas = append(record.TpAkas, newAkas...)
-	//		}
-	//	}
-	//	// If it's an AKIA, then record that as an identity. Do not record ASIA*
-	//	// keys etc.
-	//	if record.UserIdentity.AccessKeyId != nil {
-	//		if strings.HasPrefix(*record.UserIdentity.AccessKeyId, "AKIA") {
-	//			record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.AccessKeyId)
-	//		}
-	//	}
-	//	if record.UserIdentity.UserName != nil {
-	//		record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.UserName)
-	//	}
-	//
-	//	// Hive fields
-	//	record.TpCollection = "default" // TODO - should be based on the definition in HCL
-	//	record.TpConnection = record.RecipientAccountId
-	//	record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
-	//	record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
-	//	record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
-	//
-	//	//c.Collection.NotifyRow(a, &record)
-	//	for _, o := range c.observers {
-	//		o.NotifyRow(a, &record)
-	//	}
-	//
-	//}
+		for _, file := range files {
+			select {
+			case <-ctx.Done():
+				return ctx.Err() // handle context cancellation
+			default:
+				// Call ExtractArtifactRows for each gz file
+				if err := c.ExtractArtifactRows(ctx, file, onRow); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (c *AwsCloudTrailLogCollection) ExtractArtifactRows(ctx context.Context, inputPath string, onRow func(row any)) error {
+
+	gzFile, err := os.Open(inputPath)
+	if err != nil {
+		return err
+	}
+	defer gzFile.Close()
+
+	gzReader, err := gzip.NewReader(gzFile)
+	if err != nil {
+		return err
+	}
+	defer gzReader.Close()
+
+	var log AWSCloudTrailBatch
+	if err := json.NewDecoder(gzReader).Decode(&log); err != nil {
+		return err
+	}
+
+	for _, record := range log.Records {
+
+		// Record standardization
+		record.TpID = xid.New().String()
+		record.TpSourceType = "aws_cloudtrail_log"
+		record.TpTimestamp = record.EventTime
+		record.TpSourceLocation = &inputPath
+		record.TpIngestTimestamp = UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+		if record.SourceIPAddress != nil {
+			record.TpSourceIP = record.SourceIPAddress
+			record.TpIps = append(record.TpIps, *record.SourceIPAddress)
+		}
+		for _, resource := range record.Resources {
+			if resource.ARN != nil {
+				newAkas := util.AwsAkasFromArn(*resource.ARN)
+				record.TpAkas = append(record.TpAkas, newAkas...)
+			}
+		}
+		// If it's an AKIA, then record that as an identity. Do not record ASIA*
+		// keys etc.
+		if record.UserIdentity.AccessKeyId != nil {
+			if strings.HasPrefix(*record.UserIdentity.AccessKeyId, "AKIA") {
+				record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.AccessKeyId)
+			}
+		}
+		if record.UserIdentity.UserName != nil {
+			record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.UserName)
+		}
+
+		// Hive fields
+		record.TpCollection = "default" // TODO - should be based on the definition in HCL
+		record.TpConnection = record.RecipientAccountId
+		record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
+		record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
+		record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
+
+		onRow(record)
+
+	}
 
 	return nil
 

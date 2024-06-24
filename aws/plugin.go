@@ -5,6 +5,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"log"
+	"log/slog"
 )
 
 type Plugin struct {
@@ -15,45 +16,32 @@ func (t *Plugin) Identifier() string {
 	return "aws"
 }
 
-func NewPlugin(_ context.Context) *Plugin {
-	return &Plugin{}
-}
-
 func (t *Plugin) Collect(req *proto.CollectRequest) error {
 	log.Println("[INFO] Collect")
 
-	go t.doCollect(req)
+	go t.doCollect(context.Background(), req)
 
 	return nil
 }
 
-func (t *Plugin) doCollect(req *proto.CollectRequest) {
-	//
-	//"sources": {
-	//	"my_file": {
-	//		"name": "my_file",
-	//			"plugin": "file",
-	//			"config": {
-	//			"path": "/Users/nathan/src/play-duckdb/2023/02",
-	//				"extensions": []
-	//}
-	//}
-	//},
-	//"collections": {
-	//"my_aws_log": {
-	//"plugin": "aws_cloudtrail_log",
-	//"name": "my_aws_log",
-	//"source": "my_file"
-	//}
-	//}
-	// tactical
-	//create source and collection
-	source := &AwsS3BucketSource{}
-	collection := &AwsCloudTrailLogCollection{}
+func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
+	onRow := func(row any) {
+		t.OnRow(row, req)
+	}
+
+	//create collection
+	collection := &AwsCloudTrailLogCollection{
+		paths: []string{"/Users/kai/Downloads/flaws_cloudtrail_logs"},
+	}
 
 	// started hook
 	t.OnStarted(req)
 
+	err := collection.Collect(ctx, onRow)
+
 	// completion hook
-	t.OnComplete(req, nil)
+	if err := t.OnComplete(req, err); err != nil {
+		// TODO #error
+		slog.Error("error notifying observers of completion", "error", err)
+	}
 }
