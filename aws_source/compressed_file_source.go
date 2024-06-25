@@ -1,0 +1,92 @@
+package aws_source
+
+import (
+	"compress/gzip"
+	"context"
+	"encoding/json"
+	"github.com/turbot/tailpipe-plugin-aws/aws_types"
+	"github.com/turbot/tailpipe-plugin-sdk/constants"
+	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
+	"github.com/turbot/tailpipe-plugin-sdk/plugin"
+	"github.com/turbot/tailpipe-plugin-sdk/source"
+	"os"
+	"path/filepath"
+)
+
+// CompressedFileSource source is responsible for collecting audit logs from Turbot Pipes API
+type CompressedFileSource struct {
+	source.Base
+	Config CompressedFileSourceConfig
+}
+
+func (c *CompressedFileSource) Identifier() string {
+	return "aws_compressed_file_source"
+}
+
+func NewCompressedFileSourceConfig(config CompressedFileSourceConfig) plugin.Source {
+	return &CompressedFileSource{
+		Config: config,
+	}
+}
+
+func (c *CompressedFileSource) Collect(ctx context.Context, req *proto.CollectRequest) error {
+	// tactical
+	//List all gz files in each path directory and call ExtractArtifactRows for each
+	for _, path := range c.Config.Paths {
+		// list gz files on path
+		files, err := filepath.Glob(filepath.Join(path, "*.gz"))
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				// Call ExtractArtifactRows for each gz file
+				if err := c.ExtractArtifactRows(ctx, req, file); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (c *CompressedFileSource) ExtractArtifactRows(ctx context.Context, req *proto.CollectRequest, inputPath string) error {
+	gzFile, err := os.Open(inputPath)
+	if err != nil {
+		return err
+	}
+	defer gzFile.Close()
+
+	gzReader, err := gzip.NewReader(gzFile)
+	if err != nil {
+		return err
+	}
+	defer gzReader.Close()
+
+	var log aws_types.AWSCloudTrailBatch
+	if err := json.NewDecoder(gzReader).Decode(&log); err != nil {
+		return err
+	}
+
+	for _, record := range log.Records {
+		// check context cancellation
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		// populate enrichment fields the the source is aware of
+		// - in this case the source location
+		sourceEnrichmentFields := map[string]interface{}{
+			constants.TpSourceLocation: inputPath,
+		}
+
+		// call base OnRow
+		c.OnRow(req, record, sourceEnrichmentFields)
+	}
+
+	return nil
+
+}
