@@ -2,10 +2,11 @@ package aws
 
 import (
 	"context"
+	"github.com/turbot/tailpipe-plugin-aws/aws_collection"
+	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"log"
-	"log/slog"
 )
 
 type Plugin struct {
@@ -24,24 +25,34 @@ func (t *Plugin) Collect(req *proto.CollectRequest) error {
 	return nil
 }
 
+//// GetSchema returns the schema (i.e. an instance of the row struct) for all collections
+//// it is used primarily to validate the row structs provide the required fields
+//func (t *Plugin) GetSchema(collection string) map[string]any {
+//	return map[string]any{
+//		aws_collection.CloudTrailLogCollection{}.Identifier(): aws_types.AWSCloudTrail{},
+//	}
+//}
+
 func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
-	onRow := func(row any) {
-		t.OnRow(row, req)
-	}
+	// todo config parsing, identify collection type etc.
 
-	//create collection
-	collection := &AwsCloudTrailLogCollection{
-		paths: []string{"/Users/kai/Downloads/flaws_cloudtrail_logs"},
-	}
+	// TODO parse config and use to build collection
+	//  tactical - create collection
+	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: []string{"/Users/kai/Downloads/flaws_cloudtrail_logs"}}
+	var source = aws_source.NewCompressedFileSourceConfig(sourceConfig)
 
-	// started hook
+	collectionConfig := aws_collection.CloudTrailLogCollectionConfig{}
+	var col = aws_collection.NewCloudTrailLogCollection(collectionConfig, source)
+
+	// add ourselves as an observer
+	col.AddObserver(t)
+
+	// signal we have started
 	t.OnStarted(req)
 
-	err := collection.Collect(ctx, onRow)
+	// tell the collection to start collecting - this is a blocking call
+	err := col.Collect(ctx, req)
 
-	// completion hook
-	if err := t.OnComplete(req, err); err != nil {
-		// TODO #error
-		slog.Error("error notifying observers of completion", "error", err)
-	}
+	// signal we have completed
+	t.OnComplete(req, err)
 }
