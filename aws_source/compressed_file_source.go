@@ -9,6 +9,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/source"
+	"log/slog"
 	"os"
 	"path/filepath"
 )
@@ -44,6 +45,7 @@ func (c *CompressedFileSource) Collect(ctx context.Context, req *proto.CollectRe
 			case <-ctx.Done():
 				return ctx.Err()
 			default:
+				slog.Debug("Processing file", "file", file)
 				// Call ExtractArtifactRows for each gz file
 				if err := c.ExtractArtifactRows(ctx, req, file); err != nil {
 					return err

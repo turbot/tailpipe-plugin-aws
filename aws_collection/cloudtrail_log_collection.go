@@ -90,6 +90,6 @@ func (c CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[s
 			record.TpSourceLocation = &sourceStr
 		}
 	}
-	return row, nil
+	return record, nil
 
 }
