@@ -25,6 +25,14 @@ func (t *Plugin) Collect(req *proto.CollectRequest) error {
 	return nil
 }
 
+//// GetSchema returns the schema (i.e. an instance of the row struct) for all collections
+//// it is used primarily to validate the row structs provide the required fields
+//func (t *Plugin) GetSchema(collection string) map[string]any {
+//	return map[string]any{
+//		aws_collection.CloudTrailLogCollection{}.Identifier(): aws_types.AWSCloudTrail{},
+//	}
+//}
+
 func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
 	// todo config parsing, identify collection type etc.
 

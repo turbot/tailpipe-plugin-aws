@@ -35,11 +35,11 @@ func NewCloudTrailLogCollection(config CloudTrailLogCollectionConfig, source plu
 	return l
 }
 
-func (c *CloudTrailLogCollection) Identifier() string {
+func (c CloudTrailLogCollection) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[string]any) (any, error) {
+func (c CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[string]any) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
 	if !ok {
