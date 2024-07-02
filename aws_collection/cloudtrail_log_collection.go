@@ -3,6 +3,7 @@ package aws_collection
 import (
 	"fmt"
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
@@ -24,22 +25,44 @@ type CloudTrailLogCollection struct {
 	Config CloudTrailLogCollectionConfig
 }
 
-func NewCloudTrailLogCollection(config CloudTrailLogCollectionConfig, source plugin.Source) *CloudTrailLogCollection {
-	l := &CloudTrailLogCollection{
-		Config: config,
-	}
-	// Init sets the Source property on Base and adds us as an observer to it
-	// It also sets us as the Enricher property on Base
-	l.Base.Init(source, l)
+func NewCloudTrailLogCollection() plugin.Collection {
+	l := &CloudTrailLogCollection{}
+	// TODO avoid need for plugin implementation to do this
+	// Init sets us as the Enricher property on Base
+	l.Base.Init(l)
 
 	return l
 }
 
-func (c CloudTrailLogCollection) Identifier() string {
+// GetRowStruct implements Collection
+// return an instance of the row struct
+func (c *CloudTrailLogCollection) GetRowStruct() any {
+	return aws_types.AWSCloudTrail{}
+}
+
+// Init implements Collection
+func (c *CloudTrailLogCollection) Init(config any) error {
+	// TEMP - this will actually parse (or the base will)
+
+	// todo - parse config
+	c.Config = config.(CloudTrailLogCollectionConfig)
+
+	// todo create source from config
+	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: []string{"/Users/kai/tailpipe_data/flaws_cloudtrail_logs"}}
+	var source = aws_source.NewCompressedFileSourceConfig(sourceConfig)
+	// todo do this from base???
+	c.AddSource(source)
+
+	return nil
+}
+
+// Identifier implements Collection
+func (c *CloudTrailLogCollection) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-func (c CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[string]any) (any, error) {
+// EnrichRow implements RowEnricher
+func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[string]any) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
 	if !ok {

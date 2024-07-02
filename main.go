@@ -7,6 +7,6 @@ import (
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
-		Plugin: &aws.Plugin{},
+		PluginFunc: aws.NewPlugin,
 	})
 }
