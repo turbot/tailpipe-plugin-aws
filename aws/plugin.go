@@ -6,7 +6,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"log"
-	"time"
 )
 
 type Plugin struct {
@@ -16,7 +15,7 @@ type Plugin struct {
 func NewPlugin() (plugin.TailpipePlugin, error) {
 	p := &Plugin{}
 
-	time.Sleep(10 * time.Second)
+	//time.Sleep(10 * time.Second)
 	// register collections which we support
 	p.RegisterCollections(aws_collection.NewCloudTrailLogCollection)
 
