@@ -17,7 +17,7 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 
 	//time.Sleep(10 * time.Second)
 	// register collections which we support
-	p.RegisterCollections(aws_collection.NewCloudTrailLogCollection)
+	p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewFlowlogLogCollection)
 
 	return p, nil
 }
@@ -41,8 +41,29 @@ func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
 	// TODO parse config and use to build collection
 	//  tactical - create collection
 
+	//collectionConfig := aws_collection.FlowLogCollectionConfig{
+	//	Fields: []string{	"timestamp",
+	//		"version",
+	//		"account-id",
+	//		"interface-id",
+	//		"srcaddr",
+	//		"dstaddr",
+	//		"srcport",
+	//		"dstport",
+	//		"protocol",
+	//		"packets",
+	//		"bytes",
+	//		"start",
+	//		"end",
+	//		"action",
+	//		"log-status",
+	//	},
+	//}
+	//var col = aws_collection.NewFlowlogLogCollection()
+
 	collectionConfig := aws_collection.CloudTrailLogCollectionConfig{}
 	var col = aws_collection.NewCloudTrailLogCollection()
+
 	// TEMP call init
 	col.Init(collectionConfig)
 

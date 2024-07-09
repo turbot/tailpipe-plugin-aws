@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
-	"github.com/turbot/tailpipe-plugin-sdk/constants"
+	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/source"
@@ -14,23 +14,23 @@ import (
 	"path/filepath"
 )
 
-// CompressedFileSource source is responsible for collecting audit logs from Turbot Pipes API
-type CompressedFileSource struct {
+// CloudtrailCompressedFileSource source is responsible for collecting audit logs from Turbot Pipes API
+type CloudtrailCompressedFileSource struct {
 	source.Base
 	Config CompressedFileSourceConfig
 }
 
-func (c *CompressedFileSource) Identifier() string {
+func (c *CloudtrailCompressedFileSource) Identifier() string {
 	return "aws_compressed_file_source"
 }
 
-func NewCompressedFileSourceConfig(config CompressedFileSourceConfig) plugin.Source {
-	return &CompressedFileSource{
+func NewCloudtrailCompressedFileSource(config CompressedFileSourceConfig) plugin.Source {
+	return &CloudtrailCompressedFileSource{
 		Config: config,
 	}
 }
 
-func (c *CompressedFileSource) Collect(ctx context.Context, req *proto.CollectRequest) error {
+func (c *CloudtrailCompressedFileSource) Collect(ctx context.Context, req *proto.CollectRequest) error {
 	// tactical
 	//List all gz files in each path directory and call ExtractArtifactRows for each
 	for _, path := range c.Config.Paths {
@@ -56,7 +56,7 @@ func (c *CompressedFileSource) Collect(ctx context.Context, req *proto.CollectRe
 	return nil
 }
 
-func (c *CompressedFileSource) ExtractArtifactRows(ctx context.Context, req *proto.CollectRequest, inputPath string) error {
+func (c *CloudtrailCompressedFileSource) ExtractArtifactRows(ctx context.Context, req *proto.CollectRequest, inputPath string) error {
 	gzFile, err := os.Open(inputPath)
 	if err != nil {
 		return err
@@ -81,8 +81,8 @@ func (c *CompressedFileSource) ExtractArtifactRows(ctx context.Context, req *pro
 		}
 		// populate enrichment fields the the source is aware of
 		// - in this case the source location
-		sourceEnrichmentFields := map[string]interface{}{
-			constants.TpSourceLocation: inputPath,
+		sourceEnrichmentFields := &enrichment.CommonFields{
+			TpSourceLocation: &inputPath,
 		}
 
 		// call base OnRow

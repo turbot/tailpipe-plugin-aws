@@ -7,6 +7,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
+	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"strings"
@@ -49,7 +50,7 @@ func (c *CloudTrailLogCollection) Init(config any) error {
 
 	// todo create source from config
 	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: []string{"/Users/kai/tailpipe_data/flaws_cloudtrail_logs"}}
-	var source = aws_source.NewCompressedFileSourceConfig(sourceConfig)
+	var source = aws_source.NewCloudtrailCompressedFileSource(sourceConfig)
 	// todo do this from base???
 	c.AddSource(source)
 
@@ -62,11 +63,16 @@ func (c *CloudTrailLogCollection) Identifier() string {
 }
 
 // EnrichRow implements RowEnricher
-func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[string]any) (any, error) {
+func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
 	if !ok {
 		return nil, fmt.Errorf("invalid row type %T, expected AWSCloudTrail", row)
+	}
+
+	// initialize the enrichment fields to any fields provided by the source
+	if sourceEnrichmentFields == nil {
+		record.CommonFields = *sourceEnrichmentFields
 	}
 
 	// Record standardization
@@ -102,17 +108,6 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields map[
 	record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
 	record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
 
-	// now add an enrichment fields provided by the source
-	if sourceEnrichmentFields != nil {
-		if sourceLocation, ok := sourceEnrichmentFields["sourceLocation"]; ok {
-			// verify it is a string
-			sourceStr, ok := sourceLocation.(string)
-			if ok {
-				return nil, fmt.Errorf("sourceLocation is not a string")
-			}
-			record.TpSourceLocation = &sourceStr
-		}
-	}
 	return record, nil
 
 }
