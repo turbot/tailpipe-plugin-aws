@@ -2,6 +2,9 @@ package aws_collection
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
@@ -10,11 +13,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
-	"strings"
-	"time"
-	//"github.com/turbot/tailpipe-plugin-sdk/collection"
-	//sdkconfig "github.com/turbot/tailpipe-plugin-sdk/config"
-	//"github.com/turbot/tailpipe-plugin-sdk/source"
 )
 
 type CloudTrailLogCollection struct {
@@ -27,12 +25,12 @@ type CloudTrailLogCollection struct {
 }
 
 func NewCloudTrailLogCollection() plugin.Collection {
-	l := &CloudTrailLogCollection{}
+	c := &CloudTrailLogCollection{}
 	// TODO avoid need for plugin implementation to do this
 	// Init sets us as the Enricher property on Base
-	l.Base.Init(l)
+	c.Base.Init(c)
 
-	return l
+	return c
 }
 
 // GetRowStruct implements Collection
@@ -47,10 +45,12 @@ func (c *CloudTrailLogCollection) Init(config any) error {
 
 	// todo - parse config
 	c.Config = config.(CloudTrailLogCollectionConfig)
+	// todo validate config
 
 	// todo create source from config
-	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: []string{"/Users/kai/tailpipe_data/flaws_cloudtrail_logs"}}
+	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: c.Config.Paths}
 	var source = aws_source.NewCloudtrailCompressedFileSource(sourceConfig)
+
 	// todo do this from base???
 	c.AddSource(source)
 

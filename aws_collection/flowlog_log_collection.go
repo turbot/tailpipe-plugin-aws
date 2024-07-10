@@ -52,7 +52,7 @@ func (c *FlowlogLogCollection) Init(config any) error {
 	}
 
 	// todo create source from config
-	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: []string{"/Users/kai/tailpipe_data/flowlog"}}
+	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: c.Config.Paths}
 	var source = aws_source.NewFlowlogCompressedFileSource(sourceConfig)
 	// todo do this from base???
 	c.AddSource(source)

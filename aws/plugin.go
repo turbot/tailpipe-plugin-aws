@@ -6,6 +6,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"log"
+	"time"
 )
 
 type Plugin struct {
@@ -15,7 +16,7 @@ type Plugin struct {
 func NewPlugin() (plugin.TailpipePlugin, error) {
 	p := &Plugin{}
 
-	//time.Sleep(10 * time.Second)
+	time.Sleep(10 * time.Second)
 	// register collections which we support
 	p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewFlowlogLogCollection)
 
@@ -36,36 +37,46 @@ func (t *Plugin) Collect(req *proto.CollectRequest) error {
 }
 
 func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
+	var col plugin.Collection
+	var config any
+
+	// TODO most of this can be done from base
 	// todo config parsing, identify collection type etc.
 
 	// TODO parse config and use to build collection
-	//  tactical - create collection
 
-	//collectionConfig := aws_collection.FlowLogCollectionConfig{
-	//	Fields: []string{	"timestamp",
-	//		"version",
-	//		"account-id",
-	//		"interface-id",
-	//		"srcaddr",
-	//		"dstaddr",
-	//		"srcport",
-	//		"dstport",
-	//		"protocol",
-	//		"packets",
-	//		"bytes",
-	//		"start",
-	//		"end",
-	//		"action",
-	//		"log-status",
-	//	},
-	//}
-	//var col = aws_collection.NewFlowlogLogCollection()
+	switch req.CollectionName {
+	case "aws_cloudtrail_log":
+		col = aws_collection.NewCloudTrailLogCollection()
+		config = aws_collection.CloudTrailLogCollectionConfig{
+			Paths: req.Paths,
+		}
+	case "aws_flow_log":
+		col = aws_collection.NewFlowlogLogCollection()
 
-	collectionConfig := aws_collection.CloudTrailLogCollectionConfig{}
-	var col = aws_collection.NewCloudTrailLogCollection()
+		config = aws_collection.FlowLogCollectionConfig{
+			Paths: req.Paths,
+			Fields: []string{"timestamp",
+				"version",
+				"account-id",
+				"interface-id",
+				"srcaddr",
+				"dstaddr",
+				"srcport",
+				"dstport",
+				"protocol",
+				"packets",
+				"bytes",
+				"start",
+				"end",
+				"action",
+				"log-status",
+			},
+		}
+	}
 
 	// TEMP call init
-	col.Init(collectionConfig)
+	col.Init(config)
 
 	// add ourselves as an observer
 	col.AddObserver(t)

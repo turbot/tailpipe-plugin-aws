@@ -21,7 +21,6 @@ type FlowLogCollectionConfig struct {
 	// the path to the flow log files
 	Paths []string `hcl:"paths"`
 
-	// TODO will we need to infer these???
 	// the fields to extract from the flow log
 	Fields []string `hcl "fields"`
 }
