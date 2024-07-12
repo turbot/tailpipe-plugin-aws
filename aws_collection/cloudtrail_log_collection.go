@@ -35,6 +35,11 @@ func NewCloudTrailLogCollection() plugin.Collection {
 	return c
 }
 
+// Identifier implements Collection
+func (c *CloudTrailLogCollection) Identifier() string {
+	return "aws_cloudtrail_log"
+}
+
 // GetRowStruct implements Collection
 // return an instance of the row struct
 func (c *CloudTrailLogCollection) GetRowStruct() any {
@@ -77,11 +82,6 @@ func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfi
 	}
 
 	return source, nil
-}
-
-// Identifier implements Collection
-func (c *CloudTrailLogCollection) Identifier() string {
-	return "aws_cloudtrail_log"
 }
 
 // EnrichRow implements RowEnricher
