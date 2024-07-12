@@ -61,16 +61,16 @@ func (c *CloudTrailLogCollection) Init(config any) error {
 
 func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfig) (plugin.RowSource, error) {
 	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
+
 	artifactSource := artifact.NewFileSystemSource(sourceConfig)
-	artifactExtractors := []artifact.Extractor{
-		// gzip extractor with ExtractObject strategy
-		artifact.NewGzipExtractorSource(artifactSource, artifact.ExtractObject),
-		aws_source.NewCloudtrailExtractorSink(),
-	}
+	artifactLoader := artifact.NewGzipExtractorSource(artifact.ExtractObject)
+	artifactMapper := aws_source.NewCloudtrailMapper()
 
 	var source, err = row_source.NewArtifactRowSource(
 		artifactSource,
-		artifactExtractors...)
+		artifactLoader,
+		artifactMapper,
+	)
 
 	if err != nil {
 		return nil, fmt.Errorf("error creating artifact row source: %w", err)

@@ -58,54 +58,31 @@ func (c *FlowlogLogCollection) Init(config any) error {
 	return nil
 }
 
-//
-//// TEMP - this will actually parse (or the base will)
-//
-//// todo - parse config
-//c.Config = config.(FlowLogCollectionConfig)
-//
-//// init the config - this defaults the field list
-//if c.Config.Fields == nil {
-//	c.Config.Fields = DefaultFlowLogFields
-//}
-//
-//// todo create source from config
-//sourceConfig := aws_source.CompressedFileSourceConfig{Paths: c.Config.Paths}
-//var source = aws_source.NewFlowlogCompressedFileSource(sourceConfig)
-//// todo do this from base???
-//c.AddSource(source)
-//
-//return nil
-//}
-
 func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugin.RowSource, error) {
-	//sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths,Extensions: []string{".gz"}}
-	//artifactSource := artifact.NewFileSystemSource(sourceConfig)
+
+	//sourceConfig := &artifact.AwsS3BucketSourceConfig{
+	//	Bucket:       "silverwater-flowlog-s3-bucket",
+	//	Extensions:   []string{".gz"},
+	//	AccessKey:    "ASIARNKUQPUTSWALT7IS",
+	//	SecretKey:    "7rXEgyZPlfkWTbT1sRdDc5BYmaMSm8qgi5qJHWXN",
+	//	SessionToken: "IQoJb3JpZ2luX2VjEJf//////////wEaCXVzLWVhc3QtMiJIMEYCIQDqRA+V28K3t0YzcJzHaqHdIAP+JELGxb9PkoWWxAg6nwIhAPS6DnfSrfKHsqIuxoiKI3r6E41YXj+x5ZdLMVEHTw3iKoYDCGAQAxoMMDk3MzUwODc2NDU1IgzoOk1UsaFJN2M12LAq4wIxqdMvGJVUiKihwxoBSF07d0HGfm3fiDlFukeBvE16D8eoaSzFFbEuUFqeSe0qH49qcdGKqG+QzqCUpnfanRRMpSQUr9D82dp1Xy0XEN6LQXV8oNz4XUBfjZCy2Uwti7fabkzxox8AO6jejDJ16lK9Mn/g5M3nt+kxgb4lcde65oUyVu1mho8HVskByf4Zxb7koEcniw3JWo5ngzPFuy5iWlRU95g2cxQyqueehnk2s4AoPHNsPn8fPjZmCK3dkhy0Z2cMgQDQT3O7X0G+mYmcpl4dtT9DaIn9Zw81imFU3hzDL0PfqrHOFzfKrFTePVVVcK3kSOKyYBLPmx9c6Lc5IlCRMZQZ5F4JVz5MQryMstbyoz8xMLN8iWv8U49LrGSmp1KgZgNy3LNyRAKo0D4CDRe/6TBzDjk/+xGTioHXC5POjtwdAk9Ylx306I7rxDlP8TLMlx+9OFPYdAp+Jz7xel9ZMLrvv7QGOqUBiEktNKF4MdyONoymioyqbyc2ESmyApWcxRrL3XIKUyyZHJ2VAd5R4YSRZlTUSUHP0CEKdI62qNtg4ZOC4Eo6HsZWXqnYCSkMC0NAPwi2MvkbIjsZRpeOkx+o+UQP59M6QOUQJhPO+gih2vxN7XN8iTMT88ozjtiViHn8uPo0Emepiv8sGZd6V+RMaR4d8IoMvhvfVsLYSgemeF3f71SY/UK65bTJ",
+	//}
 	//
+	//artifactSource, err := artifact.NewAwsS3BucketSource(sourceConfig)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error creating s3 bucket source: %w", err)
+	//}
 
-	sourceConfig := &artifact.AwsS3BucketSourceConfig{
-		Bucket:       "silverwater-flowlog-s3-bucket",
-		Extensions:   []string{".gz"},
-		AccessKey:    "ASIARNKUQPUTSWALT7IS",
-		SecretKey:    "7rXEgyZPlfkWTbT1sRdDc5BYmaMSm8qgi5qJHWXN",
-		SessionToken: "IQoJb3JpZ2luX2VjEJf//////////wEaCXVzLWVhc3QtMiJIMEYCIQDqRA+V28K3t0YzcJzHaqHdIAP+JELGxb9PkoWWxAg6nwIhAPS6DnfSrfKHsqIuxoiKI3r6E41YXj+x5ZdLMVEHTw3iKoYDCGAQAxoMMDk3MzUwODc2NDU1IgzoOk1UsaFJN2M12LAq4wIxqdMvGJVUiKihwxoBSF07d0HGfm3fiDlFukeBvE16D8eoaSzFFbEuUFqeSe0qH49qcdGKqG+QzqCUpnfanRRMpSQUr9D82dp1Xy0XEN6LQXV8oNz4XUBfjZCy2Uwti7fabkzxox8AO6jejDJ16lK9Mn/g5M3nt+kxgb4lcde65oUyVu1mho8HVskByf4Zxb7koEcniw3JWo5ngzPFuy5iWlRU95g2cxQyqueehnk2s4AoPHNsPn8fPjZmCK3dkhy0Z2cMgQDQT3O7X0G+mYmcpl4dtT9DaIn9Zw81imFU3hzDL0PfqrHOFzfKrFTePVVVcK3kSOKyYBLPmx9c6Lc5IlCRMZQZ5F4JVz5MQryMstbyoz8xMLN8iWv8U49LrGSmp1KgZgNy3LNyRAKo0D4CDRe/6TBzDjk/+xGTioHXC5POjtwdAk9Ylx306I7rxDlP8TLMlx+9OFPYdAp+Jz7xel9ZMLrvv7QGOqUBiEktNKF4MdyONoymioyqbyc2ESmyApWcxRrL3XIKUyyZHJ2VAd5R4YSRZlTUSUHP0CEKdI62qNtg4ZOC4Eo6HsZWXqnYCSkMC0NAPwi2MvkbIjsZRpeOkx+o+UQP59M6QOUQJhPO+gih2vxN7XN8iTMT88ozjtiViHn8uPo0Emepiv8sGZd6V+RMaR4d8IoMvhvfVsLYSgemeF3f71SY/UK65bTJ",
-	}
-
-	artifactSource, err := artifact.NewAwsS3BucketSource(sourceConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error creating s3 bucket source: %w", err)
-	}
-
-	artifactExtractors := []artifact.Extractor{
-		// gzip extractor with ExtractRows strategy
-		artifact.NewGzipExtractorSource(artifactSource, artifact.ExtractRows),
-		artifact.NewTransparentExtractorSink(),
-	}
+	artifactSource := artifact.NewFileSystemSource(&artifact.FileSystemSourceConfig{
+		Paths:      config.Paths,
+		Extensions: []string{".gz"},
+	})
+	artifactLoader := artifact.NewGzipExtractorSource(artifact.ExtractRows)
 
 	source, err := row_source.NewArtifactRowSource(
 		artifactSource,
-		artifactExtractors...)
-
+		artifactLoader,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating artifact row source: %w", err)
 	}
@@ -137,16 +114,7 @@ func (c *FlowlogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrich
 		record.CommonFields = *sourceEnrichmentFields
 	}
 
-	/* required fields */
-	///	GetConnection() string
-	////	GetYear() int
-	////	GetMonth() int
-	////	GetDay() int
-	////	GetTpID() string
-	////	GetTpTimestamp() int64
-	//
-
-	//// Record standardization
+	// Record standardization
 	record.TpID = xid.New().String()
 
 	// TODO is source type actually the source, i.e compressed file source etc>
