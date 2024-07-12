@@ -6,6 +6,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"log"
+	"log/slog"
 	"time"
 )
 
@@ -16,7 +17,9 @@ type Plugin struct {
 func NewPlugin() (plugin.TailpipePlugin, error) {
 	p := &Plugin{}
 
+	slog.Info("AWS Plugin starting")
 	time.Sleep(10 * time.Second)
+	slog.Info("YAWN")
 	// register collections which we support
 	p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewFlowlogLogCollection)
 
@@ -48,13 +51,13 @@ func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
 	switch req.CollectionName {
 	case "aws_cloudtrail_log":
 		col = aws_collection.NewCloudTrailLogCollection()
-		config = aws_collection.CloudTrailLogCollectionConfig{
+		config = &aws_collection.CloudTrailLogCollectionConfig{
 			Paths: req.Paths,
 		}
 	case "aws_flow_log":
 		col = aws_collection.NewFlowlogLogCollection()
 
-		config = aws_collection.FlowLogCollectionConfig{
+		config = &aws_collection.FlowLogCollectionConfig{
 			Paths: req.Paths,
 			Fields: []string{"timestamp",
 				"version",
@@ -87,6 +90,6 @@ func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
 	// tell the collection to start collecting - this is a blocking call
 	err := col.Collect(ctx, req)
 
-	// signal we have completed
+	// signal we have completed - pass error if there was one
 	t.OnComplete(req, err)
 }

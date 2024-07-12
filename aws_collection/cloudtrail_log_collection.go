@@ -2,6 +2,8 @@ package aws_collection
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact"
+	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"strings"
 	"time"
 
@@ -21,7 +23,7 @@ type CloudTrailLogCollection struct {
 	collection.Base
 
 	// the collection config
-	Config CloudTrailLogCollectionConfig
+	Config *CloudTrailLogCollectionConfig
 }
 
 func NewCloudTrailLogCollection() plugin.Collection {
@@ -44,17 +46,37 @@ func (c *CloudTrailLogCollection) Init(config any) error {
 	// TEMP - this will actually parse (or the base will)
 
 	// todo - parse config
-	c.Config = config.(CloudTrailLogCollectionConfig)
+	c.Config = config.(*CloudTrailLogCollectionConfig)
 	// todo validate config
 
 	// todo create source from config
-	sourceConfig := aws_source.CompressedFileSourceConfig{Paths: c.Config.Paths}
-	var source = aws_source.NewCloudtrailCompressedFileSource(sourceConfig)
-
-	// todo do this from base???
+	source, err := c.getSource(c.Config)
+	if err != nil {
+		return err
+	}
 	c.AddSource(source)
 
 	return nil
+}
+
+func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfig) (plugin.RowSource, error) {
+	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
+	artifactSource := artifact.NewFileSystemSource(sourceConfig)
+	artifactExtractors := []artifact.Extractor{
+		// gzip extractor with ExtractObject strategy
+		artifact.NewGzipExtractorSource(artifactSource, artifact.ExtractObject),
+		aws_source.NewCloudtrailExtractorSink(),
+	}
+
+	var source, err = row_source.NewArtifactRowSource(
+		artifactSource,
+		artifactExtractors...)
+
+	if err != nil {
+		return nil, fmt.Errorf("error creating artifact row source: %w", err)
+	}
+
+	return source, nil
 }
 
 // Identifier implements Collection
