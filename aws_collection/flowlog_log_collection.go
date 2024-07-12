@@ -77,7 +77,7 @@ func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugi
 		Paths:      config.Paths,
 		Extensions: []string{".gz"},
 	})
-	artifactLoader := artifact.NewGzipExtractorSource(artifact.ExtractRows)
+	artifactLoader := artifact.NewGzipRowLoader()
 
 	source, err := row_source.NewArtifactRowSource(
 		artifactSource,

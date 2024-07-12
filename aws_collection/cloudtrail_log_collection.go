@@ -63,7 +63,7 @@ func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfi
 	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
 
 	artifactSource := artifact.NewFileSystemSource(sourceConfig)
-	artifactLoader := artifact.NewGzipExtractorSource(artifact.ExtractObject)
+	artifactLoader := artifact.NewGzipObjectLoader[*aws_types.AWSCloudTrailBatch]()
 	artifactMapper := aws_source.NewCloudtrailMapper()
 
 	var source, err = row_source.NewArtifactRowSource(
