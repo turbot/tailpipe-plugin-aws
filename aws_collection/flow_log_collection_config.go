@@ -22,5 +22,5 @@ type FlowLogCollectionConfig struct {
 	Paths []string `hcl:"paths"`
 
 	// the fields to extract from the flow log
-	Fields []string `hcl "fields"`
+	Fields []string `hcl:"fields"`
 }

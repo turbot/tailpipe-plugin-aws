@@ -21,7 +21,10 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	time.Sleep(10 * time.Second)
 	slog.Info("YAWN")
 	// register collections which we support
-	p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewFlowlogLogCollection)
+	err := p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewFlowlogLogCollection)
+	if err != nil {
+		return nil, err
+	}
 
 	return p, nil
 }
@@ -34,12 +37,17 @@ func (t *Plugin) Collect(req *proto.CollectRequest) error {
 	log.Println("[INFO] Collect")
 
 	// TODO can we do this in base
-	go t.doCollect(context.Background(), req)
+	go func() {
+		if err := t.doCollect(context.Background(), req); err != nil {
+			// TODO #err handle error
+			slog.Error("doCollect failed", "error", err)
+		}
+	}()
 
 	return nil
 }
 
-func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
+func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) error {
 	var col plugin.Collection
 	var config any
 
@@ -79,17 +87,22 @@ func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) {
 	}
 
 	// TEMP call init
-	col.Init(config)
+	if err := col.Init(config); err != nil {
+		// TODO #err handle error
+		slog.Error("init error", "error", err)
+	}
 
 	// add ourselves as an observer
-	col.AddObserver(t)
+	if err := col.AddObserver(t); err != nil {
+		// TODO #err handle error
+		slog.Error("add observer error", "error", err)
+	}
 
 	// signal we have started
-	t.OnStarted(req)
 
 	// tell the collection to start collecting - this is a blocking call
 	err := col.Collect(ctx, req)
 
 	// signal we have completed - pass error if there was one
-	t.OnComplete(req, err)
+	return t.OnCompleted(req, err)
 }

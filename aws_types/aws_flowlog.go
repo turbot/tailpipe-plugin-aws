@@ -12,6 +12,7 @@ import (
 type FlowLog struct {
 	// embed required enrichment fields (be sure to skip in parquet)
 	enrichment.CommonFields `parquet:"-"`
+
 	Timestamp               *time.Time `json:"timestamp,omitempty"`
 	Version                 *int32     `json:"version,omitempty"`
 	AccountID               *string    `json:"account_id,omitempty"`

@@ -53,9 +53,7 @@ func (c *FlowlogLogCollection) Init(config any) error {
 	if err != nil {
 		return err
 	}
-	c.AddSource(source)
-
-	return nil
+	return c.AddSource(source)
 }
 
 func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugin.RowSource, error) {

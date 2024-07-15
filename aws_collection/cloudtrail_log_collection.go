@@ -59,9 +59,7 @@ func (c *CloudTrailLogCollection) Init(config any) error {
 	if err != nil {
 		return err
 	}
-	c.AddSource(source)
-
-	return nil
+	return c.AddSource(source)
 }
 
 func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfig) (plugin.RowSource, error) {
