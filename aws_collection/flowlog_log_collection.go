@@ -61,9 +61,9 @@ func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugi
 	//sourceConfig := &artifact.AwsS3BucketSourceConfig{
 	//	Bucket:       "silverwater-flowlog-s3-bucket",
 	//	Extensions:   []string{".gz"},
-	//	AccessKey:    "ASIARNKUQPUTSWALT7IS",
-	//	SecretKey:    "7rXEgyZPlfkWTbT1sRdDc5BYmaMSm8qgi5qJHWXN",
-	//	SessionToken: "IQoJb3JpZ2luX2VjEJf//////////wEaCXVzLWVhc3QtMiJIMEYCIQDqRA+V28K3t0YzcJzHaqHdIAP+JELGxb9PkoWWxAg6nwIhAPS6DnfSrfKHsqIuxoiKI3r6E41YXj+x5ZdLMVEHTw3iKoYDCGAQAxoMMDk3MzUwODc2NDU1IgzoOk1UsaFJN2M12LAq4wIxqdMvGJVUiKihwxoBSF07d0HGfm3fiDlFukeBvE16D8eoaSzFFbEuUFqeSe0qH49qcdGKqG+QzqCUpnfanRRMpSQUr9D82dp1Xy0XEN6LQXV8oNz4XUBfjZCy2Uwti7fabkzxox8AO6jejDJ16lK9Mn/g5M3nt+kxgb4lcde65oUyVu1mho8HVskByf4Zxb7koEcniw3JWo5ngzPFuy5iWlRU95g2cxQyqueehnk2s4AoPHNsPn8fPjZmCK3dkhy0Z2cMgQDQT3O7X0G+mYmcpl4dtT9DaIn9Zw81imFU3hzDL0PfqrHOFzfKrFTePVVVcK3kSOKyYBLPmx9c6Lc5IlCRMZQZ5F4JVz5MQryMstbyoz8xMLN8iWv8U49LrGSmp1KgZgNy3LNyRAKo0D4CDRe/6TBzDjk/+xGTioHXC5POjtwdAk9Ylx306I7rxDlP8TLMlx+9OFPYdAp+Jz7xel9ZMLrvv7QGOqUBiEktNKF4MdyONoymioyqbyc2ESmyApWcxRrL3XIKUyyZHJ2VAd5R4YSRZlTUSUHP0CEKdI62qNtg4ZOC4Eo6HsZWXqnYCSkMC0NAPwi2MvkbIjsZRpeOkx+o+UQP59M6QOUQJhPO+gih2vxN7XN8iTMT88ozjtiViHn8uPo0Emepiv8sGZd6V+RMaR4d8IoMvhvfVsLYSgemeF3f71SY/UK65bTJ",
+	//	AccessKey:    "",
+	//	SecretKey:    "",
+	//	SessionToken: "",
 	//}
 	//
 	//artifactSource, err := artifact.NewAwsS3BucketSource(sourceConfig)
@@ -75,6 +75,14 @@ func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugi
 		Paths:      config.Paths,
 		Extensions: []string{".gz"},
 	})
+
+	//artifactSource, err := artifact.NewAwsCloudWatchSource(&artifact.AwsCloudWatchSourceConfig{
+	//	AccessKey:    "",
+	//	SecretKey:    "",
+	//	SessionToken: "",
+	//	LogGroupName: "/victor/vpc/flowlog",
+	//}, )
+
 	artifactLoader := artifact.NewGzipRowLoader()
 
 	source, err := row_source.NewArtifactRowSource(
