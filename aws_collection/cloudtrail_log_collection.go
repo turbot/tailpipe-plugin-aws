@@ -66,14 +66,9 @@ func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfi
 	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
 
 	artifactSource := artifact.NewFileSystemSource(sourceConfig)
-	artifactLoader := artifact.NewGzipObjectLoader[*aws_types.AWSCloudTrailBatch]()
 	artifactMapper := aws_source.NewCloudtrailMapper()
 
-	var source, err = row_source.NewArtifactRowSource(
-		artifactSource,
-		artifactLoader,
-		artifactMapper,
-	)
+	var source, err = row_source.NewArtifactRowSource(artifactSource, row_source.WithMapper(artifactMapper))
 
 	if err != nil {
 		return nil, fmt.Errorf("error creating artifact row source: %w", err)
@@ -91,7 +86,7 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 	}
 
 	// initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields == nil {
+	if sourceEnrichmentFields != nil {
 		record.CommonFields = *sourceEnrichmentFields
 	}
 

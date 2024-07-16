@@ -83,11 +83,10 @@ func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugi
 	//	LogGroupName: "/victor/vpc/flowlog",
 	//}, )
 
-	artifactLoader := artifact.NewGzipRowLoader()
-
 	source, err := row_source.NewArtifactRowSource(
 		artifactSource,
-		artifactLoader,
+		// we expect a log row per line of log data
+		row_source.WithRowPerLine(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating artifact row source: %w", err)
