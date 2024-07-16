@@ -24,3 +24,10 @@ type FlowLogCollectionConfig struct {
 	// the fields to extract from the flow log
 	Fields []string `hcl:"fields"`
 }
+
+func (c *FlowLogCollectionConfig) Init() error {
+	if len(c.Fields) == 0 {
+		c.Fields = DefaultFlowLogFields
+	}
+	return nil
+}

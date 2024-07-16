@@ -3,6 +3,7 @@ package aws_collection
 import (
 	"fmt"
 	"github.com/rs/xid"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
@@ -46,6 +47,12 @@ func (c *FlowlogLogCollection) Init(config any) error {
 
 	// todo - parse config
 	c.Config = config.(*FlowLogCollectionConfig)
+
+	// initi the config = this will set default fiuelds if needed
+	err := c.Config.Init()
+	if err != nil {
+		return fmt.Errorf("error initializing config: %w", err)
+	}
 	// todo validate config
 
 	// todo create source from config
@@ -71,17 +78,18 @@ func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugi
 	//	return nil, fmt.Errorf("error creating s3 bucket source: %w", err)
 	//}
 
-	artifactSource := artifact.NewFileSystemSource(&artifact.FileSystemSourceConfig{
-		Paths:      config.Paths,
-		Extensions: []string{".gz"},
-	})
+	//artifactSource := artifact.NewFileSystemSource(&artifact.FileSystemSourceConfig{
+	//	Paths:      config.Paths,
+	//	Extensions: []string{".gz"},
+	//})
 
-	//artifactSource, err := artifact.NewAwsCloudWatchSource(&artifact.AwsCloudWatchSourceConfig{
-	//	AccessKey:    "",
-	//	SecretKey:    "",
-	//	SessionToken: "",
-	//	LogGroupName: "/victor/vpc/flowlog",
-	//}, )
+	artifactSource, err := artifact.NewAwsCloudWatchSource(&artifact.AwsCloudWatchSourceConfig{
+		AccessKey:      "",
+		SecretKey:      "",
+		SessionToken:   "",
+		LogGroupName:   "/victor/vpc/flowlog",
+		LogGroupPrefix: utils.ToStringPointer("eni-000b"),
+	})
 
 	source, err := row_source.NewArtifactRowSource(
 		artifactSource,
@@ -102,7 +110,6 @@ func (c *FlowlogLogCollection) Identifier() string {
 
 // EnrichRow implements RowEnricher
 func (c *FlowlogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
-
 	// row must be a string
 	rowString, ok := row.(string)
 	if !ok {

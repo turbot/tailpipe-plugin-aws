@@ -33,7 +33,7 @@ func (t *Plugin) Identifier() string {
 	return "aws"
 }
 
-func (t *Plugin) Collect(req *proto.CollectRequest) error {
+func (t *Plugin) Collect(ctx context.Context, req *proto.CollectRequest) error {
 	log.Println("[INFO] Collect")
 
 	// TODO can we do this in base
@@ -67,22 +67,22 @@ func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) error
 
 		config = &aws_collection.FlowLogCollectionConfig{
 			Paths: req.Paths,
-			Fields: []string{"timestamp",
-				"version",
-				"account-id",
-				"interface-id",
-				"srcaddr",
-				"dstaddr",
-				"srcport",
-				"dstport",
-				"protocol",
-				"packets",
-				"bytes",
-				"start",
-				"end",
-				"action",
-				"log-status",
-			},
+			//Fields: []string{"timestamp",
+			//	"version",
+			//	"account-id",
+			//	"interface-id",
+			//	"srcaddr",
+			//	"dstaddr",
+			//	"srcport",
+			//	"dstport",
+			//	"protocol",
+			//	"packets",
+			//	"bytes",
+			//	"start",
+			//	"end",
+			//	"action",
+			//	"log-status",
+			//},
 		}
 	}
 
@@ -104,5 +104,5 @@ func (t *Plugin) doCollect(ctx context.Context, req *proto.CollectRequest) error
 	err := col.Collect(ctx, req)
 
 	// signal we have completed - pass error if there was one
-	return t.OnCompleted(req, err)
+	return t.OnCompleted(ctx, req, err)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact"
 	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"log/slog"
 )
@@ -23,11 +24,11 @@ func (c *CloudtrailMapper) Identifier() string {
 }
 
 // Map casts the data item as an AWSCloudTrailBatch and returns the records
-func (c *CloudtrailMapper) Map(_ context.Context, _ *proto.CollectRequest, a any) ([]any, error) {
+func (c *CloudtrailMapper) Map(_ context.Context, _ *proto.CollectRequest, a *artifact.ArtifactData) ([]*artifact.ArtifactData, error) {
+	// TODO will data always be a JSON?
 	// the expected input type is a JSON string deserializable to  AWSCloudTrailBatch
 	// convert from char[] to string
-
-	jsonBytes, ok := a.([]byte)
+	jsonBytes, ok := a.Data.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("expected byte[], got %T", a)
 	}
@@ -40,10 +41,10 @@ func (c *CloudtrailMapper) Map(_ context.Context, _ *proto.CollectRequest, a any
 		return nil, fmt.Errorf("error decoding json: %w", err)
 	}
 
-	slog.Debug("CloudtrailMapper", "record count", len(log.Records))
-	var res = make([]any, len(log.Records))
+	slog.Debug("CloudwatchMapper", "record count", len(log.Records))
+	var res = make([]*artifact.ArtifactData, len(log.Records))
 	for i, record := range log.Records {
-		res[i] = record
+		res[i] = artifact.NewData(record)
 	}
 	return res, nil
 }
