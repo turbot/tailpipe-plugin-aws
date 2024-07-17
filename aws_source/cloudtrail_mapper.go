@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact"
-	"github.com/turbot/tailpipe-plugin-sdk/grpc/proto"
 	"log/slog"
 )
 
@@ -24,7 +23,7 @@ func (c *CloudtrailMapper) Identifier() string {
 }
 
 // Map casts the data item as an AWSCloudTrailBatch and returns the records
-func (c *CloudtrailMapper) Map(_ context.Context, _ *proto.CollectRequest, a *artifact.ArtifactData) ([]*artifact.ArtifactData, error) {
+func (c *CloudtrailMapper) Map(_ context.Context, a *artifact.ArtifactData) ([]*artifact.ArtifactData, error) {
 	// TODO will data always be a JSON?
 	// the expected input type is a JSON string deserializable to  AWSCloudTrailBatch
 	// convert from char[] to string
