@@ -24,9 +24,9 @@ func (c *CloudtrailMapper) Identifier() string {
 
 // Map casts the data item as an AWSCloudTrailBatch and returns the records
 func (c *CloudtrailMapper) Map(_ context.Context, a *artifact.ArtifactData) ([]*artifact.ArtifactData, error) {
-	// TODO will data always be a JSON?
-	// the expected input type is a JSON string deserializable to  AWSCloudTrailBatch
-	// convert from char[] to string
+	// the expected input type is a JSON string deserializable to AWSCloudTrailBatch
+
+	// TODO why is this string not byte[]
 	jsonBytes, ok := a.Data.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("expected byte[], got %T", a)

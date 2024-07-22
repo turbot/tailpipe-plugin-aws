@@ -1,6 +1,7 @@
 package aws_collection
 
 import (
+	"context"
 	"fmt"
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
@@ -9,6 +10,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"time"
@@ -19,7 +21,6 @@ import (
 
 type FlowlogLogCollection struct {
 	// all collections must embed collection.Base
-	// this add observer and enrich functions
 	collection.Base
 
 	// the collection config
@@ -28,10 +29,6 @@ type FlowlogLogCollection struct {
 
 func NewFlowlogLogCollection() plugin.Collection {
 	l := &FlowlogLogCollection{}
-	// TODO avoid need for plugin implementation to do this
-	// Init sets us as the Enricher property on Base
-	l.Base.Init(l)
-
 	return l
 }
 
@@ -42,29 +39,56 @@ func (c *FlowlogLogCollection) GetRowStruct() any {
 }
 
 // Init implements Collection
-func (c *FlowlogLogCollection) Init(config any) error {
+func (c *FlowlogLogCollection) Init(ctx context.Context, configData []byte) error {
 	// TEMP - this will actually parse (or the base will)
+	// unmarshal the config
+	config := &FlowLogCollectionConfig{
+		Paths: []string{"/Users/kai/tailpipe_data/flowlog"},
+		// use defaults when using cloudwatch
+		//		//Fields: []string{"timestamp",
+		//		//	"version",
+		//		//	"account-id",
+		//		//	"interface-id",
+		//		//	"srcaddr",
+		//		//	"dstaddr",
+		//		//	"srcport",
+		//		//	"dstport",
+		//		//	"protocol",
+		//		//	"packets",
+		//		//	"bytes",
+		//		//	"start",
+		//		//	"end",
+		//		//	"action",
+		//		//	"log-status",
+		//		//},
+	}
 
-	// todo - parse config
-	c.Config = config.(*FlowLogCollectionConfig)
+	//err := json.Unmarshal(configData, config)
+	//if err != nil {
+	//	return fmt.Errorf("error unmarshalling config: %w", err)
+	//}
 
-	// initi the config = this will set default fiuelds if needed
-	err := c.Config.Init()
-	if err != nil {
+	// todo - parse config as hcl
+	c.Config = config
+	// todo validate config
+
+	// init the config = this will set default fields if needed
+	if err := c.Config.Init(); err != nil {
 		return fmt.Errorf("error initializing config: %w", err)
 	}
 	// todo validate config
 
 	// todo create source from config
-	source, err := c.getSource(c.Config)
+	source, err := c.getSource(ctx, c.Config)
 	if err != nil {
 		return err
 	}
 	return c.AddSource(source)
 }
 
-func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugin.RowSource, error) {
+func (c *FlowlogLogCollection) getSource(ctx context.Context, config *FlowLogCollectionConfig) (plugin.RowSource, error) {
 
+	// TODO populate from config
 	//sourceConfig := &artifact.AwsS3BucketSourceConfig{
 	//	Bucket:       "silverwater-flowlog-s3-bucket",
 	//	Extensions:   []string{".gz"},
@@ -83,16 +107,26 @@ func (c *FlowlogLogCollection) getSource(config *FlowLogCollectionConfig) (plugi
 	//	Extensions: []string{".gz"},
 	//})
 
-	artifactSource, err := artifact.NewAwsCloudWatchSource(&artifact.AwsCloudWatchSourceConfig{
-		AccessKey:      "",
-		SecretKey:      "",
-		SessionToken:   "",
-		LogGroupName:   "/victor/vpc/flowlog",
-		LogGroupPrefix: utils.ToStringPointer("eni-000b"),
+	artifactSource, err := artifact.NewAwsCloudWatchSource(ctx, &artifact.AwsCloudWatchSourceConfig{
+		AccessKey:       "ASIARNKUQPUTWCYZF7H3",
+		SecretKey:       "mKasF5qHQ0ejKr5xAC0xh4Iz6shFeNvr0pJGuVmW",
+		SessionToken:    "IQoJb3JpZ2luX2VjEFQaCXVzLWVhc3QtMiJIMEYCIQCQZSo4wDMbOkp3tDJIT7N825klJrP5G0MNyUCrMsVLKgIhALQ07bWzfoNgUxHcQpxn15w2dwZUK5awABAUmKcXSnXgKoYDCC0QAxoMMDk3MzUwODc2NDU1Igz/AKtTka19aFUqgngq4wIsRk/Mu/shGA9zsHCjd8lQAHuazr9+6LKIdGstvfsk4BaYnb/WGAHcEOMhKfkpqmqolHB4OTCZWKj5fcQKwx+UfwvtqZ7DktbIJDlYcUm0Rc7Gyn5W+FvcxCWQLUCwEs3uCVH7sz3zoszJCI8OjRkrhVXMKUsRS5wZ8PYaVheiMCN7319UQcj7v8x3SLr2ex4aF3xXmHgAJYV0t6Y4SiHKYZXL3t/JfP5hvG1/DNHbryfYIaRybyl3ulpXZ19jU77Ki1yjSQXLlD7sbR2STtx1hEUjmMM0z0dOfIrTwVbi7eaf4i0NKGG1FxsM7p2oqXSSjya6INzfZlJixw+KETo8L2Y0CwVycxqrYNxDjJX+wlBBVXFSKxXtljQl3+bCmXNAmixnsdkdDzhDsCCVeshz3RR+omFzkEFstCoSjH1XtQyfUrMBAYe0zOGklo7Pi1voXJp8v4B4iZqhAhz+2MUr9TqPMPSv6bQGOqUBpHVwsRrK1+a9JYetSw6c5A43jli1PtaxoAdGQtMCfSWq7SQf2EywiZJA9kwlILOumObODQZQwuBXPMZ+6dwuaeQIlUsUPW4DU/F2whyTTBfgYwyOw/wZTnIOOdCaR04JcUZIla6ty+cBduHhN0w8TO5XdCSqzNH9rMsDYQgcZD+o+UDVOqhIj6Cg0cZrxzhrC2AEKI8e/CzuP51gl3HUonvRSwuQ",
+		LogGroupName:    "/victor/vpc/flowlog",
+		LogStreamPrefix: utils.ToStringPointer("eni-000b"),
+		StartTime:       time.Now().Add(-time.Hour * 24),
+		EndTime:         time.Now(),
 	})
+
+	// create empty paging data to pass to source
+	// TODO maybe source creates for itself??
+	pagingData, err := c.NewPagingData()
+	if err != nil {
+		return nil, fmt.Errorf("error creating paging data: %w", err)
+	}
 
 	source, err := row_source.NewArtifactRowSource(
 		artifactSource,
+		pagingData,
 		// we expect a log row per line of log data
 		row_source.WithRowPerLine(),
 	)
@@ -179,4 +213,10 @@ func (c *FlowlogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrich
 
 	return record, nil
 
+}
+
+func (c *FlowlogLogCollection) NewPagingData() (paging.Data, error) {
+	// TODO use config to determine the type of paging data to return
+	// hard coded to cloudwatch for now
+	return paging.NewCloudwatch(), nil
 }

@@ -1,8 +1,10 @@
 package aws_collection
 
 import (
+	"context"
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact"
+	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"strings"
 	"time"
@@ -19,7 +21,6 @@ import (
 
 type CloudTrailLogCollection struct {
 	// all collections must embed collection.Base
-	// this add observer and enrich functions
 	collection.Base
 
 	// the collection config
@@ -27,12 +28,7 @@ type CloudTrailLogCollection struct {
 }
 
 func NewCloudTrailLogCollection() plugin.Collection {
-	c := &CloudTrailLogCollection{}
-	// TODO avoid need for plugin implementation to do this
-	// Init sets us as the Enricher property on Base
-	c.Base.Init(c)
-
-	return c
+	return &CloudTrailLogCollection{}
 }
 
 // Identifier implements Collection
@@ -47,11 +43,19 @@ func (c *CloudTrailLogCollection) GetRowStruct() any {
 }
 
 // Init implements Collection
-func (c *CloudTrailLogCollection) Init(config any) error {
+func (c *CloudTrailLogCollection) Init(ctx context.Context, configData []byte) error {
 	// TEMP - this will actually parse (or the base will)
+	// unmarshal the config
+	config := &CloudTrailLogCollectionConfig{
+		Paths: []string{"/Users/kai/tailpipe_data/flaws_cloudtrail_logs"},
+	}
 
-	// todo - parse config
-	c.Config = config.(*CloudTrailLogCollectionConfig)
+	//err := json.Unmarshal(configData, config)
+	//if err != nil {
+	//	return fmt.Errorf("error unmarshalling config: %w", err)
+	//}
+	// todo - parse config as hcl
+	c.Config = config
 	// todo validate config
 
 	// todo create source from config
@@ -68,7 +72,14 @@ func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfi
 	artifactSource := artifact.NewFileSystemSource(sourceConfig)
 	artifactMapper := aws_source.NewCloudtrailMapper()
 
-	var source, err = row_source.NewArtifactRowSource(artifactSource, row_source.WithMapper(artifactMapper))
+	// create empty paging data to pass to source
+	// TODO maybe source creates for itself??
+	pagingData, err := c.NewPagingData()
+	if err != nil {
+		return nil, fmt.Errorf("error creating paging data: %w", err)
+	}
+
+	source, err := row_source.NewArtifactRowSource(artifactSource, pagingData, row_source.WithMapper(artifactMapper))
 
 	if err != nil {
 		return nil, fmt.Errorf("error creating artifact row source: %w", err)
@@ -124,5 +135,12 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 	record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
 
 	return record, nil
+}
 
+// TODO use config to determine correct paging data
+// TODO move to source???
+func (c *CloudTrailLogCollection) NewPagingData() (paging.Data, error) {
+	// TODO use config to determine the type of paging data to return
+	// hard coded to cloudwatch for now
+	return paging.NewCloudwatch(), nil
 }
