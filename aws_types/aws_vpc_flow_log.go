@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-type FlowLog struct {
+// TODO is trhere an existing amazon sdk type we can use
+type AwsVpcFlowLog struct {
 	// embed required enrichment fields (be sure to skip in parquet)
 	enrichment.CommonFields `parquet:"-"`
 
@@ -57,7 +58,7 @@ type FlowLog struct {
 
 // fromString
 
-func FlowLogFromString(rowString string, schema []string) (*FlowLog, error) {
+func FlowLogFromString(rowString string, schema []string) (*AwsVpcFlowLog, error) {
 
 	fields := strings.Fields(rowString)
 
@@ -66,7 +67,7 @@ func FlowLogFromString(rowString string, schema []string) (*FlowLog, error) {
 		return nil, fmt.Errorf("row has more fields than schema allows")
 	}
 
-	flowLog := &FlowLog{}
+	flowLog := &AwsVpcFlowLog{}
 	for i, field := range fields {
 		// skip empty fields
 		if field == "-" {

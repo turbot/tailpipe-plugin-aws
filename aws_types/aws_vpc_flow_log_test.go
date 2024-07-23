@@ -14,7 +14,7 @@ func TestFlowLogFromString(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *FlowLog
+		want    *AwsVpcFlowLog
 		wantErr bool
 	}{
 		{
@@ -27,7 +27,7 @@ func TestFlowLogFromString(t *testing.T) {
 					"interface-id",
 				},
 			},
-			want: &FlowLog{
+			want: &AwsVpcFlowLog{
 				Version:     utils.ToPointer[int32](2),
 				AccountID:   utils.ToStringPointer("123456789012"),
 				InterfaceID: utils.ToStringPointer("eni-1235b8ca"),
