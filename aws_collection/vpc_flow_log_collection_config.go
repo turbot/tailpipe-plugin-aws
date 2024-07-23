@@ -17,7 +17,7 @@ var DefaultFlowLogFields = []string{
 	"log-status",
 }
 
-type FlowLogCollectionConfig struct {
+type VpcFlowLogCollectionConfig struct {
 	// the path to the flow log files
 	Paths []string `hcl:"paths"`
 
@@ -25,7 +25,7 @@ type FlowLogCollectionConfig struct {
 	Fields []string `hcl:"fields"`
 }
 
-func (c *FlowLogCollectionConfig) Init() error {
+func (c *VpcFlowLogCollectionConfig) Init() error {
 	if len(c.Fields) == 0 {
 		c.Fields = DefaultFlowLogFields
 	}

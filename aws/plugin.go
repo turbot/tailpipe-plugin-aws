@@ -18,7 +18,7 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	time.Sleep(10 * time.Second)
 	slog.Info("YAWN")
 	// register collections which we support
-	err := p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewFlowlogLogCollection)
+	err := p.RegisterCollections(aws_collection.NewCloudTrailLogCollection, aws_collection.NewVPCFlowLogLogCollection)
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 )
 
+// CloudTrailLogCollection - collection for CloudTrail logs
 type CloudTrailLogCollection struct {
 	// all collections must embed collection.Base
 	collection.Base
@@ -31,18 +32,12 @@ func NewCloudTrailLogCollection() plugin.Collection {
 	return &CloudTrailLogCollection{}
 }
 
-// Identifier implements Collection
+// Identifier implements plugin.Collection
 func (c *CloudTrailLogCollection) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-// GetRowStruct implements Collection
-// return an instance of the row struct
-func (c *CloudTrailLogCollection) GetRowStruct() any {
-	return aws_types.AWSCloudTrail{}
-}
-
-// Init implements Collection
+// Init implements plugin.Collection
 func (c *CloudTrailLogCollection) Init(ctx context.Context, configData []byte) error {
 	// TEMP - this will actually parse (or the base will)
 	// unmarshal the config
@@ -66,29 +61,26 @@ func (c *CloudTrailLogCollection) Init(ctx context.Context, configData []byte) e
 	return c.AddSource(source)
 }
 
-func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfig) (plugin.RowSource, error) {
-	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
-
-	artifactSource := artifact.NewFileSystemSource(sourceConfig)
-	artifactMapper := aws_source.NewCloudtrailMapper()
-
-	// create empty paging data to pass to source
-	// TODO maybe source creates for itself??
-	pagingData, err := c.NewPagingData()
-	if err != nil {
-		return nil, fmt.Errorf("error creating paging data: %w", err)
-	}
-
-	source, err := row_source.NewArtifactRowSource(artifactSource, pagingData, row_source.WithMapper(artifactMapper))
-
-	if err != nil {
-		return nil, fmt.Errorf("error creating artifact row source: %w", err)
-	}
-
-	return source, nil
+// GetRowSchema implements plugin.Collection
+func (c *CloudTrailLogCollection) GetRowSchema() any {
+	return aws_types.AWSCloudTrail{}
 }
 
-// EnrichRow implements RowEnricher
+// GetConfigSchema implements plugin.Collection
+func (c *CloudTrailLogCollection) GetConfigSchema() any {
+	return CloudTrailLogCollectionConfig{}
+}
+
+// GetPagingDataSchema implements plugin.Collection
+func (c *CloudTrailLogCollection) GetPagingDataSchema() (paging.Data, error) {
+	// TODO use config to determine correct paging data
+	// TODO move to source???
+	// TODO use config to determine the type of paging data to return
+	// hard coded to cloudwatch for now
+	return paging.NewCloudwatch(), nil
+}
+
+// EnrichRow implements plugin.Collection
 func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
@@ -137,10 +129,25 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 	return record, nil
 }
 
-// TODO use config to determine correct paging data
-// TODO move to source???
-func (c *CloudTrailLogCollection) NewPagingData() (paging.Data, error) {
-	// TODO use config to determine the type of paging data to return
-	// hard coded to cloudwatch for now
-	return paging.NewCloudwatch(), nil
+// use the config to configure the Source
+func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfig) (plugin.RowSource, error) {
+	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
+
+	artifactSource := artifact.NewFileSystemSource(sourceConfig)
+	artifactMapper := aws_source.NewCloudtrailMapper()
+
+	// create empty paging data to pass to source
+	// TODO maybe source creates for itself??
+	pagingData, err := c.GetPagingDataSchema()
+	if err != nil {
+		return nil, fmt.Errorf("error creating paging data: %w", err)
+	}
+
+	source, err := row_source.NewArtifactRowSource(artifactSource, pagingData, row_source.WithMapper(artifactMapper))
+
+	if err != nil {
+		return nil, fmt.Errorf("error creating artifact row source: %w", err)
+	}
+
+	return source, nil
 }
