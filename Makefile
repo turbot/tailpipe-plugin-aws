@@ -1,6 +1,6 @@
 # Paths
 PLUGIN_NAME=tailpipe-plugin-aws.plugin
-PLUGIN_DIR=~/.tailpipe/plugins
+PLUGIN_DIR=~/.tailpipe/plugins/
 
 # Build in development mode by default
 .PHONY: default
