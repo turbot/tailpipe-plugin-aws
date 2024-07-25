@@ -39,7 +39,7 @@ func (c *CloudTrailLogCollection) Identifier() string {
 
 // Init implements plugin.Collection
 func (c *CloudTrailLogCollection) Init(ctx context.Context, configData []byte) error {
-	// TEMP - this will actually parse (or the base will)
+	// TODO #config TEMP - this will actually parse (or the base will)
 	// unmarshal the config
 	config := &CloudTrailLogCollectionConfig{
 		Paths: []string{"/Users/kai/tailpipe_data/flaws_cloudtrail_logs"},
@@ -53,7 +53,7 @@ func (c *CloudTrailLogCollection) Init(ctx context.Context, configData []byte) e
 	c.Config = config
 	// todo validate config
 
-	// todo create source from config
+	// todo #config create source from config
 	source, err := c.getSource(c.Config)
 	if err != nil {
 		return err
