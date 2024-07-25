@@ -3,6 +3,9 @@ package aws_collection
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
@@ -13,10 +16,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
-	"time"
-	//"github.com/turbot/tailpipe-plugin-sdk/collection"
-	//sdkconfig "github.com/turbot/tailpipe-plugin-sdk/config"
-	//"github.com/turbot/tailpipe-plugin-sdk/source"
 )
 
 // VPCFlowLogLogCollection - collection for VPC Flow Logs
@@ -179,9 +178,12 @@ func (c *VPCFlowLogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 
 // use the config to configure the Source
 func (c *VPCFlowLogLogCollection) getSource(ctx context.Context, config *VpcFlowLogCollectionConfig) (plugin.RowSource, error) {
-
 	// TODO populate from config
-	//sourceConfig := &artifact.AwsS3BucketSourceConfig{
+	//srcConfig := &artifact.AwsS3BucketSourceConfig{
+	//	SourceConfigBase: artifact.SourceConfigBase{
+	//		// TODO #config where do we configure this
+	//		TmpDir: os.TempDir(),
+	//	},
 	//	Bucket:       "silverwater-flowlog-s3-bucket",
 	//	Extensions:   []string{".gz"},
 	//	AccessKey:    "",
@@ -195,19 +197,25 @@ func (c *VPCFlowLogLogCollection) getSource(ctx context.Context, config *VpcFlow
 	//}
 
 	//artifactSource := artifact.NewFileSystemSource(&artifact.FileSystemSourceConfig{
+
 	//	Paths:      config.Paths,
 	//	Extensions: []string{".gz"},
 	//})
-
-	artifactSource, err := artifact.NewAwsCloudWatchSource(ctx, &artifact.AwsCloudWatchSourceConfig{
-		AccessKey:       "ASIARNKUQPUT75NBF3WU",
-		SecretKey:       "R1cB+xJrGo12btp9K3abxtg4QuTr880zOWRAYRbD",
-		SessionToken:    "IQoJb3JpZ2luX2VjELH//////////wEaCXVzLWVhc3QtMiJHMEUCIQDmzhz7qZpGdGBsCxxM9EX7aDOpZI5cYkyWYnsBKtRcbwIgKKXrltoeHUdC0fudFXeC29umNGngk8sClVGvBHwGj3UqjwMIiv//////////ARADGgwwOTczNTA4NzY0NTUiDLsl05hNSFLze2TTCyrjAhz+vNi8yxuOP+SMj+ZvFA8EfkVWUOR//HABPXAU6sk8mP99T4xkxok/r/ib7wuIBL9CFhTZrJESHKwHGnvNJZRWbzBNQ586Pq+hVBudrORW5upTgic2/CPuH1qXBqmDT8Jnkhol2nPb+waxsWwHV5pGL5Cn2aVKeCyknS1DNdTOFnkOxMW19SZteC2xEnSzLqAfPFQe+5FzaYvCu/29PtOUuZYbHM/h5RGar7kmlVDpTWKaaPXDNWHxMRxQR6hgxZ3nZEA7D44ok5tLiCwNME1dXMSYVjiEXRyCZEZqOfHATZH9/uQpLEVpdXtNU27YaugmjucI4dmeMyjaX+wGyd361kGfoY9lQceu5inRS86BB6uPFi8S1w3lfbdqW/ZPpIdgjJ0fP1I9VVmLuTdGSGrq0OdoColOPjOusBV7pmdTv/UvqRhLRtTj975MlF/kVnRrnTB6YIIR6g9VDjkJ/ARX/tsw6+f9tAY6pgE+JL4P4PKd0nEr8jnMFfDvb85TYOege8Dagrr2fU9VkGIW8a1HtqAU+MNBW9x9kl12raTtJBj9agne6BgPAseqCr/x1aV2s5QtUqtL0drWG4oh+RpU+DUgDrc93ZrKw6+H7KNRpBNGK6egZKsjmomWfT+ZLihjk0ZPe+dRHDv49KnjO8xgLfDCKFFAB2UOQLHsdhx4hYpPPcIHe/onYrI0PCilboia",
+	srcConfig := &artifact.AwsCloudWatchSourceConfig{
+		SourceConfigBase: artifact.SourceConfigBase{
+			// TODO #config where do we configure this
+			TmpDir: os.TempDir(),
+		},
+		AccessKey:       "ASIARNKUQPUT2DKH2CJH",
+		SecretKey:       "o3W4OjtkAs418H4h/rJGcorIHQVWw8qVGCFXTW0Y",
+		SessionToken:    "IQoJb3JpZ2luX2VjEOf//////////wEaCXVzLWVhc3QtMiJIMEYCIQCMQtQOXk2UvNDtrKpGVv/KpXph86EJ8LVnGK+RZM5epQIhAO3oruAIomKUK8ljVNcQrBL7CtkkHJsSboBX9FrF/pwUKo8DCMD//////////wEQAxoMMDk3MzUwODc2NDU1Igxp82/qL0ja9Ki1M90q4wLDWC+4stlMrQYQV2hGIZXekIRClllYiwyzModW5cx1lVDnp1s1Twnm2eDcA707NzMX5v5k6p+A2svLx6JUg2ymGOBHB067IyanCXNCzGK/+FG+Ec2L419r2Jt+sxspvNthcQhkVFAPIkdFBCr0cdcIc60IrVF5TCHhsf94bQHRE/NXGwwZeeUZiXCaz6QQDsr56+p/bGHR1QTxLfwZWSNs/tI1IuTRaiBk0LOfACgWAYWq5VWwDQbqoYCIBOU+rpH/YNNmsUgQQbIS9VKbu2vuAoUeXuOiST2J5YRriX+potowmnICtkEFuIAfpuYz6uA4xwT3fOtQNjs3dEfKjus7ZrFv0oO3PtUHWGC3Nsn0y2/jkwYlasTekfKNd0Wz/cnKwEjtNWWFw1+MXNbocGc9lBulmN4StMOTUI/jQdlm3tXJ861CD+4Qm23aulw9IFZODdL7dHcHx1gIPAsNt1qeXEgOMIvLibUGOqUBBoIM4Qt+VO0jO/1Li4WEfPB/Pd3+D12VaPwC7503YtNEaZOg9SmWeXht/G9Fq6B+bUsNrA0ADAFLotr4QZZsUST2BJU5lf3vAIbi9tH4WUMzY4kK7huqax3TICN7kuRO/kxbWvXyeqTPOayi47xgEOc5YiRhyuyjZfwxpZdJVxvOG+AOoqbhphRe9DvbVhUylrKDj0FpH93zuDOYUl0a7PCBM1ns",
 		LogGroupName:    "/victor/vpc/flowlog",
 		LogStreamPrefix: utils.ToStringPointer("eni"),
 		StartTime:       time.Now().Add(-time.Hour * 24),
 		EndTime:         time.Now(),
-	})
+	}
+
+	artifactSource, err := artifact.NewAwsCloudWatchSource(ctx, srcConfig)
 
 	// create empty paging data to pass to source
 	// TODO maybe source creates for itself??
