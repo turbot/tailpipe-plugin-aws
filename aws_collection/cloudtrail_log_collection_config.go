@@ -1,5 +1,7 @@
 package aws_collection
 
-type CloudTrailLogCollectionConfig struct {
-	Paths []string
+type CloudTrailLogCollectionConfig struct{}
+
+func (c CloudTrailLogCollectionConfig) Validate() error {
+	return nil
 }

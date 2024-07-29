@@ -1,9 +1,7 @@
 package aws_collection
 
 import (
-	"context"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact"
 	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"strings"
@@ -22,7 +20,7 @@ import (
 // CloudTrailLogCollection - collection for CloudTrail logs
 type CloudTrailLogCollection struct {
 	// all collections must embed collection.Base
-	collection.Base
+	collection.Base[CloudTrailLogCollectionConfig]
 
 	// the collection config
 	Config *CloudTrailLogCollectionConfig
@@ -32,43 +30,31 @@ func NewCloudTrailLogCollection() plugin.Collection {
 	return &CloudTrailLogCollection{}
 }
 
+func (c *CloudTrailLogCollection) SupportedSources() []string {
+	// TODO #source do we need to to specify the type  or artifact source supported?
+	return []string{
+		row_source.ArtifactRowSourceIdentifier,
+	}
+}
+
 // Identifier implements plugin.Collection
 func (c *CloudTrailLogCollection) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-// Init implements plugin.Collection
-func (c *CloudTrailLogCollection) Init(ctx context.Context, configData []byte) error {
-	// TODO #config TEMP - this will actually parse (or the base will)
-	// unmarshal the config
-	config := &CloudTrailLogCollectionConfig{
-		Paths: []string{"/Users/kai/tailpipe_data/flaws_cloudtrail_logs"},
+// GetSourceOptions returns any options which should be passed to the given source type
+func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
+	switch sourceType {
+	// if source is an artifact source, use the cloudtrail mapper
+	case row_source.ArtifactRowSourceIdentifier:
+		return []row_source.RowSourceOption{row_source.WithMapper(aws_source.NewCloudtrailMapper())}
 	}
-
-	//err := json.Unmarshal(configData, config)
-	//if err != nil {
-	//	return fmt.Errorf("error unmarshalling config: %w", err)
-	//}
-	// todo - parse config as hcl
-	c.Config = config
-	// todo validate config
-
-	// todo #config create source from config
-	source, err := c.getSource(c.Config)
-	if err != nil {
-		return err
-	}
-	return c.AddSource(source)
+	return nil
 }
 
 // GetRowSchema implements plugin.Collection
 func (c *CloudTrailLogCollection) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
-}
-
-// GetConfigSchema implements plugin.Collection
-func (c *CloudTrailLogCollection) GetConfigSchema() any {
-	return CloudTrailLogCollectionConfig{}
 }
 
 // GetPagingDataSchema implements plugin.Collection
@@ -130,25 +116,36 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 	return record, nil
 }
 
-// use the config to configure the Source
-func (c *CloudTrailLogCollection) getSource(config *CloudTrailLogCollectionConfig) (plugin.RowSource, error) {
-	sourceConfig := &artifact.FileSystemSourceConfig{Paths: config.Paths, Extensions: []string{".gz"}}
-
-	artifactSource := artifact.NewFileSystemSource(sourceConfig)
-	artifactMapper := aws_source.NewCloudtrailMapper()
-
-	// create empty paging data to pass to source
-	// TODO maybe source creates for itself??
-	pagingData, err := c.GetPagingDataSchema()
-	if err != nil {
-		return nil, fmt.Errorf("error creating paging data: %w", err)
-	}
-
-	source, err := row_source.NewArtifactRowSource(artifactSource, pagingData, row_source.WithMapper(artifactMapper))
-
-	if err != nil {
-		return nil, fmt.Errorf("error creating artifact row source: %w", err)
-	}
-
-	return source, nil
-}
+//
+//// use the config to configure the Source
+//func (c *CloudTrailLogCollection) getSource(configData *hcl.Data) (plugin.RowSource, error) {
+//switch configData.Type {
+//
+//}
+//	var cfg CloudTrailLogCollectionConfig
+//	err := hcl.ParseConfig(configData, &cfg)
+//	if err != nil {
+//		return nil, fmt.Errorf("error parsing config: %w", err)
+//	}
+//
+//
+//	sourceConfig := &artifact.FileSystemSourceConfig{Paths: hcl.Paths, Extensions: []string{".gz"}}
+//
+//	artifactSource := artifact.NewFileSystemSource(sourceConfig)
+//	artifactMapper := aws_source.NewCloudtrailMapper()
+//
+//	// create empty paging data to pass to source
+//	// TODO maybe source creates for itself??
+//	pagingData, err := c.GetPagingDataSchema()
+//	if err != nil {
+//		return nil, fmt.Errorf("error creating paging data: %w", err)
+//	}
+//
+//	source, err := row_source.NewArtifactRowSource(artifactSource, pagingData, )
+//
+//	if err != nil {
+//		return nil, fmt.Errorf("error creating artifact row source: %w", err)
+//	}
+//
+//	return source, nil
+//}

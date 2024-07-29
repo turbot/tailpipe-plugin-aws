@@ -14,7 +14,7 @@ type CloudtrailMapper struct {
 }
 
 // NewCloudtrailMapper creates a new CloudtrailMapper
-func NewCloudtrailMapper() *CloudtrailMapper {
+func NewCloudtrailMapper() artifact.Mapper {
 	return &CloudtrailMapper{}
 }
 

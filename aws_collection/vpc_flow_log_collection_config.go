@@ -18,16 +18,15 @@ var DefaultFlowLogFields = []string{
 }
 
 type VpcFlowLogCollectionConfig struct {
-	// the path to the flow log files
-	Paths []string `hcl:"paths"`
-
 	// the fields to extract from the flow log
 	Fields []string `hcl:"fields"`
 }
 
-func (c *VpcFlowLogCollectionConfig) Init() error {
+func (c VpcFlowLogCollectionConfig) Validate() error {
+	// set default fields if none are specified
 	if len(c.Fields) == 0 {
 		c.Fields = DefaultFlowLogFields
 	}
+
 	return nil
 }
