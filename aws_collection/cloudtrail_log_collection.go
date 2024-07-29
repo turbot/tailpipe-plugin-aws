@@ -72,6 +72,7 @@ func (c *CloudTrailLogCollection) GetConfigSchema() any {
 }
 
 // GetPagingDataSchema implements plugin.Collection
+// TODO #paging data HARD CODED for now
 func (c *CloudTrailLogCollection) GetPagingDataSchema() (paging.Data, error) {
 	// TODO use config to determine correct paging data
 	// TODO move to source???
