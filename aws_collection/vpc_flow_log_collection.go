@@ -2,6 +2,7 @@ package aws_collection
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"time"
 
 	"github.com/rs/xid"
@@ -30,9 +31,9 @@ func (c *VPCFlowLogLogCollection) Identifier() string {
 }
 
 func (c *VPCFlowLogLogCollection) SupportedSources() []string {
-	// TODO #source do we need to to specify the type  or artifact source supported?
 	return []string{
 		row_source.ArtifactRowSourceIdentifier,
+		aws_source.CloudwatchSourceIdentifier,
 	}
 }
 
