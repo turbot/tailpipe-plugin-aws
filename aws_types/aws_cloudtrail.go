@@ -11,7 +11,7 @@ type AWSCloudTrailBatch struct {
 
 type AWSCloudTrail struct {
 	// embed required enrichment fields (be sure to skip in parquet)
-	enrichment.CommonFields `parquet:"-"`
+	enrichment.CommonFields
 
 	AdditionalEventData *helpers.JSONString `json:"additionalEventData,omitempty"`
 	APIVersion          *string             `json:"apiVersion,omitempty"`

@@ -12,7 +12,7 @@ import (
 // TODO is trhere an existing amazon sdk type we can use
 type AwsVpcFlowLog struct {
 	// embed required enrichment fields (be sure to skip in parquet)
-	enrichment.CommonFields `parquet:"-"`
+	enrichment.CommonFields
 
 	Timestamp               *time.Time `json:"timestamp,omitempty"`
 	Version                 *int32     `json:"version,omitempty"`
