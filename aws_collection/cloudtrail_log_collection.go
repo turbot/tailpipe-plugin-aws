@@ -6,14 +6,13 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
-	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
@@ -47,7 +46,7 @@ func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_sour
 	switch sourceType {
 	// if source is an artifact source, use the cloudtrail mapper
 	case artifact_row_source.ArtifactRowSourceIdentifier:
-		return []row_source.RowSourceOption{artifact_row_source.WithMapper(aws_source.NewCloudtrailMapper())}
+		return []row_source.RowSourceOption{artifact_row_source.WithMapper(artifact_mapper.NewCloudwatchMapper())}
 	}
 	return nil
 }
@@ -55,16 +54,6 @@ func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_sour
 // GetRowSchema implements plugin.Collection
 func (c *CloudTrailLogCollection) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
-}
-
-// GetPagingDataSchema implements plugin.Collection
-// TODO #paging data HARD CODED for now
-func (c *CloudTrailLogCollection) GetPagingDataSchema() (paging.Data, error) {
-	// TODO use config to determine correct paging data
-	// TODO move to source???
-	// TODO use config to determine the type of paging data to return
-	// hard coded to cloudwatch for now
-	return paging.NewCloudwatch(), nil
 }
 
 // EnrichRow implements plugin.Collection
