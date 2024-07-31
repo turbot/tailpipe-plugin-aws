@@ -4,8 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
+)
+
+const (
+	AWSCloudwatchMapperIdentifier = "aws_cloudwatch_mapper"
 )
 
 // CloudwatchMapper is an [plugin.Mapper] implementation
@@ -14,16 +19,16 @@ type CloudwatchMapper struct {
 }
 
 // NewCloudwatchMapper creates a new CloudwatchMapper
-func NewCloudwatchMapper() artifact.Mapper {
+func NewCloudwatchMapper() artifact_mapper.Mapper {
 	return &CloudwatchMapper{}
 }
 
 func (c *CloudwatchMapper) Identifier() string {
-	return artifact.AWSCloudwatchMapperIdentifier
+	return AWSCloudwatchMapperIdentifier
 }
 
 // Map unmarshalls JSON into an AWSCloudTrailBatch object and extracts AWSCloudTrail records from it
-func (c *CloudwatchMapper) Map(_ context.Context, a *artifact.ArtifactData) ([]*artifact.ArtifactData, error) {
+func (c *CloudwatchMapper) Map(_ context.Context, a *types.RowData) ([]*types.RowData, error) {
 	// the expected input type is a JSON string deserializable to a map with keys "IngestionTime", "Timestamp" and "Message"
 	jsonString, ok := a.Data.(string)
 	if !ok {
@@ -40,7 +45,7 @@ func (c *CloudwatchMapper) Map(_ context.Context, a *artifact.ArtifactData) ([]*
 	metadata.TpIngestTimestamp = helpers.UnixMillis(cloudwatchEntry["IngestionTime"].(float64))
 	metadata.TpTimestamp = helpers.UnixMillis(cloudwatchEntry["Timestamp"].(float64))
 
-	d := artifact.NewData(row, artifact.WithMetadata(metadata))
+	d := types.NewData(row, types.WithMetadata(metadata))
 
-	return []*artifact.ArtifactData{d}, nil
+	return []*types.RowData{d}, nil
 }

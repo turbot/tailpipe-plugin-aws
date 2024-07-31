@@ -3,6 +3,7 @@ package aws_collection
 import (
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-aws/aws_source"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact"
 	"time"
 
 	"github.com/rs/xid"
@@ -12,7 +13,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
-	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
 // VPCFlowLogLogCollection - collection for VPC Flow Logs
@@ -32,7 +32,7 @@ func (c *VPCFlowLogLogCollection) Identifier() string {
 
 func (c *VPCFlowLogLogCollection) SupportedSources() []string {
 	return []string{
-		row_source.ArtifactRowSourceIdentifier,
+		artifact.ArtifactRowSourceIdentifier,
 		aws_source.CloudwatchSourceIdentifier,
 	}
 }

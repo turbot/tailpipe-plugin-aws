@@ -1,13 +1,13 @@
 package aws_source
 
 import (
-	"github.com/turbot/tailpipe-plugin-sdk/artifact"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"time"
 )
 
 // AwsCloudWatchSourceConfig is the configuration for an [CloudWatchArtifactSource]
 type AwsCloudWatchSourceConfig struct {
-	artifact.SourceConfigBase
+	artifact_source.SourceConfigBase
 	// TODO #confif connection based credentiuals mechanism
 	AccessKey    string
 	SecretKey    string

@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"log/slog"
 	"os"
 	"path"
@@ -25,7 +26,7 @@ import (
 // CloudWatchArtifactSource is a [Source] implementation that reads logs from AWS CloudWatch
 // and writes them to a temp JSON file
 type CloudWatchArtifactSource struct {
-	artifact.SourceBase
+	artifact_source.SourceBase
 
 	config  *AwsCloudWatchSourceConfig
 	client  *cloudwatchlogs.Client
@@ -60,12 +61,12 @@ func NewAwsCloudWatchSource(ctx context.Context, config *AwsCloudWatchSourceConf
 }
 
 func (s *CloudWatchArtifactSource) Identifier() string {
-	return artifact.AWSCloudwatchSourceIdentifier
+	return artifact_source.AWSCloudwatchSourceIdentifier
 }
 
 // Mapper returns a function that creates a new [Mapper] required by this source
 // [CloudwatchMapper] knows how to extract the row and metadata fields from the JSON that we save
-func (s *CloudWatchArtifactSource) Mapper() func() artifact.Mapper {
+func (s *CloudWatchArtifactSource) Mapper() func() artifact_mapper.Mapper {
 	return NewCloudwatchMapper
 }
 

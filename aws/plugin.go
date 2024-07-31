@@ -3,7 +3,7 @@ package aws
 import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_collection"
 	"github.com/turbot/tailpipe-plugin-aws/aws_source"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"log/slog"
@@ -24,7 +24,7 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	// register the collections, sources and mappers that we provide
 	collections := []func() plugin.Collection{aws_collection.NewCloudTrailLogCollection, aws_collection.NewVPCFlowLogLogCollection}
 	sources := []func() row_source.RowSource{aws_source.NewCloudwatchSource}
-	mappers := []func() artifact.Mapper{aws_source.NewCloudtrailMapper}
+	mappers := []func() artifact_mapper.Mapper{aws_source.NewCloudtrailMapper}
 
 	// register collections which we support
 	if err := p.RegisterCollections(collections...); err != nil {

@@ -2,6 +2,7 @@ package aws_collection
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact"
 	"github.com/turbot/tailpipe-plugin-sdk/paging"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"strings"
@@ -33,7 +34,7 @@ func NewCloudTrailLogCollection() plugin.Collection {
 func (c *CloudTrailLogCollection) SupportedSources() []string {
 	// TODO #source do we need to to specify the type  or artifact source supported?
 	return []string{
-		row_source.ArtifactRowSourceIdentifier,
+		artifact.ArtifactRowSourceIdentifier,
 	}
 }
 
@@ -46,8 +47,8 @@ func (c *CloudTrailLogCollection) Identifier() string {
 func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	switch sourceType {
 	// if source is an artifact source, use the cloudtrail mapper
-	case row_source.ArtifactRowSourceIdentifier:
-		return []row_source.RowSourceOption{row_source.WithMapper(aws_source.NewCloudtrailMapper())}
+	case artifact.ArtifactRowSourceIdentifier:
+		return []row_source.RowSourceOption{artifact.WithMapper(aws_source.NewCloudtrailMapper())}
 	}
 	return nil
 }

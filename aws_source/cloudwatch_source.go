@@ -2,6 +2,7 @@ package aws_source
 
 import (
 	"context"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact"
 	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
@@ -9,7 +10,7 @@ import (
 const CloudwatchSourceIdentifier = "aws_cloudwatch_source"
 
 type CloudwatchSource struct {
-	row_source.ArtifactRowSource
+	artifact.ArtifactRowSource
 }
 
 func NewCloudwatchSource() row_source.RowSource {
