@@ -9,11 +9,10 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
-	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
 type Plugin struct {
-	plugin.Base
+	plugin.PluginBase
 }
 
 func NewPlugin() (plugin.TailpipePlugin, error) {
@@ -26,7 +25,6 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	// register the collections, sources and mappers that we provide
 	resources := &plugin.ResourceFunctions{
 		Collections:     []func() collection.Collection{aws_collection.NewCloudTrailLogCollection, aws_collection.NewVPCFlowLogLogCollection},
-		Sources:         []func() row_source.RowSource{aws_source.NewCloudwatchSource},
 		ArtifactMappers: []func() artifact_mapper.Mapper{aws_source.NewCloudtrailMapper},
 	}
 

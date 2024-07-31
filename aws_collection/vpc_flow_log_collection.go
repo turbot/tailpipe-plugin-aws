@@ -2,8 +2,7 @@ package aws_collection
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"time"
 
 	"github.com/rs/xid"
@@ -16,8 +15,8 @@ import (
 
 // VPCFlowLogLogCollection - collection for VPC Flow Logs
 type VPCFlowLogLogCollection struct {
-	// all collections must embed collection.Base
-	collection.Base[VpcFlowLogCollectionConfig]
+	// all collections must embed collection.CollectionBase
+	collection.CollectionBase[VpcFlowLogCollectionConfig]
 }
 
 func NewVPCFlowLogLogCollection() collection.Collection {
@@ -31,8 +30,11 @@ func (c *VPCFlowLogLogCollection) Identifier() string {
 
 func (c *VPCFlowLogLogCollection) SupportedSources() []string {
 	return []string{
-		artifact_row_source.ArtifactRowSourceIdentifier,
-		aws_source.CloudwatchSourceIdentifier,
+		// TODO #factory provider a shortcut for all artifact sources
+		artifact_source.AwsS3BucketSourceIdentifier,
+		artifact_source.FileSystemSourceIdentifier,
+		artifact_source.GcpStorageBucketSourceIdentifier,
+		artifact_source.AWSCloudwatchSourceIdentifier,
 	}
 }
 
@@ -159,7 +161,7 @@ func (c *VPCFlowLogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 }
 
 //
-//// use the config to configure the Source
+//// use the config to configure the ArtifactSource
 //func (c *VPCFlowLogLogCollection) getSource(ctx context.Context, config *VpcFlowLogCollectionConfig) (plugin.RowSource, error) {
 //	// TODO populate from config
 //	//srcConfig := &artifact.AwsS3BucketSourceConfig{

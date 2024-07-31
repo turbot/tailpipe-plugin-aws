@@ -2,6 +2,7 @@ package aws_collection
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"strings"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -18,8 +18,8 @@ import (
 
 // CloudTrailLogCollection - collection for CloudTrail logs
 type CloudTrailLogCollection struct {
-	// all collections must embed collection.Base
-	collection.Base[CloudTrailLogCollectionConfig]
+	// all collections must embed collection.CollectionBase
+	collection.CollectionBase[CloudTrailLogCollectionConfig]
 
 	// the collection config
 	Config *CloudTrailLogCollectionConfig
@@ -32,7 +32,11 @@ func NewCloudTrailLogCollection() collection.Collection {
 func (c *CloudTrailLogCollection) SupportedSources() []string {
 	// TODO #source do we need to to specify the type  or artifact source supported?
 	return []string{
-		artifact_row_source.ArtifactRowSourceIdentifier,
+		// TODO #factory provider a shortcut for all artifact sources
+		artifact_source.AwsS3BucketSourceIdentifier,
+		artifact_source.FileSystemSourceIdentifier,
+		artifact_source.GcpStorageBucketSourceIdentifier,
+		artifact_source.AWSCloudwatchSourceIdentifier,
 	}
 }
 
@@ -44,9 +48,13 @@ func (c *CloudTrailLogCollection) Identifier() string {
 // GetSourceOptions returns any options which should be passed to the given source type
 func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	switch sourceType {
+	// TODO #factory provider a shortcut for all artifact sources
 	// if source is an artifact source, use the cloudtrail mapper
-	case artifact_row_source.ArtifactRowSourceIdentifier:
-		return []row_source.RowSourceOption{artifact_row_source.WithMapper(artifact_mapper.NewCloudwatchMapper())}
+	case artifact_source.AwsS3BucketSourceIdentifier,
+		artifact_source.FileSystemSourceIdentifier,
+		artifact_source.GcpStorageBucketSourceIdentifier,
+		artifact_source.AWSCloudwatchSourceIdentifier:
+		return []row_source.RowSourceOption{artifact_source.WithMapper(artifact_mapper.NewCloudwatchMapper())}
 	}
 	return nil
 }
@@ -106,7 +114,7 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 }
 
 //
-//// use the config to configure the Source
+//// use the config to configure the ArtifactSource
 //func (c *CloudTrailLogCollection) getSource(configData *hcl.Data) (plugin.RowSource, error) {
 //switch configData.Type {
 //
