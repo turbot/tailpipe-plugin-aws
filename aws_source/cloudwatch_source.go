@@ -10,7 +10,7 @@ import (
 const CloudwatchSourceIdentifier = "aws_cloudwatch_source"
 
 type CloudwatchSource struct {
-	artifact_row_source.ArtifactRowSource
+	artifact_row_source.Base
 }
 
 func NewCloudwatchSource() row_source.RowSource {
@@ -23,5 +23,5 @@ func (c *CloudwatchSource) Identifier() string {
 }
 
 func (c *CloudwatchSource) Init(ctx context.Context, configData *hcl.Data, opts ...row_source.RowSourceOption) error {
-	return c.ArtifactRowSource.Init(ctx, configData, opts...)
+	return c.Base.Init(ctx, configData, opts...)
 }
