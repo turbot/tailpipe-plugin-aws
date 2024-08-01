@@ -2,14 +2,14 @@ package aws_collection
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -40,7 +40,7 @@ func (c *CloudTrailLogCollection) SupportedSources() []string {
 	}
 }
 
-// Identifier implements plugin.Collection
+// Identifier implements collection.Collection
 func (c *CloudTrailLogCollection) Identifier() string {
 	return "aws_cloudtrail_log"
 }
@@ -54,17 +54,17 @@ func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_sour
 		artifact_source.FileSystemSourceIdentifier,
 		artifact_source.GcpStorageBucketSourceIdentifier,
 		artifact_source.AWSCloudwatchSourceIdentifier:
-		return []row_source.RowSourceOption{artifact_source.WithMapper(artifact_mapper.NewCloudwatchMapper())}
+		return []row_source.RowSourceOption{artifact_source.WithMapper(aws_source.NewCloudtrailMapper())}
 	}
 	return nil
 }
 
-// GetRowSchema implements plugin.Collection
+// GetRowSchema implements collection.Collection
 func (c *CloudTrailLogCollection) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
 }
 
-// EnrichRow implements plugin.Collection
+// EnrichRow implements collection.Collection
 func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
@@ -112,37 +112,3 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 
 	return record, nil
 }
-
-//
-//// use the config to configure the ArtifactSource
-//func (c *CloudTrailLogCollection) getSource(configData *hcl.Data) (plugin.RowSource, error) {
-//switch configData.Type {
-//
-//}
-//	var cfg CloudTrailLogCollectionConfig
-//	err := hcl.ParseConfig(configData, &cfg)
-//	if err != nil {
-//		return nil, fmt.Errorf("error parsing config: %w", err)
-//	}
-//
-//
-//	sourceConfig := &artifact.FileSystemSourceConfig{Paths: hcl.Paths, Extensions: []string{".gz"}}
-//
-//	artifactSource := artifact.NewFileSystemSource(sourceConfig)
-//	artifactMapper := aws_source.NewCloudtrailMapper()
-//
-//	// create empty paging data to pass to source
-//	// TODO maybe source creates for itself??
-//	pagingData, err := c.GetPagingDataSchema()
-//	if err != nil {
-//		return nil, fmt.Errorf("error creating paging data: %w", err)
-//	}
-//
-//	source, err := row_source.NewArtifactRowSource(artifactSource, pagingData, )
-//
-//	if err != nil {
-//		return nil, fmt.Errorf("error creating artifact row source: %w", err)
-//	}
-//
-//	return source, nil
-//}

@@ -23,7 +23,7 @@ func NewVPCFlowLogLogCollection() collection.Collection {
 	return &VPCFlowLogLogCollection{}
 }
 
-// Identifier implements plugin.Collection
+// Identifier implements collection.Collection
 func (c *VPCFlowLogLogCollection) Identifier() string {
 	return "aws_vpc_flow_log"
 }
@@ -39,7 +39,7 @@ func (c *VPCFlowLogLogCollection) SupportedSources() []string {
 }
 
 //
-//// Init implements plugin.Collection
+//// Init implements collection.Collection
 //func (c *VPCFlowLogLogCollection) Init(ctx context.Context, collectionConfig, sourceConfig *hcl.Data) error {
 //	}
 //	//// TEMP - this will actually parse (or the base will)
@@ -74,20 +74,20 @@ func (c *VPCFlowLogLogCollection) SupportedSources() []string {
 //
 //}
 
-// GetRowSchema implements plugin.Collection
+// GetRowSchema implements collection.Collection
 // return an instance of the row struct
 func (c *VPCFlowLogLogCollection) GetRowSchema() any {
 	return aws_types.AwsVpcFlowLog{}
 }
 
-// GetPagingDataSchema implements plugin.Collection
+// GetPagingDataSchema implements collection.Collection
 func (c *VPCFlowLogLogCollection) GetPagingDataSchema() (paging.Data, error) {
 	// TODO use config to determine the type of paging data to return
 	// hard coded to cloudwatch for now
 	return paging.NewCloudwatch(), nil
 }
 
-// EnrichRow implements plugin.Collection
+// EnrichRow implements collection.Collection
 func (c *VPCFlowLogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be a string
 	rowString, ok := row.(string)
