@@ -20,24 +20,10 @@ import (
 type CloudTrailLogCollection struct {
 	// all collections must embed collection.CollectionBase
 	collection.CollectionBase[CloudTrailLogCollectionConfig]
-
-	// the collection config
-	Config *CloudTrailLogCollectionConfig
 }
 
 func NewCloudTrailLogCollection() collection.Collection {
 	return &CloudTrailLogCollection{}
-}
-
-func (c *CloudTrailLogCollection) SupportedSources() []string {
-	// TODO #source do we need to to specify the type  or artifact source supported?
-	return []string{
-		// TODO #factory provider a shortcut for all artifact sources
-		artifact_source.AwsS3BucketSourceIdentifier,
-		artifact_source.FileSystemSourceIdentifier,
-		artifact_source.GcpStorageBucketSourceIdentifier,
-		artifact_source.AWSCloudwatchSourceIdentifier,
-	}
 }
 
 // Identifier implements collection.Collection
@@ -46,17 +32,9 @@ func (c *CloudTrailLogCollection) Identifier() string {
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
-func (c *CloudTrailLogCollection) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
-	switch sourceType {
-	// TODO #factory provider a shortcut for all artifact sources
-	// if source is an artifact source, use the cloudtrail mapper
-	case artifact_source.AwsS3BucketSourceIdentifier,
-		artifact_source.FileSystemSourceIdentifier,
-		artifact_source.GcpStorageBucketSourceIdentifier,
-		artifact_source.AWSCloudwatchSourceIdentifier:
-		return []row_source.RowSourceOption{artifact_source.WithMapper(aws_source.NewCloudtrailMapper())}
-	}
-	return nil
+func (c *CloudTrailLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+	// if the source is an artifact source, we need to specify the mapper
+	return []row_source.RowSourceOption{artifact_source.WithMapper(aws_source.NewCloudtrailMapper())}
 }
 
 // GetRowSchema implements collection.Collection

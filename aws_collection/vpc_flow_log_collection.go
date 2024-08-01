@@ -2,7 +2,6 @@ package aws_collection
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"time"
 
 	"github.com/rs/xid"
@@ -10,7 +9,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
-	"github.com/turbot/tailpipe-plugin-sdk/paging"
 )
 
 // VPCFlowLogLogCollection - collection for VPC Flow Logs
@@ -26,16 +24,6 @@ func NewVPCFlowLogLogCollection() collection.Collection {
 // Identifier implements collection.Collection
 func (c *VPCFlowLogLogCollection) Identifier() string {
 	return "aws_vpc_flow_log"
-}
-
-func (c *VPCFlowLogLogCollection) SupportedSources() []string {
-	return []string{
-		// TODO #factory provider a shortcut for all artifact sources
-		artifact_source.AwsS3BucketSourceIdentifier,
-		artifact_source.FileSystemSourceIdentifier,
-		artifact_source.GcpStorageBucketSourceIdentifier,
-		artifact_source.AWSCloudwatchSourceIdentifier,
-	}
 }
 
 //
@@ -78,13 +66,6 @@ func (c *VPCFlowLogLogCollection) SupportedSources() []string {
 // return an instance of the row struct
 func (c *VPCFlowLogLogCollection) GetRowSchema() any {
 	return aws_types.AwsVpcFlowLog{}
-}
-
-// GetPagingDataSchema implements collection.Collection
-func (c *VPCFlowLogLogCollection) GetPagingDataSchema() (paging.Data, error) {
-	// TODO use config to determine the type of paging data to return
-	// hard coded to cloudwatch for now
-	return paging.NewCloudwatch(), nil
 }
 
 // EnrichRow implements collection.Collection

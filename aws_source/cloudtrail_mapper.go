@@ -25,18 +25,15 @@ func (c *CloudtrailMapper) Identifier() string {
 
 // Map casts the data item as an AWSCloudTrailBatch and returns the records
 func (c *CloudtrailMapper) Map(_ context.Context, a *types.RowData) ([]*types.RowData, error) {
-	// the expected input type is a JSON string deserializable to AWSCloudTrailBatch
-
-	// TODO why is this string not byte[]
+	// the expected input type is a JSON byte[] deserializable to AWSCloudTrailBatch
 	jsonBytes, ok := a.Data.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("expected byte[], got %T", a)
 	}
-	jsonString := string(jsonBytes)
 
 	// decode json ito AWSCloudTrailBatch
 	var log aws_types.AWSCloudTrailBatch
-	err := json.Unmarshal([]byte(jsonString), &log)
+	err := json.Unmarshal(jsonBytes, &log)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding json: %w", err)
 	}
