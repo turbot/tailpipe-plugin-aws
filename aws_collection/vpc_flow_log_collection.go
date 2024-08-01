@@ -8,13 +8,14 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 )
 
 // VPCFlowLogLogCollection - collection for VPC Flow Logs
 type VPCFlowLogLogCollection struct {
 	// all collections must embed collection.CollectionBase
-	collection.CollectionBase[VpcFlowLogCollectionConfig]
+	collection.CollectionBase[*VpcFlowLogCollectionConfig]
 }
 
 func NewVPCFlowLogLogCollection() collection.Collection {
@@ -66,6 +67,10 @@ func (c *VPCFlowLogLogCollection) Identifier() string {
 // return an instance of the row struct
 func (c *VPCFlowLogLogCollection) GetRowSchema() any {
 	return aws_types.AwsVpcFlowLog{}
+}
+
+func (c *VPCFlowLogLogCollection) GetConfigSchema() hcl.Config {
+	return &VpcFlowLogCollectionConfig{}
 }
 
 // EnrichRow implements collection.Collection

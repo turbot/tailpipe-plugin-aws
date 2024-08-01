@@ -2,16 +2,17 @@ package aws_collection
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
@@ -40,6 +41,10 @@ func (c *CloudTrailLogCollection) GetSourceOptions() []row_source.RowSourceOptio
 // GetRowSchema implements collection.Collection
 func (c *CloudTrailLogCollection) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
+}
+
+func (c *CloudTrailLogCollection) GetConfigSchema() hcl.Config {
+	return &CloudTrailLogCollectionConfig{}
 }
 
 // EnrichRow implements collection.Collection

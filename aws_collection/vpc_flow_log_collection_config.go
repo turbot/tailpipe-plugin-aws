@@ -19,10 +19,10 @@ var DefaultFlowLogFields = []string{
 
 type VpcFlowLogCollectionConfig struct {
 	// the fields to extract from the flow log
-	Fields []string `hcl:"fields"`
+	Fields []string `hcl:"fields,optional"`
 }
 
-func (c VpcFlowLogCollectionConfig) Validate() error {
+func (c *VpcFlowLogCollectionConfig) Validate() error {
 	// set default fields if none are specified
 	if len(c.Fields) == 0 {
 		c.Fields = DefaultFlowLogFields
