@@ -155,7 +155,7 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 		case "chosen_cert_arn":
 			record.ChosenCertArn = value
 		case "matched_rule_priority":
-			if value == "-" {
+			if value != "-" {
 				mrp, err := strconv.Atoi(value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing matched_rule_priority: %w", err)
