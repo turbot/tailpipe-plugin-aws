@@ -69,6 +69,7 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 				return nil, fmt.Errorf("error parsing timestamp: %w", err)
 			}
 			record.Timestamp = ts
+			record.TpTimestamp = helpers.UnixMillis(ts.UnixNano() / int64(time.Millisecond))
 		case "elb":
 			record.Elb = value
 		case "client":

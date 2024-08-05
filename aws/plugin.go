@@ -26,6 +26,7 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 			aws_collection.NewCloudTrailLogCollection,
 			aws_collection.NewVPCFlowLogLogCollection,
 			aws_collection.NewElbAccessLogCollection,
+			aws_collection.NewS3ServerAccessLogCollection,
 		},
 	}
 
