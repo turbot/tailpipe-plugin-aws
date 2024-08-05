@@ -12,10 +12,15 @@ const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_
 const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
 type ElbAccessLogMapper struct {
+	fullParser   *gonx.Parser
+	noConnParser *gonx.Parser
 }
 
 func NewElbAccessLogMapper() *ElbAccessLogMapper {
-	return &ElbAccessLogMapper{}
+	return &ElbAccessLogMapper{
+		fullParser:   gonx.NewParser(elbLogFormat),
+		noConnParser: gonx.NewParser(elbLogFormatNoConnTrace),
+	}
 }
 
 func (c *ElbAccessLogMapper) Identifier() string {
@@ -35,11 +40,9 @@ func (c *ElbAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*type
 	inputMetadata := a.Metadata
 
 	// parse log line
-	parser := gonx.NewParser(elbLogFormat)
-	parser2 := gonx.NewParser(elbLogFormatNoConnTrace)
-	parsed, err = parser.ParseString(input)
+	parsed, err = c.fullParser.ParseString(input)
 	if err != nil {
-		parsed, err = parser2.ParseString(input)
+		parsed, err = c.noConnParser.ParseString(input)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing log line: %w", err)
 		}
