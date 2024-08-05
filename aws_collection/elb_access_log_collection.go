@@ -2,14 +2,19 @@ package aws_collection
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
-	"strconv"
-	"time"
+	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
 type ElbAccessLogCollection struct {
@@ -30,6 +35,13 @@ func (c *ElbAccessLogCollection) GetRowSchema() any {
 
 func (c *ElbAccessLogCollection) GetConfigSchema() hcl.Config {
 	return &ElbAccessLogCollectionConfig{}
+}
+
+func (c *ElbAccessLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+	return []row_source.RowSourceOption{
+		artifact_source.WithRowPerLine(),
+		artifact_source.WithMapper(aws_source.NewElbAccessLogMapper()),
+	}
 }
 
 func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
@@ -59,26 +71,22 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 			record.Timestamp = ts
 		case "elb":
 			record.Elb = value
-		case "client_ip":
-			record.ClientIP = value
-			record.TpSourceIP = &value
-			record.TpIps = append(record.TpIps, value)
-		case "client_port":
-			cp, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing client_port: %w", err)
+		case "client":
+			if value != "-" && strings.Contains(value, ":") {
+				ip := strings.Split(value, ":")[0]
+				record.ClientIP = ip
+				record.TpSourceIP = &ip
+				record.TpIps = append(record.TpIps, ip)
+				record.ClientPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
 			}
-			record.ClientPort = cp
-		case "target_ip":
-			record.TargetIP = value
-			record.TpDestinationIP = &value
-			record.TpIps = append(record.TpIps, value)
-		case "target_port":
-			tp, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing target_port: %w", err)
+		case "target":
+			if value != "-" && strings.Contains(value, ":") {
+				ip := strings.Split(value, ":")[0]
+				record.TargetIP = &ip
+				record.TpDestinationIP = &ip
+				record.TpIps = append(record.TpIps, ip)
+				record.TargetPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
 			}
-			record.TargetPort = tp
 		case "request_processing_time":
 			rpt, err := strconv.ParseFloat(value, 64)
 			if err != nil {
@@ -98,29 +106,37 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 			}
 			record.ResponseProcessingTime = rpt
 		case "elb_status_code":
-			esc, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing elb_status_code: %w", err)
+			if value != "-" {
+				esc, err := strconv.Atoi(value)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing elb_status_code: %w", err)
+				}
+				record.ElbStatusCode = &esc
 			}
-			record.ElbStatusCode = esc
 		case "target_status_code":
-			tsc, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing target_status_code: %w", err)
+			if value != "-" {
+				tsc, err := strconv.Atoi(value)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing target_status_code: %w", err)
+				}
+				record.TargetStatusCode = &tsc
 			}
-			record.TargetStatusCode = tsc
 		case "received_bytes":
-			rb, err := strconv.ParseInt(value, 10, 64)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing received_bytes: %w", err)
+			if value != "-" {
+				rb, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing received_bytes: %w", err)
+				}
+				record.ReceivedBytes = &rb
 			}
-			record.ReceivedBytes = rb
 		case "sent_bytes":
-			sb, err := strconv.ParseInt(value, 10, 64)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing sent_bytes: %w", err)
+			if value != "-" {
+				sb, err := strconv.ParseInt(value, 10, 64)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing sent_bytes: %w", err)
+				}
+				record.SentBytes = &sb
 			}
-			record.SentBytes = sb
 		case "request":
 			record.Request = value
 		case "user_agent":
@@ -139,11 +155,13 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 		case "chosen_cert_arn":
 			record.ChosenCertArn = value
 		case "matched_rule_priority":
-			mrp, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing matched_rule_priority: %w", err)
+			if value == "-" {
+				mrp, err := strconv.Atoi(value)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing matched_rule_priority: %w", err)
+				}
+				record.MatchedRulePriority = mrp
 			}
-			record.MatchedRulePriority = mrp
 		case "request_creation_time":
 			rct, err := time.Parse(time.RFC3339, value)
 			if err != nil {
@@ -156,7 +174,18 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 			record.RedirectURL = &value
 		case "error_reason":
 			record.ErrorReason = &value
+		case "target_list":
+			record.TargetList = &value
+		case "target_status_list":
+			record.TargetStatusList = &value
+		case "classification":
+			record.Classification = &value
+		case "classification_reason":
+			record.ClassificationReason = &value
+		case "conn_trace_id":
+			record.ConnTraceID = value
 		}
+
 	}
 
 	// Record standardization

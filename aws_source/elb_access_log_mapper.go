@@ -8,21 +8,24 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
-const elbLogFormat = `$type $timestamp $elb $client_ip:$client_port $target_ip:$target_port $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn $trace_id $domain_name $chosen_cert_arn $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason"`
+const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn $trace_id $domain_name $chosen_cert_arn $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" $error_reason "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
+const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn $trace_id $domain_name $chosen_cert_arn $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" $error_reason "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
-type ELBAccessLogMapper struct {
+type ElbAccessLogMapper struct {
 }
 
-func NewELBAccessLogMapper() *ELBAccessLogMapper {
-	return &ELBAccessLogMapper{}
+func NewElbAccessLogMapper() *ElbAccessLogMapper {
+	return &ElbAccessLogMapper{}
 }
 
-func (c *ELBAccessLogMapper) Identifier() string {
+func (c *ElbAccessLogMapper) Identifier() string {
 	return "elb_access_log_mapper"
 }
 
-func (c *ELBAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*types.RowData, error) {
+func (c *ElbAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*types.RowData, error) {
 	var out []*types.RowData
+	var parsed *gonx.Entry
+	var err error
 
 	// validate input type is string
 	input, ok := a.Data.(string)
@@ -33,9 +36,13 @@ func (c *ELBAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*type
 
 	// parse log line
 	parser := gonx.NewParser(elbLogFormat)
-	parsed, err := parser.ParseString(input)
+	parser2 := gonx.NewParser(elbLogFormatNoConnTrace)
+	parsed, err = parser.ParseString(input)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing log line: %w", err)
+		parsed, err = parser2.ParseString(input)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing log line: %w", err)
+		}
 	}
 
 	fields := make(map[string]string)

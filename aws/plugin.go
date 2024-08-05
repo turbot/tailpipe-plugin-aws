@@ -22,7 +22,11 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 
 	// register the collections that we provide
 	resources := &plugin.ResourceFunctions{
-		Collections: []func() collection.Collection{aws_collection.NewCloudTrailLogCollection, aws_collection.NewVPCFlowLogLogCollection},
+		Collections: []func() collection.Collection{
+			aws_collection.NewCloudTrailLogCollection,
+			aws_collection.NewVPCFlowLogLogCollection,
+			aws_collection.NewElbAccessLogCollection,
+		},
 	}
 
 	if err := p.RegisterResources(resources); err != nil {
