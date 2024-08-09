@@ -20,7 +20,7 @@ import (
 // CloudTrailLogCollection - collection for CloudTrail logs
 type CloudTrailLogCollection struct {
 	// all collections must embed collection.CollectionBase
-	collection.CollectionBase[CloudTrailLogCollectionConfig]
+	collection.CollectionBase[*CloudTrailLogCollectionConfig]
 }
 
 func NewCloudTrailLogCollection() collection.Collection {
