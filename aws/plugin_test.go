@@ -1,12 +1,10 @@
 package aws
 
-//
-//import (
-//	"testing"
-//
-//	"github.com/turbot/tailpipe-plugin-sdk/plugin"
-//)
-//
-//func TestConformance(t *testing.T) {
-//	plugin.RunConformanceTests(t, &Plugin{})
-//}
+import (
+	"github.com/turbot/tailpipe-plugin-sdk/plugin"
+	"testing"
+)
+
+func TestConformance(t *testing.T) {
+	plugin.Validate(t, NewPlugin)
+}
