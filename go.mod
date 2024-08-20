@@ -1,8 +1,8 @@
 module github.com/turbot/tailpipe-plugin-aws
 
-go 1.22.2
+go 1.23
 
-toolchain go1.22.3
+toolchain go1.23.0
 
 replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
 
