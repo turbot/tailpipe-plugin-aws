@@ -34,8 +34,11 @@ func (c *CloudTrailLogCollection) Identifier() string {
 
 // GetSourceOptions returns any options which should be passed to the given source type
 func (c *CloudTrailLogCollection) GetSourceOptions() []row_source.RowSourceOption {
-	// if the source is an artifact source, we need to specify the mapper
-	return []row_source.RowSourceOption{artifact_source.WithMapper(aws_source.NewCloudtrailMapper())}
+	return []row_source.RowSourceOption{
+		// if the source is an artifact source, we need a mapper
+		// NOTE: WithMapper option will ONLY apply if the RowSource IS an ArtifactSource
+		artifact_source.WithMapper(aws_source.NewCloudtrailMapper()),
+	}
 }
 
 // GetRowSchema implements collection.Collection
