@@ -1,7 +1,8 @@
-package aws_collection
+package aws_partition
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"strings"
 	"time"
 
@@ -11,30 +12,29 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
-// CloudTrailLogCollection - collection for CloudTrail logs
-type CloudTrailLogCollection struct {
-	// all collections must embed collection.CollectionBase
-	collection.CollectionBase[*CloudTrailLogCollectionConfig]
+// CloudTrailLogPartition - partition for CloudTrail logs
+type CloudTrailLogPartition struct {
+	// all partitions must embed partition.PartitionBase
+	partition.PartitionBase[*CloudTrailLogPartitionConfig]
 }
 
-func NewCloudTrailLogCollection() collection.Collection {
-	return &CloudTrailLogCollection{}
+func NewCloudTrailLogPartition() partition.Partition {
+	return &CloudTrailLogPartition{}
 }
 
-// Identifier implements collection.Collection
-func (c *CloudTrailLogCollection) Identifier() string {
+// Identifier implements partition.Partition
+func (c *CloudTrailLogPartition) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
-func (c *CloudTrailLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+func (c *CloudTrailLogPartition) GetSourceOptions() []row_source.RowSourceOption {
 	// the defaulkt file layout for Cloudtrail logs in S3
 	defaultArtifactConfig := &artifact_source.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs/o-z3cf4qoe7m/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
@@ -53,17 +53,17 @@ func (c *CloudTrailLogCollection) GetSourceOptions() []row_source.RowSourceOptio
 	}
 }
 
-// GetRowSchema implements collection.Collection
-func (c *CloudTrailLogCollection) GetRowSchema() any {
+// GetRowSchema implements partition.Partition
+func (c *CloudTrailLogPartition) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
 }
 
-func (c *CloudTrailLogCollection) GetConfigSchema() parse.Config {
-	return &CloudTrailLogCollectionConfig{}
+func (c *CloudTrailLogPartition) GetConfigSchema() parse.Config {
+	return &CloudTrailLogPartitionConfig{}
 }
 
-// EnrichRow implements collection.Collection
-func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+// EnrichRow implements partition.Partition
+func (c *CloudTrailLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
 	if !ok {
@@ -102,8 +102,8 @@ func (c *CloudTrailLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 	}
 
 	// Hive fields
-	record.TpCollection = "default" // TODO - should be based on the definition in HCL
-	record.TpConnection = record.RecipientAccountId
+	record.TpPartition = "default" // TODO - should be based on the definition in HCL
+	record.TpIndex = record.RecipientAccountId
 	record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
 	record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
 	record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())

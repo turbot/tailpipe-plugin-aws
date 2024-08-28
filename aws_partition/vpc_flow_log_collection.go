@@ -1,44 +1,44 @@
-package aws_collection
+package aws_partition
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 )
 
-// VPCFlowLogLogCollection - collection for VPC Flow Logs
-type VPCFlowLogLogCollection struct {
-	// all collections must embed collection.CollectionBase
-	collection.CollectionBase[*VpcFlowLogCollectionConfig]
+// VPCFlowLogLogPartition - partition for VPC Flow Logs
+type VPCFlowLogLogPartition struct {
+	// all partitions must embed partition.PartitionBase
+	partition.PartitionBase[*VpcFlowLogPartitionConfig]
 }
 
-func NewVPCFlowLogLogCollection() collection.Collection {
-	return &VPCFlowLogLogCollection{}
+func NewVPCFlowLogLogPartition() partition.Partition {
+	return &VPCFlowLogLogPartition{}
 }
 
-// Identifier implements collection.Collection
-func (c *VPCFlowLogLogCollection) Identifier() string {
+// Identifier implements partition.Partition
+func (c *VPCFlowLogLogPartition) Identifier() string {
 	return "aws_vpc_flow_log"
 }
 
-// GetRowSchema implements collection.Collection
+// GetRowSchema implements partition.Partition
 // return an instance of the row struct
-func (c *VPCFlowLogLogCollection) GetRowSchema() any {
+func (c *VPCFlowLogLogPartition) GetRowSchema() any {
 	return aws_types.AwsVpcFlowLog{}
 }
 
-func (c *VPCFlowLogLogCollection) GetConfigSchema() parse.Config {
-	return &VpcFlowLogCollectionConfig{}
+func (c *VPCFlowLogLogPartition) GetConfigSchema() parse.Config {
+	return &VpcFlowLogPartitionConfig{}
 }
 
-// EnrichRow implements collection.Collection
-func (c *VPCFlowLogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+// EnrichRow implements partition.Partition
+func (c *VPCFlowLogLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be a string
 	rowString, ok := row.(string)
 	if !ok {
@@ -67,9 +67,9 @@ func (c *VPCFlowLogLogCollection) EnrichRow(row any, sourceEnrichmentFields *enr
 
 	// Hive fields
 	// TODO - should be based on the definition in HCL
-	record.TpCollection = "default"
+	record.TpPartition = "default"
 	if record.AccountID != nil {
-		record.TpConnection = *record.AccountID
+		record.TpIndex = *record.AccountID
 	}
 
 	// populate the year, month, day from start time

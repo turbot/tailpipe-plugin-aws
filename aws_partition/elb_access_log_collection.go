@@ -1,7 +1,8 @@
-package aws_collection
+package aws_partition
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"strconv"
 	"strings"
 	"time"
@@ -10,41 +11,40 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
-type ElbAccessLogCollection struct {
-	collection.CollectionBase[*ElbAccessLogCollectionConfig]
+type ElbAccessLogPartition struct {
+	partition.PartitionBase[*ElbAccessLogPartitionConfig]
 }
 
-func NewElbAccessLogCollection() collection.Collection {
-	return &ElbAccessLogCollection{}
+func NewElbAccessLogPartition() partition.Partition {
+	return &ElbAccessLogPartition{}
 }
 
-func (c *ElbAccessLogCollection) Identifier() string {
+func (c *ElbAccessLogPartition) Identifier() string {
 	return "aws_elb_access_log"
 }
 
-func (c *ElbAccessLogCollection) GetRowSchema() any {
+func (c *ElbAccessLogPartition) GetRowSchema() any {
 	return &aws_types.AwsElbAccessLog{}
 }
 
-func (c *ElbAccessLogCollection) GetConfigSchema() parse.Config {
-	return &ElbAccessLogCollectionConfig{}
+func (c *ElbAccessLogPartition) GetConfigSchema() parse.Config {
+	return &ElbAccessLogPartitionConfig{}
 }
 
-func (c *ElbAccessLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+func (c *ElbAccessLogPartition) GetSourceOptions() []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 		artifact_source.WithArtifactMapper(aws_source.NewElbAccessLogMapper()),
 	}
 }
 
-func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *ElbAccessLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// short-circuit for unexpected row type
 	rawRecord, ok := row.(map[string]string)
 	if !ok {
@@ -195,9 +195,9 @@ func (c *ElbAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enri
 	record.TpSourceType = "aws_elb_access_log" // TODO: #refactor move to source?
 
 	// Hive Fields
-	record.TpCollection = c.Identifier()
-	if record.TpConnection == "" {
-		record.TpConnection = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
+	record.TpPartition = c.Identifier()
+	if record.TpIndex == "" {
+		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
 	record.TpYear = int32(record.Timestamp.Year())
 	record.TpMonth = int32(record.Timestamp.Month())

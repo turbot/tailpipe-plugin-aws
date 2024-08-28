@@ -1,8 +1,8 @@
 package aws
 
 import (
-	"github.com/turbot/tailpipe-plugin-aws/aws_collection"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
+	"github.com/turbot/tailpipe-plugin-aws/aws_partition"
+	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 )
 
@@ -17,14 +17,14 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	//time.Sleep(10 * time.Second)
 	//slog.Info("YAWN")
 
-	// register the collections that we provide
+	// register the partitions that we provide
 	resources := &plugin.ResourceFunctions{
-		Collections: []func() collection.Collection{
-			aws_collection.NewCloudTrailLogCollection,
-			aws_collection.NewVPCFlowLogLogCollection,
-			aws_collection.NewElbAccessLogCollection,
-			aws_collection.NewS3ServerAccessLogCollection,
-			aws_collection.NewLambdaLogCollection,
+		Partitions: []func() partition.Partition{
+			aws_partition.NewCloudTrailLogPartition,
+			aws_partition.NewVPCFlowLogLogPartition,
+			aws_partition.NewElbAccessLogPartition,
+			aws_partition.NewS3ServerAccessLogPartition,
+			aws_partition.NewLambdaLogPartition,
 		},
 	}
 

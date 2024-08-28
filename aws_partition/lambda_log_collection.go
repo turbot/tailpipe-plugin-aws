@@ -1,7 +1,8 @@
-package aws_collection
+package aws_partition
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"strconv"
 	"strings"
 	"time"
@@ -9,41 +10,40 @@ import (
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
-type LambdaLogCollection struct {
-	// all collections must embed collection.CollectionBase
-	collection.CollectionBase[*LambdaLogCollectionConfig]
+type LambdaLogPartition struct {
+	// all partitions must embed partition.PartitionBase
+	partition.PartitionBase[*LambdaLogPartitionConfig]
 }
 
-func NewLambdaLogCollection() collection.Collection {
-	return &LambdaLogCollection{}
+func NewLambdaLogPartition() partition.Partition {
+	return &LambdaLogPartition{}
 }
 
-func (c *LambdaLogCollection) Identifier() string {
+func (c *LambdaLogPartition) Identifier() string {
 	return "aws_lambda_log"
 }
 
-func (c *LambdaLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+func (c *LambdaLogPartition) GetSourceOptions() []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 	}
 }
 
-func (c *LambdaLogCollection) GetRowSchema() any {
+func (c *LambdaLogPartition) GetRowSchema() any {
 	return &aws_types.AwsLambdaLog{}
 }
 
-func (c *LambdaLogCollection) GetConfigSchema() parse.Config {
-	return &LambdaLogCollectionConfig{}
+func (c *LambdaLogPartition) GetConfigSchema() parse.Config {
+	return &LambdaLogPartitionConfig{}
 }
 
-func (c *LambdaLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *LambdaLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	rawRecord, ok := row.(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid row type: %T, expected string", row)
@@ -104,9 +104,9 @@ func (c *LambdaLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichm
 	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
 
 	// Hive fields
-	record.TpCollection = c.Identifier()
-	if record.TpConnection == "" {
-		record.TpConnection = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
+	record.TpPartition = c.Identifier()
+	if record.TpIndex == "" {
+		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
 	record.TpYear = int32(record.Timestamp.Year())
 	record.TpMonth = int32(record.Timestamp.Month())
