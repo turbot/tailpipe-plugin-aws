@@ -2,7 +2,6 @@ package aws_partition
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"time"
 
 	"github.com/rs/xid"
@@ -10,6 +9,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
+	"github.com/turbot/tailpipe-plugin-sdk/partition"
 )
 
 // VPCFlowLogLogPartition - partition for VPC Flow Logs
