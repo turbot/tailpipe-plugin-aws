@@ -37,7 +37,7 @@ func (c *ElbAccessLogPartition) GetConfigSchema() parse.Config {
 	return &ElbAccessLogPartitionConfig{}
 }
 
-func (c *ElbAccessLogPartition) GetSourceOptions() []row_source.RowSourceOption {
+func (c *ElbAccessLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 		artifact_source.WithArtifactMapper(aws_source.NewElbAccessLogMapper()),

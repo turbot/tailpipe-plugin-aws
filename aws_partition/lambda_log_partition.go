@@ -29,7 +29,7 @@ func (c *LambdaLogPartition) Identifier() string {
 	return "aws_lambda_log"
 }
 
-func (c *LambdaLogPartition) GetSourceOptions() []row_source.RowSourceOption {
+func (c *LambdaLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 	}

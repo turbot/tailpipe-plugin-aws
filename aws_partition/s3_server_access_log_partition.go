@@ -35,7 +35,7 @@ func (c *S3ServerAccessLogPartition) GetConfigSchema() parse.Config {
 	return &S3ServerAccessLogPartitionConfig{}
 }
 
-func (c *S3ServerAccessLogPartition) GetSourceOptions() []row_source.RowSourceOption {
+func (c *S3ServerAccessLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 		artifact_source.WithArtifactMapper(aws_source.NewS3ServerAccessLogMapper()),

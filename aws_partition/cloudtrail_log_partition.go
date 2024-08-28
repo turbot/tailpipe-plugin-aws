@@ -34,23 +34,25 @@ func (c *CloudTrailLogPartition) Identifier() string {
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
-func (c *CloudTrailLogPartition) GetSourceOptions() []row_source.RowSourceOption {
-	// the defaulkt file layout for Cloudtrail logs in S3
-	defaultArtifactConfig := &artifact_source.ArtifactSourceConfigBase{
-		FileLayout: utils.ToStringPointer("AWSLogs/o-z3cf4qoe7m/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
-		//JsonPath:    nil,
-	}
-
-	return []row_source.RowSourceOption{
+func (c *CloudTrailLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
+	var opts = []row_source.RowSourceOption{
 		// if the source is an artifact source, we need a mapper
 		// NOTE: WithArtifactMapper option will ONLY apply if the RowSource IS an ArtifactSource
 		// TODO #design we may be able to remove the need for this if we can handle JSON generically
 		artifact_source.WithArtifactMapper(aws_source.NewCloudtrailMapper()),
-
-		// default file layout for CloudTrail logs in S3
-		// TODO check if source is S3???
-		artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 	}
+
+	switch sourceType {
+	case artifact_source.AwsS3BucketSourceIdentifier:
+		// the default file layout for Cloudtrail logs in S3
+		defaultArtifactConfig := &artifact_source.ArtifactSourceConfigBase{
+			// TODO #config finalise default cloudtrail file layout
+			FileLayout: utils.ToStringPointer("AWSLogs/o-z3cf4qoe7m/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
+		}
+		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig))
+	}
+
+	return opts
 }
 
 // GetRowSchema implements partition.Partition
