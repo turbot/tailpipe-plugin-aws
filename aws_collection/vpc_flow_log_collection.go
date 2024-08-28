@@ -8,8 +8,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/parse"
 )
 
 // VPCFlowLogLogCollection - collection for VPC Flow Logs
@@ -33,7 +33,7 @@ func (c *VPCFlowLogLogCollection) GetRowSchema() any {
 	return aws_types.AwsVpcFlowLog{}
 }
 
-func (c *VPCFlowLogLogCollection) GetConfigSchema() hcl.Config {
+func (c *VPCFlowLogLogCollection) GetConfigSchema() parse.Config {
 	return &VpcFlowLogCollectionConfig{}
 }
 

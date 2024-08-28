@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
@@ -34,10 +35,21 @@ func (c *CloudTrailLogCollection) Identifier() string {
 
 // GetSourceOptions returns any options which should be passed to the given source type
 func (c *CloudTrailLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+	// the defaulkt file layout for Cloudtrail logs in S3
+	defaultArtifactConfig := &artifact_source.ArtifactSourceConfigBase{
+		FileLayout: utils.ToStringPointer("AWSLogs/o-z3cf4qoe7m/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
+		//JsonPath:    nil,
+	}
+
 	return []row_source.RowSourceOption{
 		// if the source is an artifact source, we need a mapper
-		// NOTE: WithMapper option will ONLY apply if the RowSource IS an ArtifactSource
-		artifact_source.WithMapper(aws_source.NewCloudtrailMapper()),
+		// NOTE: WithArtifactMapper option will ONLY apply if the RowSource IS an ArtifactSource
+		// TODO #design we may be able to remove the need for this if we can handle JSON generically
+		artifact_source.WithArtifactMapper(aws_source.NewCloudtrailMapper()),
+
+		// default file layout for CloudTrail logs in S3
+		// TODO check if source is S3???
+		artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 	}
 }
 
@@ -46,7 +58,7 @@ func (c *CloudTrailLogCollection) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
 }
 
-func (c *CloudTrailLogCollection) GetConfigSchema() hcl.Config {
+func (c *CloudTrailLogCollection) GetConfigSchema() parse.Config {
 	return &CloudTrailLogCollectionConfig{}
 }
 

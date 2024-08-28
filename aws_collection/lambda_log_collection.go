@@ -11,8 +11,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
@@ -39,7 +39,7 @@ func (c *LambdaLogCollection) GetRowSchema() any {
 	return &aws_types.AwsLambdaLog{}
 }
 
-func (c *LambdaLogCollection) GetConfigSchema() hcl.Config {
+func (c *LambdaLogCollection) GetConfigSchema() parse.Config {
 	return &LambdaLogCollectionConfig{}
 }
 

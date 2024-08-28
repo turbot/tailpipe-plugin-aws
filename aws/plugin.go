@@ -1,9 +1,6 @@
 package aws
 
 import (
-	"log/slog"
-	"time"
-
 	"github.com/turbot/tailpipe-plugin-aws/aws_collection"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
@@ -16,9 +13,9 @@ type Plugin struct {
 func NewPlugin() (plugin.TailpipePlugin, error) {
 	p := &Plugin{}
 
-	slog.Info("AWS Plugin starting")
-	time.Sleep(10 * time.Second)
-	slog.Info("YAWN")
+	//slog.Info("AWS Plugin starting")
+	//time.Sleep(10 * time.Second)
+	//slog.Info("YAWN")
 
 	// register the collections that we provide
 	resources := &plugin.ResourceFunctions{

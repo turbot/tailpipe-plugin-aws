@@ -12,8 +12,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 )
 
@@ -33,14 +33,14 @@ func (c *ElbAccessLogCollection) GetRowSchema() any {
 	return &aws_types.AwsElbAccessLog{}
 }
 
-func (c *ElbAccessLogCollection) GetConfigSchema() hcl.Config {
+func (c *ElbAccessLogCollection) GetConfigSchema() parse.Config {
 	return &ElbAccessLogCollectionConfig{}
 }
 
 func (c *ElbAccessLogCollection) GetSourceOptions() []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
-		artifact_source.WithMapper(aws_source.NewElbAccessLogMapper()),
+		artifact_source.WithArtifactMapper(aws_source.NewElbAccessLogMapper()),
 	}
 }
 

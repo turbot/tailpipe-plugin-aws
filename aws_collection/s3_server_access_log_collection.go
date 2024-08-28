@@ -8,8 +8,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"strconv"
 	"time"
@@ -31,14 +31,14 @@ func (c *S3ServerAccessLogCollection) GetRowSchema() any {
 	return &aws_types.AwsS3ServerAccessLog{}
 }
 
-func (c *S3ServerAccessLogCollection) GetConfigSchema() hcl.Config {
+func (c *S3ServerAccessLogCollection) GetConfigSchema() parse.Config {
 	return &S3ServerAccessLogCollectionConfig{}
 }
 
 func (c *S3ServerAccessLogCollection) GetSourceOptions() []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
-		artifact_source.WithMapper(aws_source.NewS3ServerAccessLogMapper()),
+		artifact_source.WithArtifactMapper(aws_source.NewS3ServerAccessLogMapper()),
 	}
 }
 
