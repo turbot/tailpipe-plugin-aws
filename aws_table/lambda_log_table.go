@@ -1,8 +1,7 @@
-package aws_partition
+package aws_table
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"strconv"
 	"strings"
 	"time"
@@ -14,36 +13,37 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-type LambdaLogPartition struct {
-	// all partitions must embed partition.PartitionBase
-	partition.PartitionBase[*LambdaLogPartitionConfig]
+type LambdaLogTable struct {
+	// all tables must embed table.TableBase
+	table.TableBase[*LambdaLogTableConfig]
 }
 
-func NewLambdaLogPartition() partition.Partition {
-	return &LambdaLogPartition{}
+func NewLambdaLogTable() table.Table {
+	return &LambdaLogTable{}
 }
 
-func (c *LambdaLogPartition) Identifier() string {
+func (c *LambdaLogTable) Identifier() string {
 	return "aws_lambda_log"
 }
 
-func (c *LambdaLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
+func (c *LambdaLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 	}
 }
 
-func (c *LambdaLogPartition) GetRowSchema() any {
+func (c *LambdaLogTable) GetRowSchema() any {
 	return &aws_types.AwsLambdaLog{}
 }
 
-func (c *LambdaLogPartition) GetConfigSchema() parse.Config {
-	return &LambdaLogPartitionConfig{}
+func (c *LambdaLogTable) GetConfigSchema() parse.Config {
+	return &LambdaLogTableConfig{}
 }
 
-func (c *LambdaLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *LambdaLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	rawRecord, ok := row.(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid row type: %T, expected string", row)
@@ -104,7 +104,7 @@ func (c *LambdaLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichme
 	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
 
 	// Hive fields
-	record.TpPartition = c.Identifier()
+	record.TpTable = c.Identifier()
 	if record.TpIndex == "" {
 		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}

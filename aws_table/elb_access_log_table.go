@@ -1,8 +1,7 @@
-package aws_partition
+package aws_table
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"strconv"
 	"strings"
 	"time"
@@ -15,36 +14,37 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-type ElbAccessLogPartition struct {
-	partition.PartitionBase[*ElbAccessLogPartitionConfig]
+type ElbAccessLogTable struct {
+	table.TableBase[*ElbAccessLogTableConfig]
 }
 
-func NewElbAccessLogPartition() partition.Partition {
-	return &ElbAccessLogPartition{}
+func NewElbAccessLogTable() table.Table {
+	return &ElbAccessLogTable{}
 }
 
-func (c *ElbAccessLogPartition) Identifier() string {
+func (c *ElbAccessLogTable) Identifier() string {
 	return "aws_elb_access_log"
 }
 
-func (c *ElbAccessLogPartition) GetRowSchema() any {
+func (c *ElbAccessLogTable) GetRowSchema() any {
 	return &aws_types.AwsElbAccessLog{}
 }
 
-func (c *ElbAccessLogPartition) GetConfigSchema() parse.Config {
-	return &ElbAccessLogPartitionConfig{}
+func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
+	return &ElbAccessLogTableConfig{}
 }
 
-func (c *ElbAccessLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
+func (c *ElbAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
 		artifact_source.WithArtifactMapper(aws_source.NewElbAccessLogMapper()),
 	}
 }
 
-func (c *ElbAccessLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// short-circuit for unexpected row type
 	rawRecord, ok := row.(map[string]string)
 	if !ok {
@@ -195,7 +195,7 @@ func (c *ElbAccessLogPartition) EnrichRow(row any, sourceEnrichmentFields *enric
 	record.TpSourceType = "aws_elb_access_log" // TODO: #refactor move to source?
 
 	// Hive Fields
-	record.TpPartition = c.Identifier()
+	record.TpTable = c.Identifier()
 	if record.TpIndex == "" {
 		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}

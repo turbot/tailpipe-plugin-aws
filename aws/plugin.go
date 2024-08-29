@@ -1,9 +1,9 @@
 package aws
 
 import (
-	"github.com/turbot/tailpipe-plugin-aws/aws_partition"
-	"github.com/turbot/tailpipe-plugin-sdk/partition"
+	"github.com/turbot/tailpipe-plugin-aws/aws_table"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type Plugin struct {
@@ -17,14 +17,14 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	//time.Sleep(10 * time.Second)
 	//slog.Info("YAWN")
 
-	// register the partitions that we provide
+	// register the tables that we provide
 	resources := &plugin.ResourceFunctions{
-		Partitions: []func() partition.Partition{
-			aws_partition.NewCloudTrailLogPartition,
-			aws_partition.NewVPCFlowLogLogPartition,
-			aws_partition.NewElbAccessLogPartition,
-			aws_partition.NewS3ServerAccessLogPartition,
-			aws_partition.NewLambdaLogPartition,
+		Tables: []func() table.Table{
+			aws_table.NewCloudTrailLogTable,
+			aws_table.NewVPCFlowLogLogTable,
+			aws_table.NewElbAccessLogTable,
+			aws_table.NewS3ServerAccessLogTable,
+			aws_table.NewLambdaLogTable,
 		},
 	}
 

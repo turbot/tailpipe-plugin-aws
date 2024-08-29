@@ -1,8 +1,7 @@
-package aws_partition
+package aws_table
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/partition"
 	"strings"
 	"time"
 
@@ -16,25 +15,26 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-// CloudTrailLogPartition - partition for CloudTrail logs
-type CloudTrailLogPartition struct {
-	// all partitions must embed partition.PartitionBase
-	partition.PartitionBase[*CloudTrailLogPartitionConfig]
+// CloudTrailLogTable - table for CloudTrail logs
+type CloudTrailLogTable struct {
+	// all tables must embed table.TableBase
+	table.TableBase[*CloudTrailLogTableConfig]
 }
 
-func NewCloudTrailLogPartition() partition.Partition {
-	return &CloudTrailLogPartition{}
+func NewCloudTrailLogTable() table.Table {
+	return &CloudTrailLogTable{}
 }
 
-// Identifier implements partition.Partition
-func (c *CloudTrailLogPartition) Identifier() string {
+// Identifier implements table.Table
+func (c *CloudTrailLogTable) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
-func (c *CloudTrailLogPartition) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
+func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	var opts = []row_source.RowSourceOption{
 		// if the source is an artifact source, we need a mapper
 		// NOTE: WithArtifactMapper option will ONLY apply if the RowSource IS an ArtifactSource
@@ -55,17 +55,17 @@ func (c *CloudTrailLogPartition) GetSourceOptions(sourceType string) []row_sourc
 	return opts
 }
 
-// GetRowSchema implements partition.Partition
-func (c *CloudTrailLogPartition) GetRowSchema() any {
+// GetRowSchema implements table.Table
+func (c *CloudTrailLogTable) GetRowSchema() any {
 	return aws_types.AWSCloudTrail{}
 }
 
-func (c *CloudTrailLogPartition) GetConfigSchema() parse.Config {
-	return &CloudTrailLogPartitionConfig{}
+func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
+	return &CloudTrailLogTableConfig{}
 }
 
-// EnrichRow implements partition.Partition
-func (c *CloudTrailLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+// EnrichRow implements table.Table
+func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
 	record, ok := row.(aws_types.AWSCloudTrail)
 	if !ok {
@@ -104,7 +104,7 @@ func (c *CloudTrailLogPartition) EnrichRow(row any, sourceEnrichmentFields *enri
 	}
 
 	// Hive fields
-	record.TpPartition = "default" // TODO - should be based on the definition in HCL
+	record.TpTable = "default" // TODO - should be based on the definition in HCL
 	record.TpIndex = record.RecipientAccountId
 	record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
 	record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())

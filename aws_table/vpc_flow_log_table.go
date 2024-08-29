@@ -1,4 +1,4 @@
-package aws_partition
+package aws_table
 
 import (
 	"fmt"
@@ -9,36 +9,36 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
-	"github.com/turbot/tailpipe-plugin-sdk/partition"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-// VPCFlowLogLogPartition - partition for VPC Flow Logs
-type VPCFlowLogLogPartition struct {
-	// all partitions must embed partition.PartitionBase
-	partition.PartitionBase[*VpcFlowLogPartitionConfig]
+// VPCFlowLogLogTable - table for VPC Flow Logs
+type VPCFlowLogLogTable struct {
+	// all tables must embed table.TableBase
+	table.TableBase[*VpcFlowLogTableConfig]
 }
 
-func NewVPCFlowLogLogPartition() partition.Partition {
-	return &VPCFlowLogLogPartition{}
+func NewVPCFlowLogLogTable() table.Table {
+	return &VPCFlowLogLogTable{}
 }
 
-// Identifier implements partition.Partition
-func (c *VPCFlowLogLogPartition) Identifier() string {
+// Identifier implements table.Table
+func (c *VPCFlowLogLogTable) Identifier() string {
 	return "aws_vpc_flow_log"
 }
 
-// GetRowSchema implements partition.Partition
+// GetRowSchema implements table.Table
 // return an instance of the row struct
-func (c *VPCFlowLogLogPartition) GetRowSchema() any {
+func (c *VPCFlowLogLogTable) GetRowSchema() any {
 	return aws_types.AwsVpcFlowLog{}
 }
 
-func (c *VPCFlowLogLogPartition) GetConfigSchema() parse.Config {
-	return &VpcFlowLogPartitionConfig{}
+func (c *VPCFlowLogLogTable) GetConfigSchema() parse.Config {
+	return &VpcFlowLogTableConfig{}
 }
 
-// EnrichRow implements partition.Partition
-func (c *VPCFlowLogLogPartition) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+// EnrichRow implements table.Table
+func (c *VPCFlowLogLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be a string
 	rowString, ok := row.(string)
 	if !ok {
@@ -67,7 +67,7 @@ func (c *VPCFlowLogLogPartition) EnrichRow(row any, sourceEnrichmentFields *enri
 
 	// Hive fields
 	// TODO - should be based on the definition in HCL
-	record.TpPartition = "default"
+	record.TpTable = "default"
 	if record.AccountID != nil {
 		record.TpIndex = *record.AccountID
 	}

@@ -1,4 +1,4 @@
-package aws_partition
+package aws_table
 
 //import (
 //	"testing"
@@ -7,5 +7,5 @@ package aws_partition
 //)
 //
 //func TestConformance(t *testing.T) {
-//	collection.RunConformanceTests(t, &CloudTrailLogPartition{})
+//	collection.RunConformanceTests(t, &CloudTrailLogTable{})
 //}
