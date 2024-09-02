@@ -67,7 +67,7 @@ func (c *VPCFlowLogLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 
 	// Hive fields
 	// TODO - should be based on the definition in HCL
-	record.TpTable = "default"
+	record.TpPartition = "default"
 	if record.AccountID != nil {
 		record.TpIndex = *record.AccountID
 	}

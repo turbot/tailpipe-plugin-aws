@@ -195,7 +195,7 @@ func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichmen
 	record.TpSourceType = "aws_elb_access_log" // TODO: #refactor move to source?
 
 	// Hive Fields
-	record.TpTable = c.Identifier()
+	record.TpPartition = c.Identifier()
 	if record.TpIndex == "" {
 		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}

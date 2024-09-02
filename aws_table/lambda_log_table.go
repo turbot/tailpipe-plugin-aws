@@ -104,7 +104,7 @@ func (c *LambdaLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.C
 	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
 
 	// Hive fields
-	record.TpTable = c.Identifier()
+	record.TpPartition = c.Identifier()
 	if record.TpIndex == "" {
 		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
