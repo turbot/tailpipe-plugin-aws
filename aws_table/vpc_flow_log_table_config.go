@@ -1,4 +1,4 @@
-package aws_collection
+package aws_table
 
 var DefaultFlowLogFields = []string{
 	"version",
@@ -17,12 +17,12 @@ var DefaultFlowLogFields = []string{
 	"log-status",
 }
 
-type VpcFlowLogCollectionConfig struct {
+type VpcFlowLogTableConfig struct {
 	// the fields to extract from the flow log
 	Fields []string `hcl:"fields,optional"`
 }
 
-func (c *VpcFlowLogCollectionConfig) Validate() error {
+func (c *VpcFlowLogTableConfig) Validate() error {
 	// set default fields if none are specified
 	if len(c.Fields) == 0 {
 		c.Fields = DefaultFlowLogFields

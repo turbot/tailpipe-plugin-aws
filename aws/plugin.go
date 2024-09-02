@@ -1,12 +1,9 @@
 package aws
 
 import (
-	"log/slog"
-	"time"
-
-	"github.com/turbot/tailpipe-plugin-aws/aws_collection"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
+	"github.com/turbot/tailpipe-plugin-aws/aws_table"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type Plugin struct {
@@ -16,18 +13,18 @@ type Plugin struct {
 func NewPlugin() (plugin.TailpipePlugin, error) {
 	p := &Plugin{}
 
-	slog.Info("AWS Plugin starting")
-	time.Sleep(10 * time.Second)
-	slog.Info("YAWN")
+	//slog.Info("AWS Plugin starting")
+	//time.Sleep(10 * time.Second)
+	//slog.Info("YAWN")
 
-	// register the collections that we provide
+	// register the tables that we provide
 	resources := &plugin.ResourceFunctions{
-		Collections: []func() collection.Collection{
-			aws_collection.NewCloudTrailLogCollection,
-			aws_collection.NewVPCFlowLogLogCollection,
-			aws_collection.NewElbAccessLogCollection,
-			aws_collection.NewS3ServerAccessLogCollection,
-			aws_collection.NewLambdaLogCollection,
+		Tables: []func() table.Table{
+			aws_table.NewCloudTrailLogTable,
+			aws_table.NewVPCFlowLogLogTable,
+			aws_table.NewElbAccessLogTable,
+			aws_table.NewS3ServerAccessLogTable,
+			aws_table.NewLambdaLogTable,
 		},
 	}
 

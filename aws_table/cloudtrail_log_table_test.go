@@ -1,4 +1,4 @@
-package aws_collection
+package aws_table
 
 //import (
 //	"testing"
@@ -7,5 +7,5 @@ package aws_collection
 //)
 //
 //func TestConformance(t *testing.T) {
-//	collection.RunConformanceTests(t, &CloudTrailLogCollection{})
+//	collection.RunConformanceTests(t, &CloudTrailLogTable{})
 //}

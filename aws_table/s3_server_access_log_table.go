@@ -1,48 +1,49 @@
-package aws_collection
+package aws_table
 
 import (
 	"fmt"
 	"github.com/rs/xid"
+	"strconv"
+	"time"
+
 	"github.com/turbot/tailpipe-plugin-aws/aws_source"
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
-	"github.com/turbot/tailpipe-plugin-sdk/collection"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/hcl"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
-	"strconv"
-	"time"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-type S3ServerAccessLogCollection struct {
-	collection.CollectionBase[*S3ServerAccessLogCollectionConfig]
+type S3ServerAccessLogTable struct {
+	table.TableBase[*S3ServerAccessLogTableConfig]
 }
 
-func NewS3ServerAccessLogCollection() collection.Collection {
-	return &S3ServerAccessLogCollection{}
+func NewS3ServerAccessLogTable() table.Table {
+	return &S3ServerAccessLogTable{}
 }
 
-func (c *S3ServerAccessLogCollection) Identifier() string {
+func (c *S3ServerAccessLogTable) Identifier() string {
 	return "aws_s3_server_access_log"
 }
 
-func (c *S3ServerAccessLogCollection) GetRowSchema() any {
+func (c *S3ServerAccessLogTable) GetRowSchema() any {
 	return &aws_types.AwsS3ServerAccessLog{}
 }
 
-func (c *S3ServerAccessLogCollection) GetConfigSchema() hcl.Config {
-	return &S3ServerAccessLogCollectionConfig{}
+func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
+	return &S3ServerAccessLogTableConfig{}
 }
 
-func (c *S3ServerAccessLogCollection) GetSourceOptions() []row_source.RowSourceOption {
+func (c *S3ServerAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
-		artifact_source.WithMapper(aws_source.NewS3ServerAccessLogMapper()),
+		artifact_source.WithArtifactMapper(aws_source.NewS3ServerAccessLogMapper()),
 	}
 }
 
-func (c *S3ServerAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// short-circuit for unexpected row type
 	rawRecord, ok := row.(map[string]string)
 	if !ok {
@@ -189,9 +190,9 @@ func (c *S3ServerAccessLogCollection) EnrichRow(row any, sourceEnrichmentFields 
 	record.TpSourceType = "aws.s3_server_access_log"
 
 	// Hive Fields
-	record.TpCollection = c.Identifier()
-	if record.TpConnection == "" {
-		record.TpConnection = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
+	record.TpPartition = c.Identifier()
+	if record.TpIndex == "" {
+		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
 	record.TpYear = int32(record.Timestamp.Year())
 	record.TpMonth = int32(record.Timestamp.Month())
