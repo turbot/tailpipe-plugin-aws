@@ -11,6 +11,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
@@ -45,7 +46,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 	switch sourceType {
 	case artifact_source.AwsS3BucketSourceIdentifier:
 		// the default file layout for Cloudtrail logs in S3
-		defaultArtifactConfig := &artifact_source.ArtifactSourceConfigBase{
+		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 			// TODO #config finalise default cloudtrail file layout
 			FileLayout: utils.ToStringPointer("AWSLogs/o-z3cf4qoe7m/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
 		}
