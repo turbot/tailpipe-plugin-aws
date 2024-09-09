@@ -74,17 +74,14 @@ func (c *VPCFlowLogLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 
 	// populate the year, month, day from start time
 	if record.Timestamp != nil {
-		// TODO factor into function
-		record.TpYear = int32(record.Timestamp.In(time.UTC).Year())
-		record.TpMonth = int32(record.Timestamp.In(time.UTC).Month())
-		record.TpDay = int32(record.Timestamp.In(time.UTC).Day())
-
+		// convert to date in format yy-mm-dd
+		record.TpDate = record.Timestamp.In(time.UTC).Format("2006-01-02")
 		record.TpTimestamp = helpers.UnixMillis(record.Timestamp.UnixNano() / int64(time.Millisecond))
 
 	} else if record.Start != nil {
-		record.TpYear = int32(time.Unix(int64(*record.Start)/1000, 0).In(time.UTC).Year())
-		record.TpMonth = int32(time.Unix(int64(*record.Start)/1000, 0).In(time.UTC).Month())
-		record.TpDay = int32(time.Unix(int64(*record.Start)/1000, 0).In(time.UTC).Day())
+		// convert to date in format yy-mm-dd
+		// TODO is Start unix millis?? if so why do we convert it for TpTimestamp
+		record.TpDate = time.UnixMilli(*record.Start).Format("2006-01-02")
 
 		//convert from unis seconds to milliseconds
 		record.TpTimestamp = helpers.UnixMillis(*record.Start * 1000)

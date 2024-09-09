@@ -107,9 +107,8 @@ func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 	// Hive fields
 	record.TpPartition = "default" // TODO - should be based on the definition in HCL
 	record.TpIndex = record.RecipientAccountId
-	record.TpYear = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Year())
-	record.TpMonth = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Month())
-	record.TpDay = int32(time.Unix(int64(record.EventTime)/1000, 0).In(time.UTC).Day())
+	// convert to date in format yy-mm-dd
+	record.TpDate = time.UnixMilli(int64(record.EventTime)).Format("2006-01-02")
 
 	return record, nil
 }
