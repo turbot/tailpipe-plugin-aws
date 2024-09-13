@@ -1,7 +1,7 @@
 TAILPIPE_INSTALL_DIR ?= ~/.tailpipe
 BUILD_TAGS = netgo
 install:
-	go build -o $(TAILPIPE_INSTALL_DIR)/plugins/tailpipe-plugin-aws.plugin -tags "${BUILD_TAGS}" *.go
+	go build -o $(TAILPIPE_INSTALL_DIR)/plugins/hub.tailpipe.io/plugins/turbot/aws@latest/tailpipe-plugin-aws.plugin -tags "${BUILD_TAGS}" *.go
 
 ## Paths
 #PLUGIN_NAME=tailpipe-plugin-aws.plugin
