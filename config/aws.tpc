@@ -1,0 +1,63 @@
+partition "aws_cloudtrail_log" "cloudtrail_logs" {
+  plugin = "aws"
+  source "aws_s3_bucket" {
+    bucket        = "my-s3-bucket"
+    prefix        = "AWSLogs/123456789012/CloudTrail/us-east-1/2024"
+    extensions    = [".gz"]
+    region        = "us-east-1"
+    access_key    = "AKIA..."
+    secret_key    = "dp+C+J..."
+    session_token = "AQoDX..."
+  }
+}
+
+partition "aws_elb_access_log" "elb_logs" {
+  plugin = "aws"
+  source "aws_s3_bucket" {
+    bucket        = "my-s3-bucket"
+    prefix        = "AWSLogs/123456789012/elasticloadbalancing"
+    extensions    = [".gz"]
+    region        = "us-east-1"
+    access_key    = "AKIA..."
+    secret_key    = "dp+C+J..."
+    session_token = "AQoDX..."
+  }
+}
+
+partition "aws_lambda_log" "lambda_logs" {
+  plugin = "aws"
+  source "aws_cloudwatch" {
+    log_group_name = "/aws/lambda/my_function"
+    start_time     = "2024-01-01T01:01:01Z"
+    end_time       = "2024-01-31T01:01:01Z"
+    access_key     = "AKIA..."
+    secret_key     = "dp+C+J..."
+    session_token  = "AQoDX..."
+  }
+}
+
+partition "aws_s3_server_access_log" "s3_server_access_logs" {
+  plugin = "aws"
+  source "aws_s3_bucket" {
+    bucket        = "my-s3-bucket"
+    prefix        = "AWSLogs/123456789012/S3/other-s3-bucket"
+    extensions    = [] # allow all since these logs have no extension
+    region        = "us-east-1"
+    access_key    = "AKIA..."
+    secret_key    = "dp+C+J..."
+    session_token = "AQoDX..."
+  }
+}
+
+
+partition "aws_vpc_flow_log" "vpc_flow_logs" {
+  plugin = "aws"
+  source "aws_cloudwatch" {
+  log_group_name  = "/my/vpc/flowlog"
+    start_time    = "2024-01-01T01:01:01Z"
+    end_time      = "2024-01-31T01:01:01Z"
+    access_key    = "AKIA..."
+    secret_key    = "dp+C+J..."
+    session_token = "AQoDX..."
+  }
+}
