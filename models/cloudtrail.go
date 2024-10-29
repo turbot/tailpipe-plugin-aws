@@ -1,4 +1,4 @@
-package tables
+package models
 
 import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"

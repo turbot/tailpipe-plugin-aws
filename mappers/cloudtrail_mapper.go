@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"log/slog"
 
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
@@ -33,7 +33,7 @@ func (c *CloudtrailMapper) Map(_ context.Context, a *types.RowData) ([]*types.Ro
 	}
 
 	// decode json ito AWSCloudTrailBatch
-	var log tables.AWSCloudTrailBatch
+	var log models.AWSCloudTrailBatch
 	err := json.Unmarshal(jsonBytes, &log)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding json: %w", err)

@@ -2,6 +2,7 @@ package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +30,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 }
 
 func (c *ElbAccessLogTable) GetRowSchema() any {
-	return &AwsElbAccessLog{}
+	return &models.AwsElbAccessLog{}
 }
 
 func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
@@ -53,7 +54,7 @@ func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichmen
 	// TODO: #validate ensure we have a timestamp field
 
 	// Build record and add any source enrichment fields
-	var record AwsElbAccessLog
+	var record models.AwsElbAccessLog
 	if sourceEnrichmentFields != nil {
 		record.CommonFields = *sourceEnrichmentFields
 	}

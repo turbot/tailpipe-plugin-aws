@@ -2,6 +2,7 @@ package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strconv"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ func (c *LambdaLogTable) GetSourceOptions(sourceType string) []row_source.RowSou
 }
 
 func (c *LambdaLogTable) GetRowSchema() any {
-	return &AwsLambdaLog{}
+	return &models.AwsLambdaLog{}
 }
 
 func (c *LambdaLogTable) GetConfigSchema() parse.Config {
@@ -48,7 +49,7 @@ func (c *LambdaLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.C
 		return nil, fmt.Errorf("invalid row type: %T, expected string", row)
 	}
 
-	var record AwsLambdaLog
+	var record models.AwsLambdaLog
 	if sourceEnrichmentFields != nil {
 		record.CommonFields = *sourceEnrichmentFields
 

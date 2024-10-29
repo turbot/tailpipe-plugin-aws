@@ -2,6 +2,7 @@ package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"time"
 
 	"github.com/rs/xid"
@@ -29,7 +30,7 @@ func (c *VPCFlowLogLogTable) Identifier() string {
 // GetRowSchema implements table.Table
 // return an instance of the row struct
 func (c *VPCFlowLogLogTable) GetRowSchema() any {
-	return AwsVpcFlowLog{}
+	return models.AwsVpcFlowLog{}
 }
 
 func (c *VPCFlowLogLogTable) GetConfigSchema() parse.Config {
@@ -43,7 +44,7 @@ func (c *VPCFlowLogLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 	if !ok {
 		return nil, fmt.Errorf("invalid row type %T, expected string", row)
 	}
-	record, err := FlowLogFromString(rowString, c.Config.Fields)
+	record, err := models.FlowLogFromString(rowString, c.Config.Fields)
 
 	if err != nil {
 		return nil, fmt.Errorf("error parsing row: %s", err)

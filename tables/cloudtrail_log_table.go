@@ -2,6 +2,7 @@ package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strings"
 	"time"
 
@@ -57,7 +58,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 
 // GetRowSchema implements table.Table
 func (c *CloudTrailLogTable) GetRowSchema() any {
-	return AWSCloudTrail{}
+	return models.AWSCloudTrail{}
 }
 
 func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
@@ -67,7 +68,7 @@ func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
 // EnrichRow implements table.Table
 func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
-	record, ok := row.(AWSCloudTrail)
+	record, ok := row.(models.AWSCloudTrail)
 	if !ok {
 		return nil, fmt.Errorf("invalid row type %T, expected AWSCloudTrail", row)
 	}
