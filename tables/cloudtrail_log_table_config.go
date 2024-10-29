@@ -1,4 +1,4 @@
-package aws_table
+package tables
 
 type CloudTrailLogTableConfig struct{}
 

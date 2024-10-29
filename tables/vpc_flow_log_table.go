@@ -1,11 +1,10 @@
-package aws_table
+package tables
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/rs/xid"
-	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
@@ -30,7 +29,7 @@ func (c *VPCFlowLogLogTable) Identifier() string {
 // GetRowSchema implements table.Table
 // return an instance of the row struct
 func (c *VPCFlowLogLogTable) GetRowSchema() any {
-	return aws_types.AwsVpcFlowLog{}
+	return AwsVpcFlowLog{}
 }
 
 func (c *VPCFlowLogLogTable) GetConfigSchema() parse.Config {
@@ -44,7 +43,7 @@ func (c *VPCFlowLogLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 	if !ok {
 		return nil, fmt.Errorf("invalid row type %T, expected string", row)
 	}
-	record, err := aws_types.FlowLogFromString(rowString, c.Config.Fields)
+	record, err := FlowLogFromString(rowString, c.Config.Fields)
 
 	if err != nil {
 		return nil, fmt.Errorf("error parsing row: %s", err)

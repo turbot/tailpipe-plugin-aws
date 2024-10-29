@@ -1,4 +1,4 @@
-package aws_types
+package tables
 
 import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -43,6 +43,7 @@ type AWSCloudTrail struct {
 	EdgeDeviceDetails            *helpers.JSONString `json:"edgeDeviceDetails,omitempty"`
 	TLSDetails                   *TLSDetails         `json:"tlsDetails,omitempty"`
 }
+
 type UserIdentity struct {
 	Type             string          `json:"type"`
 	PrincipalId      *string         `json:"principalId,omitempty"`

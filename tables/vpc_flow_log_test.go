@@ -1,4 +1,4 @@
-package aws_types
+package tables
 
 import (
 	"github.com/turbot/pipe-fittings/utils"

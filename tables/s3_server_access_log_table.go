@@ -1,4 +1,4 @@
-package aws_table
+package tables
 
 import (
 	"fmt"
@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
-	"github.com/turbot/tailpipe-plugin-aws/aws_types"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -29,7 +28,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 }
 
 func (c *S3ServerAccessLogTable) GetRowSchema() any {
-	return &aws_types.AwsS3ServerAccessLog{}
+	return &AwsS3ServerAccessLog{}
 }
 
 func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
@@ -39,7 +38,7 @@ func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
 func (c *S3ServerAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
-		artifact_source.WithArtifactMapper(aws_source.NewS3ServerAccessLogMapper()),
+		artifact_source.WithArtifactMapper(mappers.NewS3ServerAccessLogMapper()),
 	}
 }
 
@@ -53,7 +52,7 @@ func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enri
 	// TODO: #validate ensure we have a timestamp field
 
 	// Build record and add any source enrichment fields
-	var record aws_types.AwsS3ServerAccessLog
+	var record AwsS3ServerAccessLog
 	if sourceEnrichmentFields != nil {
 		record.CommonFields = *sourceEnrichmentFields
 	}

@@ -1,4 +1,4 @@
-package aws_table
+package tables
 
 import (
 	"fmt"
@@ -7,8 +7,7 @@ import (
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
-	"github.com/turbot/tailpipe-plugin-aws/aws_types"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/util"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
@@ -40,7 +39,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 		// if the source is an artifact source, we need a mapper
 		// NOTE: WithArtifactMapper option will ONLY apply if the RowSource IS an ArtifactSource
 		// TODO #design we may be able to remove the need for this if we can handle JSON generically
-		artifact_source.WithArtifactMapper(aws_source.NewCloudtrailMapper()),
+		artifact_source.WithArtifactMapper(mappers.NewCloudtrailMapper()),
 	}
 
 	switch sourceType {
@@ -58,7 +57,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 
 // GetRowSchema implements table.Table
 func (c *CloudTrailLogTable) GetRowSchema() any {
-	return aws_types.AWSCloudTrail{}
+	return AWSCloudTrail{}
 }
 
 func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
@@ -68,7 +67,7 @@ func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
 // EnrichRow implements table.Table
 func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
-	record, ok := row.(aws_types.AWSCloudTrail)
+	record, ok := row.(AWSCloudTrail)
 	if !ok {
 		return nil, fmt.Errorf("invalid row type %T, expected AWSCloudTrail", row)
 	}

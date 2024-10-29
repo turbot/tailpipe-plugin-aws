@@ -1,4 +1,4 @@
-package aws_table
+package tables
 
 type S3ServerAccessLogTableConfig struct {
 }
