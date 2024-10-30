@@ -1,14 +1,14 @@
-package aws_table
+package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
-	"github.com/turbot/tailpipe-plugin-aws/aws_types"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -30,7 +30,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 }
 
 func (c *ElbAccessLogTable) GetRowSchema() any {
-	return &aws_types.AwsElbAccessLog{}
+	return &models.AwsElbAccessLog{}
 }
 
 func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
@@ -40,7 +40,7 @@ func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
 func (c *ElbAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
-		artifact_source.WithArtifactMapper(aws_source.NewElbAccessLogMapper()),
+		artifact_source.WithArtifactMapper(mappers.NewElbAccessLogMapper()),
 	}
 }
 
@@ -54,7 +54,7 @@ func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichmen
 	// TODO: #validate ensure we have a timestamp field
 
 	// Build record and add any source enrichment fields
-	var record aws_types.AwsElbAccessLog
+	var record models.AwsElbAccessLog
 	if sourceEnrichmentFields != nil {
 		record.CommonFields = *sourceEnrichmentFields
 	}

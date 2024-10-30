@@ -1,9 +1,10 @@
 package main
 
 import (
+	"log/slog"
+
 	"github.com/turbot/tailpipe-plugin-aws/aws"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
-	"log/slog"
 )
 
 func main() {
@@ -12,6 +13,6 @@ func main() {
 	})
 
 	if err != nil {
-		slog.Error("Error starting plugin", "error", err)
+		slog.Error("Error starting aws", "error", err)
 	}
 }

@@ -1,13 +1,13 @@
-package aws_table
+package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
-	"github.com/turbot/tailpipe-plugin-aws/aws_types"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -36,7 +36,7 @@ func (c *LambdaLogTable) GetSourceOptions(sourceType string) []row_source.RowSou
 }
 
 func (c *LambdaLogTable) GetRowSchema() any {
-	return &aws_types.AwsLambdaLog{}
+	return &models.AwsLambdaLog{}
 }
 
 func (c *LambdaLogTable) GetConfigSchema() parse.Config {
@@ -49,7 +49,7 @@ func (c *LambdaLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.C
 		return nil, fmt.Errorf("invalid row type: %T, expected string", row)
 	}
 
-	var record aws_types.AwsLambdaLog
+	var record models.AwsLambdaLog
 	if sourceEnrichmentFields != nil {
 		record.CommonFields = *sourceEnrichmentFields
 

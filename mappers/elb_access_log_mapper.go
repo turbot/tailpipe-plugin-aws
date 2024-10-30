@@ -1,4 +1,4 @@
-package aws_source
+package mappers
 
 import (
 	"context"

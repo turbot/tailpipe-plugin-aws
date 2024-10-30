@@ -1,15 +1,14 @@
-package aws_table
+package tables
 
 import (
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/aws_source"
-	"github.com/turbot/tailpipe-plugin-aws/aws_types"
-	"github.com/turbot/tailpipe-plugin-aws/util"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -40,7 +39,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 		// if the source is an artifact source, we need a mapper
 		// NOTE: WithArtifactMapper option will ONLY apply if the RowSource IS an ArtifactSource
 		// TODO #design we may be able to remove the need for this if we can handle JSON generically
-		artifact_source.WithArtifactMapper(aws_source.NewCloudtrailMapper()),
+		artifact_source.WithArtifactMapper(mappers.NewCloudtrailMapper()),
 	}
 
 	switch sourceType {
@@ -58,7 +57,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 
 // GetRowSchema implements table.Table
 func (c *CloudTrailLogTable) GetRowSchema() any {
-	return aws_types.AWSCloudTrail{}
+	return models.AWSCloudTrail{}
 }
 
 func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
@@ -68,7 +67,7 @@ func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
 // EnrichRow implements table.Table
 func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// row must be an AWSCloudTrail
-	record, ok := row.(aws_types.AWSCloudTrail)
+	record, ok := row.(models.AWSCloudTrail)
 	if !ok {
 		return nil, fmt.Errorf("invalid row type %T, expected AWSCloudTrail", row)
 	}
@@ -89,7 +88,7 @@ func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 	}
 	for _, resource := range record.Resources {
 		if resource.ARN != nil {
-			newAkas := util.AwsAkasFromArn(*resource.ARN)
+			newAkas := awsAkasFromArn(*resource.ARN)
 			record.TpAkas = append(record.TpAkas, newAkas...)
 		}
 	}
@@ -111,4 +110,50 @@ func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichme
 	record.TpDate = time.UnixMilli(int64(record.EventTime)).Format("2006-01-02")
 
 	return record, nil
+}
+
+// awsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
+// * the full arn
+// * the account ID
+// * EC2 instance ID
+// * S3 bucket name
+// * EC2 volume ID
+
+func awsAkasFromArn(arn string) []string {
+	// Split the ARN into its components.
+	parts := strings.Split(arn, ":")
+	if len(parts) < 6 {
+		return []string{}
+	}
+
+	// Extract the service name and the resource descriptor.
+	service := parts[2]
+	resourceDescriptor := parts[5]
+	accountID := parts[4]
+
+	// Initialize a slice to hold the key elements.
+	keyElements := []string{arn}
+	if accountID != "" {
+		keyElements = append(keyElements, accountID)
+	}
+
+	// Handle different services.
+	switch service {
+	case "s3":
+		// For S3, the resource descriptor is the bucket name.
+		keyElements = append(keyElements, resourceDescriptor)
+	case "ec2":
+		// For EC2, we need to further parse the resource descriptor.
+		if strings.HasPrefix(resourceDescriptor, "instance/") {
+			// Extract the instance ID for EC2 instances.
+			instanceID := strings.TrimPrefix(resourceDescriptor, "instance/")
+			keyElements = append(keyElements, instanceID)
+		} else if strings.HasPrefix(resourceDescriptor, "volume/") {
+			// Extract the volume ID for EC2 volumes.
+			volumeID := strings.TrimPrefix(resourceDescriptor, "volume/")
+			keyElements = append(keyElements, volumeID)
+		}
+	}
+
+	return keyElements
 }
