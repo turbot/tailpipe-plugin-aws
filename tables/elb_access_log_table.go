@@ -2,26 +2,27 @@ package tables
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/models"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
+	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 type ElbAccessLogTable struct {
-	table.TableBase[*ElbAccessLogTableConfig]
+	table.TableBase[*ElbAccessLogTableConfig, *config.AwsConnection]
 }
 
 func NewElbAccessLogTable() table.Table {
@@ -40,9 +41,9 @@ func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
 	return &ElbAccessLogTableConfig{}
 }
 
-func (c *ElbAccessLogTable) Init(ctx context.Context, tableConfigData *parse.Data, collectionStateJSON json.RawMessage, sourceConfigData *parse.Data) error {
+func (c *ElbAccessLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
-	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
+	if err := c.TableBase.Init(ctx, connectionSchemaProvider, req); err != nil {
 		return err
 	}
 

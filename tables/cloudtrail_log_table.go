@@ -2,16 +2,16 @@ package tables
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
-	"github.com/turbot/tailpipe-plugin-aws/models"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/tailpipe-plugin-aws/config"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
+	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -19,12 +19,13 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 // CloudTrailLogTable - table for CloudTrail logs
 type CloudTrailLogTable struct {
 	// all tables must embed table.TableBase
-	table.TableBase[*CloudTrailLogTableConfig]
+	table.TableBase[*CloudTrailLogTableConfig, *config.AwsConnection]
 }
 
 func NewCloudTrailLogTable() table.Table {
@@ -36,9 +37,9 @@ func (c *CloudTrailLogTable) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-func (c *CloudTrailLogTable) Init(ctx context.Context, tableConfigData *parse.Data, collectionStateJSON json.RawMessage, sourceConfigData *parse.Data) error {
+func (c *CloudTrailLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
-	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
+	if err := c.TableBase.Init(ctx, connectionSchemaProvider, req); err != nil {
 		return err
 	}
 

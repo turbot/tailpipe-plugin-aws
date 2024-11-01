@@ -2,12 +2,13 @@ package tables
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/config"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -18,7 +19,7 @@ import (
 
 type LambdaLogTable struct {
 	// all tables must embed table.TableBase
-	table.TableBase[*LambdaLogTableConfig]
+	table.TableBase[*LambdaLogTableConfig, *config.AwsConnection]
 }
 
 func NewLambdaLogTable() table.Table {

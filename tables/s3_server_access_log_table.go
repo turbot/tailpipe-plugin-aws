@@ -2,24 +2,25 @@ package tables
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/rs/xid"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"strconv"
 	"time"
 
+	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 type S3ServerAccessLogTable struct {
-	table.TableBase[*S3ServerAccessLogTableConfig]
+	table.TableBase[*S3ServerAccessLogTableConfig, *config.AwsConnection]
 }
 
 func NewS3ServerAccessLogTable() table.Table {
@@ -38,9 +39,9 @@ func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
 	return &S3ServerAccessLogTableConfig{}
 }
 
-func (c *S3ServerAccessLogTable) Init(ctx context.Context, tableConfigData *parse.Data, collectionStateJSON json.RawMessage, sourceConfigData *parse.Data) error {
+func (c *S3ServerAccessLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
-	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
+	if err := c.TableBase.Init(ctx, connectionSchemaProvider, req); err != nil {
 		return err
 	}
 

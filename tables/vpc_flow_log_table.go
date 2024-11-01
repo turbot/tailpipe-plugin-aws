@@ -2,10 +2,11 @@ package tables
 
 import (
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/models"
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-aws/config"
+	"github.com/turbot/tailpipe-plugin-aws/models"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
@@ -15,7 +16,7 @@ import (
 // VPCFlowLogLogTable - table for VPC Flow Logs
 type VPCFlowLogLogTable struct {
 	// all tables must embed table.TableBase
-	table.TableBase[*VpcFlowLogTableConfig]
+	table.TableBase[*VpcFlowLogTableConfig, *config.AwsConnection]
 }
 
 func NewVPCFlowLogLogTable() table.Table {
