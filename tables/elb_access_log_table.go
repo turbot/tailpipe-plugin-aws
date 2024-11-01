@@ -1,6 +1,8 @@
 package tables
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strconv"
@@ -37,10 +39,24 @@ func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
 	return &ElbAccessLogTableConfig{}
 }
 
+func (c *ElbAccessLogTable) Init(ctx context.Context, tableConfigData *parse.Data, collectionStateJSON json.RawMessage, sourceConfigData *parse.Data) error {
+	// call base init
+	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
+		return err
+	}
+	// TODO switch on source
+	// TODO KAI make sure tables add NewCloudwatchMapper if needed
+	// NOTE: add the cloudwatch mapper to ensure rows are in correct format
+	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
+
+	// if the source is an artifact source, we need a mapper
+	c.Mapper = mappers.NewElbAccessLogMapper()
+	return nil
+}
+
 func (c *ElbAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
 	return []row_source.RowSourceOption{
 		artifact_source.WithRowPerLine(),
-		artifact_source.WithArtifactMapper(mappers.NewElbAccessLogMapper()),
 	}
 }
 

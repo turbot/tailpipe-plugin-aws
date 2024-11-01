@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/satyrius/gonx"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
@@ -27,17 +26,16 @@ func (c *ElbAccessLogMapper) Identifier() string {
 	return "elb_access_log_mapper"
 }
 
-func (c *ElbAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*types.RowData, error) {
-	var out []*types.RowData
+func (c *ElbAccessLogMapper) Map(ctx context.Context, a any) ([]any, error) {
+	var out []any
 	var parsed *gonx.Entry
 	var err error
 
 	// validate input type is string
-	input, ok := a.Data.(string)
+	input, ok := a.(string)
 	if !ok {
-		return nil, fmt.Errorf("expected string, got %T", a.Data)
+		return nil, fmt.Errorf("expected string, got %T", a)
 	}
-	inputMetadata := a.Metadata
 
 	// parse log line
 	parsed, err = c.fullParser.ParseString(input)
@@ -51,7 +49,7 @@ func (c *ElbAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*type
 	fields := make(map[string]string)
 
 	fields = parsed.Fields()
-	out = append(out, types.NewData(fields, types.WithMetadata(inputMetadata)))
+	out = append(out, fields)
 
 	return out, nil
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/satyrius/gonx"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 const s3ServerAccessLogFormat = `$bucket_owner $bucket [$timestamp] $remote_ip $requester $request_id $operation $key "$request_uri" $http_status $error_code $bytes_sent $object_size $total_time $turn_around_time "$referer" "$user_agent" $version_id $host_id $signature_version $cipher_suite $authentication_type $host_header $tls_version $access_point_arn $acl_required`
@@ -27,17 +26,16 @@ func (c *S3ServerAccessLogMapper) Identifier() string {
 	return "s3_server_access_log_mapper"
 }
 
-func (c *S3ServerAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]*types.RowData, error) {
-	var out []*types.RowData
+func (c *S3ServerAccessLogMapper) Map(ctx context.Context, a any) ([]any, error) {
+	var out []any
 	var parsed *gonx.Entry
 	var err error
 
 	// validate input type is string
-	input, ok := a.Data.(string)
+	input, ok := a.(string)
 	if !ok {
-		return nil, fmt.Errorf("expected string, got %T", a.Data)
+		return nil, fmt.Errorf("expected string, got %T", a)
 	}
-	inputMetadata := a.Metadata
 
 	// parse log line
 	parsed, err = c.fullParser.ParseString(input)
@@ -49,9 +47,8 @@ func (c *S3ServerAccessLogMapper) Map(ctx context.Context, a *types.RowData) ([]
 	}
 
 	fields := make(map[string]string)
-
 	fields = parsed.Fields()
-	out = append(out, types.NewData(fields, types.WithMetadata(inputMetadata)))
+	out = append(out, fields)
 
 	return out, nil
 }

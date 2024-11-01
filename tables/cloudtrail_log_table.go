@@ -1,6 +1,8 @@
 package tables
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-aws/models"
 	"strings"
@@ -33,14 +35,25 @@ func (c *CloudTrailLogTable) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
+func (c *CloudTrailLogTable) Init(ctx context.Context, tableConfigData *parse.Data, collectionStateJSON json.RawMessage, sourceConfigData *parse.Data) error {
+	// call base init
+	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
+		return err
+	}
+	// TODO switch on source
+
+	// TODO KAI make sure tables add NewCloudwatchMapper if needed
+	// NOTE: add the cloudwatch mapper to ensure rows are in correct format
+	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
+
+	// if the source is an artifact source, we need a mapper
+	c.Mapper = mappers.NewCloudtrailMapper()
+	return nil
+}
+
 // GetSourceOptions returns any options which should be passed to the given source type
 func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
-	var opts = []row_source.RowSourceOption{
-		// if the source is an artifact source, we need a mapper
-		// NOTE: WithArtifactMapper option will ONLY apply if the RowSource IS an ArtifactSource
-		// TODO #design we may be able to remove the need for this if we can handle JSON generically
-		artifact_source.WithArtifactMapper(mappers.NewCloudtrailMapper()),
-	}
+	var opts []row_source.RowSourceOption
 
 	switch sourceType {
 	case artifact_source.AwsS3BucketSourceIdentifier:
