@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 )
 
-// CloudtrailMapper is a Mappers that receives AWSCloudTrailBatch objects and extracts AWSCloudTrail records from them
+// CloudtrailMapper is a mapper that receives AWSCloudTrailBatch objects and extracts AWSCloudTrail records from them
 type CloudtrailMapper struct {
 }
 
