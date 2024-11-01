@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"strconv"
 	"strings"
 	"time"
@@ -44,14 +45,20 @@ func (c *ElbAccessLogTable) Init(ctx context.Context, tableConfigData *parse.Dat
 	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
 		return err
 	}
+
+	c.setMappers()
+	return nil
+}
+
+func (c *ElbAccessLogTable) setMappers() {
 	// TODO switch on source
+
 	// TODO KAI make sure tables add NewCloudwatchMapper if needed
 	// NOTE: add the cloudwatch mapper to ensure rows are in correct format
 	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
 
 	// if the source is an artifact source, we need a mapper
-	c.Mapper = mappers.NewElbAccessLogMapper()
-	return nil
+	c.Mappers = []artifact_mapper.Mapper{mappers.NewElbAccessLogMapper()}
 }
 
 func (c *ElbAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {

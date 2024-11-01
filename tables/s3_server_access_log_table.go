@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/rs/xid"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"strconv"
 	"time"
 
@@ -42,14 +43,20 @@ func (c *S3ServerAccessLogTable) Init(ctx context.Context, tableConfigData *pars
 	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
 		return err
 	}
+
+	c.setMappers()
+	return nil
+}
+
+func (c *S3ServerAccessLogTable) setMappers() {
 	// TODO switch on source
+
 	// TODO KAI make sure tables add NewCloudwatchMapper if needed
 	// NOTE: add the cloudwatch mapper to ensure rows are in correct format
 	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
 
 	// if the source is an artifact source, we need a mapper
-	c.Mapper = mappers.NewS3ServerAccessLogMapper()
-	return nil
+	c.Mappers = []artifact_mapper.Mapper{mappers.NewS3ServerAccessLogMapper()}
 }
 
 func (c *S3ServerAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {

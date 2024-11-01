@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -40,6 +41,12 @@ func (c *CloudTrailLogTable) Init(ctx context.Context, tableConfigData *parse.Da
 	if err := c.TableBase.Init(ctx, tableConfigData, collectionStateJSON, sourceConfigData); err != nil {
 		return err
 	}
+
+	c.setMappers()
+	return nil
+}
+
+func (c *CloudTrailLogTable) setMappers() {
 	// TODO switch on source
 
 	// TODO KAI make sure tables add NewCloudwatchMapper if needed
@@ -47,8 +54,7 @@ func (c *CloudTrailLogTable) Init(ctx context.Context, tableConfigData *parse.Da
 	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
 
 	// if the source is an artifact source, we need a mapper
-	c.Mapper = mappers.NewCloudtrailMapper()
-	return nil
+	c.Mappers = []artifact_mapper.Mapper{mappers.NewCloudtrailMapper()}
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
