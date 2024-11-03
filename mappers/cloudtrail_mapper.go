@@ -15,7 +15,7 @@ type CloudtrailMapper struct {
 }
 
 // NewCloudtrailMapper creates a new CloudtrailMapper
-func NewCloudtrailMapper() artifact_mapper.Mapper {
+func NewCloudtrailMapper() artifact_mapper.Mapper[rows.CloudTrailLog] {
 	return &CloudtrailMapper{}
 }
 
@@ -24,7 +24,7 @@ func (c *CloudtrailMapper) Identifier() string {
 }
 
 // Map casts the data item as an CloudTrailBatch and returns the CloudTrailLog records
-func (c *CloudtrailMapper) Map(_ context.Context, a any) ([]any, error) {
+func (c *CloudtrailMapper) Map(_ context.Context, a any) ([]rows.CloudTrailLog, error) {
 	// the expected input type is a JSON byte[] deserializable to CloudTrailBatch
 	jsonBytes, ok := a.([]byte)
 	if !ok {
@@ -39,7 +39,7 @@ func (c *CloudtrailMapper) Map(_ context.Context, a any) ([]any, error) {
 	}
 
 	slog.Debug("CloudwatchMapper", "record count", len(log.Records))
-	var res = make([]any, len(log.Records))
+	var res = make([]rows.CloudTrailLog, len(log.Records))
 	for i, record := range log.Records {
 		res[i] = record
 	}

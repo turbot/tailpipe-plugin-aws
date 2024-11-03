@@ -26,8 +26,8 @@ func (c *ElbAccessLogMapper) Identifier() string {
 	return "elb_access_log_mapper"
 }
 
-func (c *ElbAccessLogMapper) Map(ctx context.Context, a any) ([]any, error) {
-	var out []any
+func (c *ElbAccessLogMapper) Map(ctx context.Context, a any) ([]map[string]string, error) {
+	var out []map[string]string
 	var parsed *gonx.Entry
 	var err error
 

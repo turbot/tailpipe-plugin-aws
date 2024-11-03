@@ -26,8 +26,8 @@ func (c *S3ServerAccessLogMapper) Identifier() string {
 	return "s3_server_access_log_mapper"
 }
 
-func (c *S3ServerAccessLogMapper) Map(ctx context.Context, a any) ([]any, error) {
-	var out []any
+func (c *S3ServerAccessLogMapper) Map(ctx context.Context, a any) ([]map[string]string, error) {
+	var out []map[string]string
 	var parsed *gonx.Entry
 	var err error
 

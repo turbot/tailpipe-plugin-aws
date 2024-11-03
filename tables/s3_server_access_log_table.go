@@ -10,7 +10,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -58,7 +57,7 @@ func (c *S3ServerAccessLogTable) initMappers() {
 	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
 
 	// if the source is an artifact source, we need a mapper
-	c.Mappers = []artifact_mapper.Mapper{mappers.NewS3ServerAccessLogMapper()}
+	c.Mapper = mappers.NewS3ServerAccessLogMapper()
 }
 
 func (c *S3ServerAccessLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
