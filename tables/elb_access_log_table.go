@@ -10,7 +10,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
-	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -22,7 +22,7 @@ import (
 )
 
 type ElbAccessLogTable struct {
-	table.TableBase[*ElbAccessLogTableConfig, *config.AwsConnection]
+	table.TableImpl[map[string]string, *ElbAccessLogTableConfig, *config.AwsConnection]
 }
 
 func NewElbAccessLogTable() table.Table {
@@ -34,7 +34,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 }
 
 func (c *ElbAccessLogTable) GetRowSchema() any {
-	return &models.AwsElbAccessLog{}
+	return &rows.AwsElbAccessLog{}
 }
 
 func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
@@ -43,15 +43,15 @@ func (c *ElbAccessLogTable) GetConfigSchema() parse.Config {
 
 func (c *ElbAccessLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
-	if err := c.TableBase.Init(ctx, connectionSchemaProvider, req); err != nil {
+	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
 		return err
 	}
 
-	c.setMappers()
+	c.initMappers()
 	return nil
 }
 
-func (c *ElbAccessLogTable) setMappers() {
+func (c *ElbAccessLogTable) initMappers() {
 	// TODO switch on source
 
 	// TODO KAI make sure tables add NewCloudwatchMapper if needed
@@ -68,75 +68,69 @@ func (c *ElbAccessLogTable) GetSourceOptions(sourceType string) []row_source.Row
 	}
 }
 
-func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
-	// short-circuit for unexpected row type
-	rawRecord, ok := row.(map[string]string)
-	if !ok {
-		return nil, fmt.Errorf("invalid row type: %T, expected map[string]string", row)
-	}
-
+func (c *ElbAccessLogTable) EnrichRow(rawRecord map[string]string, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// Build record and add any source enrichment fields
-	var record models.AwsElbAccessLog
+	var row rows.AwsElbAccessLog
 	if sourceEnrichmentFields != nil {
-		record.CommonFields = *sourceEnrichmentFields
+		row.CommonFields = *sourceEnrichmentFields
 	}
 
 	for key, value := range rawRecord {
 		switch key {
 		case "type":
-			record.Type = value
+			row.Type = value
 		case "timestamp":
 			ts, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing timestamp: %w", err)
 			}
-			record.Timestamp = ts
-			record.TpTimestamp = helpers.UnixMillis(ts.UnixNano() / int64(time.Millisecond))
+			row.Timestamp = ts
+			row.TpTimestamp = helpers.UnixMillis(ts.UnixNano() / int64(time.Millisecond))
 		case "elb":
-			record.Elb = value
+			row.Elb = value
 		case "client":
 			if value != "-" && strings.Contains(value, ":") {
 				ip := strings.Split(value, ":")[0]
-				record.ClientIP = ip
-				record.TpSourceIP = &ip
-				record.TpIps = append(record.TpIps, ip)
-				record.ClientPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
+				row.ClientIP = ip
+				row.TpSourceIP = &ip
+				row.TpIps = append(row.TpIps, ip)
+				row.ClientPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
 			}
 		case "target":
 			if value != "-" && strings.Contains(value, ":") {
 				ip := strings.Split(value, ":")[0]
-				record.TargetIP = &ip
-				record.TpDestinationIP = &ip
-				record.TpIps = append(record.TpIps, ip)
-				record.TargetPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
+				row.TargetIP = &ip
+				row.TpDestinationIP = &ip
+				row.TpIps = append(row.TpIps, ip)
+				row.TargetPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
 			}
 		case "request_processing_time":
 			rpt, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing request_processing_time: %w", err)
 			}
-			record.RequestProcessingTime = rpt
+			row.RequestProcessingTime = rpt
 		case "target_processing_time":
 			tpt, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing target_processing_time: %w", err)
 			}
-			record.TargetProcessingTime = tpt
+			row.TargetProcessingTime = tpt
 		case "response_processing_time":
 			rpt, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing response_processing_time: %w", err)
 			}
-			record.ResponseProcessingTime = rpt
+			row.ResponseProcessingTime = rpt
 		case "elb_status_code":
 			if value != "-" {
 				esc, err := strconv.Atoi(value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing elb_status_code: %w", err)
 				}
-				record.ElbStatusCode = &esc
+				row.ElbStatusCode = &esc
 			}
 		case "target_status_code":
 			if value != "-" {
@@ -144,7 +138,7 @@ func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichmen
 				if err != nil {
 					return nil, fmt.Errorf("error parsing target_status_code: %w", err)
 				}
-				record.TargetStatusCode = &tsc
+				row.TargetStatusCode = &tsc
 			}
 		case "received_bytes":
 			if value != "-" {
@@ -152,7 +146,7 @@ func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichmen
 				if err != nil {
 					return nil, fmt.Errorf("error parsing received_bytes: %w", err)
 				}
-				record.ReceivedBytes = &rb
+				row.ReceivedBytes = &rb
 			}
 		case "sent_bytes":
 			if value != "-" {
@@ -160,72 +154,72 @@ func (c *ElbAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichmen
 				if err != nil {
 					return nil, fmt.Errorf("error parsing sent_bytes: %w", err)
 				}
-				record.SentBytes = &sb
+				row.SentBytes = &sb
 			}
 		case "request":
-			record.Request = value
+			row.Request = value
 		case "user_agent":
-			record.UserAgent = value
+			row.UserAgent = value
 		case "ssl_cipher":
-			record.SslCipher = value
+			row.SslCipher = value
 		case "ssl_protocol":
-			record.SslProtocol = value
+			row.SslProtocol = value
 		case "target_group_arn":
-			record.TargetGroupArn = value
+			row.TargetGroupArn = value
 		case "trace_id":
-			record.TraceID = value
+			row.TraceID = value
 		case "domain_name":
-			record.DomainName = value
-			record.TpDomains = append(record.TpDomains, value)
+			row.DomainName = value
+			row.TpDomains = append(row.TpDomains, value)
 		case "chosen_cert_arn":
-			record.ChosenCertArn = value
+			row.ChosenCertArn = value
 		case "matched_rule_priority":
 			if value != "-" {
 				mrp, err := strconv.Atoi(value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing matched_rule_priority: %w", err)
 				}
-				record.MatchedRulePriority = mrp
+				row.MatchedRulePriority = mrp
 			}
 		case "request_creation_time":
 			rct, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing request_creation_time: %w", err)
 			}
-			record.RequestCreationTime = rct
+			row.RequestCreationTime = rct
 		case "actions_executed":
-			record.ActionsExecuted = value
+			row.ActionsExecuted = value
 		case "redirect_url":
-			record.RedirectURL = &value
+			row.RedirectURL = &value
 		case "error_reason":
-			record.ErrorReason = &value
+			row.ErrorReason = &value
 		case "target_list":
-			record.TargetList = &value
+			row.TargetList = &value
 		case "target_status_list":
-			record.TargetStatusList = &value
+			row.TargetStatusList = &value
 		case "classification":
-			record.Classification = &value
+			row.Classification = &value
 		case "classification_reason":
-			record.ClassificationReason = &value
+			row.ClassificationReason = &value
 		case "conn_trace_id":
-			record.ConnTraceID = value
+			row.ConnTraceID = value
 		}
 
 	}
 
 	// Record standardization
-	record.TpID = xid.New().String()
-	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
-	record.TpSourceType = "aws_elb_access_log" // TODO: #refactor move to source?
+	row.TpID = xid.New().String()
+	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpSourceType = "aws_elb_access_log" // TODO: #refactor move to source?
 
 	// Hive Fields
-	record.TpPartition = c.Identifier()
-	if record.TpIndex == "" {
-		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
+	row.TpPartition = c.Identifier()
+	if row.TpIndex == "" {
+		row.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
 
 	// convert to date in format yy-mm-dd
-	record.TpDate = record.Timestamp.Format("2006-01-02")
+	row.TpDate = row.Timestamp.Format("2006-01-02")
 
-	return record, nil
+	return row, nil
 }

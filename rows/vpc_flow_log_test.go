@@ -1,4 +1,4 @@
-package models
+package rows
 
 import (
 	"github.com/turbot/pipe-fittings/utils"

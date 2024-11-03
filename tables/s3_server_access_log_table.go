@@ -3,12 +3,13 @@ package tables
 import (
 	"context"
 	"fmt"
-	"github.com/rs/xid"
 	"strconv"
 	"time"
 
+	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
+	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -20,7 +21,7 @@ import (
 )
 
 type S3ServerAccessLogTable struct {
-	table.TableBase[*S3ServerAccessLogTableConfig, *config.AwsConnection]
+	table.TableImpl[map[string]string, *S3ServerAccessLogTableConfig, *config.AwsConnection]
 }
 
 func NewS3ServerAccessLogTable() table.Table {
@@ -32,7 +33,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 }
 
 func (c *S3ServerAccessLogTable) GetRowSchema() any {
-	return &AwsS3ServerAccessLog{}
+	return &rows.AwsS3ServerAccessLog{}
 }
 
 func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
@@ -41,15 +42,15 @@ func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
 
 func (c *S3ServerAccessLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
-	if err := c.TableBase.Init(ctx, connectionSchemaProvider, req); err != nil {
+	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
 		return err
 	}
 
-	c.setMappers()
+	c.initMappers()
 	return nil
 }
 
-func (c *S3ServerAccessLogTable) setMappers() {
+func (c *S3ServerAccessLogTable) initMappers() {
 	// TODO switch on source
 
 	// TODO KAI make sure tables add NewCloudwatchMapper if needed
@@ -66,51 +67,45 @@ func (c *S3ServerAccessLogTable) GetSourceOptions(sourceType string) []row_sourc
 	}
 }
 
-func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
-	// short-circuit for unexpected row type
-	rawRecord, ok := row.(map[string]string)
-	if !ok {
-		return nil, fmt.Errorf("invalid row type: %T, expected map[string]string", row)
-	}
-
+func (c *S3ServerAccessLogTable) EnrichRow(rawRow map[string]string, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// TODO: #validate ensure we have a timestamp field
 
-	// Build record and add any source enrichment fields
-	var record AwsS3ServerAccessLog
+	// Build row and add any source enrichment fields
+	var row rows.AwsS3ServerAccessLog
 	if sourceEnrichmentFields != nil {
-		record.CommonFields = *sourceEnrichmentFields
+		row.CommonFields = *sourceEnrichmentFields
 	}
 
-	for key, value := range rawRecord {
+	for key, value := range rawRow {
 		switch key {
 		case "bucket_owner":
-			record.BucketOwner = value
+			row.BucketOwner = value
 		case "bucket":
-			record.Bucket = value
+			row.Bucket = value
 		case "timestamp":
 			ts, err := time.Parse("02/Jan/2006:15:04:05 -0700", value)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing timestamp: %w", err)
 			}
-			record.Timestamp = ts
-			record.TpTimestamp = helpers.UnixMillis(ts.UnixNano() / int64(time.Millisecond))
+			row.Timestamp = ts
+			row.TpTimestamp = helpers.UnixMillis(ts.UnixNano() / int64(time.Millisecond))
 		case "remote_ip":
-			record.RemoteIP = value
-			record.TpSourceIP = &value
-			record.TpIps = append(record.TpIps, value)
+			row.RemoteIP = value
+			row.TpSourceIP = &value
+			row.TpIps = append(row.TpIps, value)
 		case "requester":
-			record.Requester = value
+			row.Requester = value
 		case "request_id":
-			record.RequestID = value
+			row.RequestID = value
 		case "operation":
-			record.Operation = value
+			row.Operation = value
 		case "key":
 			if value != "-" {
-				record.Key = &value
+				row.Key = &value
 			}
 		case "request_uri":
 			if value != "-" {
-				record.RequestURI = &value
+				row.RequestURI = &value
 			}
 		case "http_status":
 			if value != "-" {
@@ -118,11 +113,11 @@ func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enri
 				if err != nil {
 					return nil, fmt.Errorf("error parsing http_status: %w", err)
 				}
-				record.HTTPStatus = &hs
+				row.HTTPStatus = &hs
 			}
 		case "error_code":
 			if value != "-" {
-				record.ErrorCode = &value
+				row.ErrorCode = &value
 			}
 		case "bytes_sent":
 			if value != "-" {
@@ -130,7 +125,7 @@ func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enri
 				if err != nil {
 					return nil, fmt.Errorf("error parsing bytes_sent: %w", err)
 				}
-				record.BytesSent = &bs
+				row.BytesSent = &bs
 			}
 		case "object_size":
 			if value != "-" {
@@ -138,7 +133,7 @@ func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enri
 				if err != nil {
 					return nil, fmt.Errorf("error parsing object_size: %w", err)
 				}
-				record.ObjectSize = &os
+				row.ObjectSize = &os
 			}
 		case "total_time":
 			if value != "-" {
@@ -146,7 +141,7 @@ func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enri
 				if err != nil {
 					return nil, fmt.Errorf("error parsing total_time: %w", err)
 				}
-				record.TotalTime = &tt
+				row.TotalTime = &tt
 			}
 		case "turn_around_time":
 			if value != "-" {
@@ -154,71 +149,71 @@ func (c *S3ServerAccessLogTable) EnrichRow(row any, sourceEnrichmentFields *enri
 				if err != nil {
 					return nil, fmt.Errorf("error parsing turn_around_time: %w", err)
 				}
-				record.TurnAroundTime = &tat
+				row.TurnAroundTime = &tat
 			}
 		case "referer":
 			if value != "-" {
-				record.Referer = &value
+				row.Referer = &value
 			}
 		case "user_agent":
 			if value != "-" {
-				record.UserAgent = &value
+				row.UserAgent = &value
 			}
 		case "version_id":
 			if value != "-" {
-				record.VersionID = &value
+				row.VersionID = &value
 			}
 		case "host_id":
 			if value != "-" {
-				record.HostID = &value
+				row.HostID = &value
 			}
 		case "signature_version":
 			if value != "-" {
-				record.SignatureVersion = &value
+				row.SignatureVersion = &value
 			}
 		case "cipher_suite":
 			if value != "-" {
-				record.CipherSuite = &value
+				row.CipherSuite = &value
 			}
 		case "authentication_type":
 			if value != "-" {
-				record.AuthenticationType = &value
+				row.AuthenticationType = &value
 			}
 		case "host_header":
 			if value != "-" {
-				record.HostHeader = &value
+				row.HostHeader = &value
 			}
 		case "tls_version":
 			if value != "-" {
-				record.TLSVersion = &value
+				row.TLSVersion = &value
 			}
 		case "access_point_arn":
 			if value != "-" {
-				record.AccessPointArn = &value
+				row.AccessPointArn = &value
 			}
 		case "acl_required":
 			if value != "-" {
 				b := true
-				record.AclRequired = &b
+				row.AclRequired = &b
 			} else {
 				b := false
-				record.AclRequired = &b
+				row.AclRequired = &b
 			}
 		}
 	}
 
 	// Record standardization
-	record.TpID = xid.New().String()
-	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
-	record.TpSourceType = "aws.s3_server_access_log"
+	row.TpID = xid.New().String()
+	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpSourceType = "aws.s3_server_access_log"
 
 	// Hive Fields
-	record.TpPartition = c.Identifier()
-	if record.TpIndex == "" {
-		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
+	row.TpPartition = c.Identifier()
+	if row.TpIndex == "" {
+		row.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
 	// convert to date in format yy-mm-dd
-	record.TpDate = record.Timestamp.Format("2006-01-02")
+	row.TpDate = row.Timestamp.Format("2006-01-02")
 
-	return record, nil
+	return row, nil
 }

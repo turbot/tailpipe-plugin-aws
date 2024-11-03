@@ -2,7 +2,6 @@ package tables
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
-	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
@@ -22,10 +21,10 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
-// CloudTrailLogTable - table for CloudTrail logs
+// CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct {
-	// all tables must embed table.TableBase
-	table.TableBase[*CloudTrailLogTableConfig, *config.AwsConnection]
+	// all tables must embed table.TableImpl
+	table.TableImpl[rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
 }
 
 func NewCloudTrailLogTable() table.Table {
@@ -39,15 +38,15 @@ func (c *CloudTrailLogTable) Identifier() string {
 
 func (c *CloudTrailLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
-	if err := c.TableBase.Init(ctx, connectionSchemaProvider, req); err != nil {
+	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
 		return err
 	}
 
-	c.setMappers()
+	c.initMappers()
 	return nil
 }
 
-func (c *CloudTrailLogTable) setMappers() {
+func (c *CloudTrailLogTable) initMappers() {
 	// TODO switch on source
 
 	// TODO KAI make sure tables add NewCloudwatchMapper if needed
@@ -67,7 +66,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 		// the default file layout for Cloudtrail logs in S3
 		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 			// TODO #config finalise default cloudtrail file layout
-			FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
+			FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrailLog/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})S(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
 		}
 		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig))
 	}
@@ -77,7 +76,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 
 // GetRowSchema implements table.Table
 func (c *CloudTrailLogTable) GetRowSchema() any {
-	return models.AWSCloudTrail{}
+	return rows.CloudTrailLog{}
 }
 
 func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
@@ -85,95 +84,43 @@ func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
 }
 
 // EnrichRow implements table.Table
-func (c *CloudTrailLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
-	// row must be an AWSCloudTrail
-	record, ok := row.(models.AWSCloudTrail)
-	if !ok {
-		return nil, fmt.Errorf("invalid row type %T, expected AWSCloudTrail", row)
-	}
-
+func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
-		record.CommonFields = *sourceEnrichmentFields
+		row.CommonFields = *sourceEnrichmentFields
 	}
 
 	// Record standardization
-	record.TpID = xid.New().String()
-	record.TpSourceType = "aws_cloudtrail_log"
-	record.TpTimestamp = record.EventTime
-	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
-	if record.SourceIPAddress != nil {
-		record.TpSourceIP = record.SourceIPAddress
-		record.TpIps = append(record.TpIps, *record.SourceIPAddress)
+	row.TpID = xid.New().String()
+	row.TpSourceType = "aws_cloudtrail_log"
+	row.TpTimestamp = row.EventTime
+	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	if row.SourceIPAddress != nil {
+		row.TpSourceIP = row.SourceIPAddress
+		row.TpIps = append(row.TpIps, *row.SourceIPAddress)
 	}
-	for _, resource := range record.Resources {
+	for _, resource := range row.Resources {
 		if resource.ARN != nil {
 			newAkas := awsAkasFromArn(*resource.ARN)
-			record.TpAkas = append(record.TpAkas, newAkas...)
+			row.TpAkas = append(row.TpAkas, newAkas...)
 		}
 	}
 	// If it's an AKIA, then record that as an identity. Do not record ASIA*
 	// keys etc.
-	if record.UserIdentity.AccessKeyId != nil {
-		if strings.HasPrefix(*record.UserIdentity.AccessKeyId, "AKIA") {
-			record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.AccessKeyId)
+	if row.UserIdentity.AccessKeyId != nil {
+		if strings.HasPrefix(*row.UserIdentity.AccessKeyId, "AKIA") {
+			row.TpUsernames = append(row.TpUsernames, *row.UserIdentity.AccessKeyId)
 		}
 	}
-	if record.UserIdentity.UserName != nil {
-		record.TpUsernames = append(record.TpUsernames, *record.UserIdentity.UserName)
+	if row.UserIdentity.UserName != nil {
+		row.TpUsernames = append(row.TpUsernames, *row.UserIdentity.UserName)
 	}
 
 	// Hive fields
-	record.TpPartition = "default" // TODO - should be based on the definition in HCL
-	record.TpIndex = record.RecipientAccountId
+	row.TpPartition = "default" // TODO - should be based on the definition in HCL
+	row.TpIndex = row.RecipientAccountId
 	// convert to date in format yy-mm-dd
-	record.TpDate = time.UnixMilli(int64(record.EventTime)).Format("2006-01-02")
+	row.TpDate = time.UnixMilli(int64(row.EventTime)).Format("2006-01-02")
 
-	return record, nil
-}
-
-// awsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
-// * the full arn
-// * the account ID
-// * EC2 instance ID
-// * S3 bucket name
-// * EC2 volume ID
-
-func awsAkasFromArn(arn string) []string {
-	// Split the ARN into its components.
-	parts := strings.Split(arn, ":")
-	if len(parts) < 6 {
-		return []string{}
-	}
-
-	// Extract the service name and the resource descriptor.
-	service := parts[2]
-	resourceDescriptor := parts[5]
-	accountID := parts[4]
-
-	// Initialize a slice to hold the key elements.
-	keyElements := []string{arn}
-	if accountID != "" {
-		keyElements = append(keyElements, accountID)
-	}
-
-	// Handle different services.
-	switch service {
-	case "s3":
-		// For S3, the resource descriptor is the bucket name.
-		keyElements = append(keyElements, resourceDescriptor)
-	case "ec2":
-		// For EC2, we need to further parse the resource descriptor.
-		if strings.HasPrefix(resourceDescriptor, "instance/") {
-			// Extract the instance ID for EC2 instances.
-			instanceID := strings.TrimPrefix(resourceDescriptor, "instance/")
-			keyElements = append(keyElements, instanceID)
-		} else if strings.HasPrefix(resourceDescriptor, "volume/") {
-			// Extract the volume ID for EC2 volumes.
-			volumeID := strings.TrimPrefix(resourceDescriptor, "volume/")
-			keyElements = append(keyElements, volumeID)
-		}
-	}
-
-	return keyElements
+	return row, nil
 }

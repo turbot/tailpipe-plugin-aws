@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/models"
 	"log/slog"
 
+	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
 )
 
-// CloudtrailMapper is a mapper that receives AWSCloudTrailBatch objects and extracts AWSCloudTrail records from them
+// CloudtrailMapper is a mapper that receives CloudTrailBatch objects and extracts CloudTrailLog records from them
 type CloudtrailMapper struct {
 }
 
@@ -23,16 +23,16 @@ func (c *CloudtrailMapper) Identifier() string {
 	return "cloudtrail_mapper"
 }
 
-// Map casts the data item as an AWSCloudTrailBatch and returns the records
+// Map casts the data item as an CloudTrailBatch and returns the CloudTrailLog records
 func (c *CloudtrailMapper) Map(_ context.Context, a any) ([]any, error) {
-	// the expected input type is a JSON byte[] deserializable to AWSCloudTrailBatch
+	// the expected input type is a JSON byte[] deserializable to CloudTrailBatch
 	jsonBytes, ok := a.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("expected byte[], got %T", a)
 	}
 
-	// decode json ito AWSCloudTrailBatch
-	var log models.AWSCloudTrailBatch
+	// decode json ito CloudTrailBatch
+	var log rows.CloudTrailBatch
 	err := json.Unmarshal(jsonBytes, &log)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding json: %w", err)

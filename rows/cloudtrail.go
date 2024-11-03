@@ -1,15 +1,15 @@
-package models
+package rows
 
 import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 )
 
-type AWSCloudTrailBatch struct {
-	Records []AWSCloudTrail `json:"Records"`
+type CloudTrailBatch struct {
+	Records []CloudTrailLog `json:"Records"`
 }
 
-type AWSCloudTrail struct {
+type CloudTrailLog struct {
 	// embed required enrichment fields (be sure to skip in parquet)
 	enrichment.CommonFields
 

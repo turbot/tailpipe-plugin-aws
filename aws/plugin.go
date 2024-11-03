@@ -8,7 +8,7 @@ import (
 )
 
 type Plugin struct {
-	plugin.PluginBase
+	plugin.PluginImpl
 }
 
 func NewPlugin() (plugin.TailpipePlugin, error) {
@@ -17,7 +17,7 @@ func NewPlugin() (plugin.TailpipePlugin, error) {
 	//slog.Info("AWS Plugin started")
 
 	p := &Plugin{
-		PluginBase: plugin.NewPluginBase("aws", config.NewAwsConnection),
+		PluginImpl: plugin.NewPluginImpl("aws", config.NewAwsConnection),
 	}
 
 	// register the tables that we provide

@@ -8,7 +8,7 @@ import (
 
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/config"
-	"github.com/turbot/tailpipe-plugin-aws/models"
+	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
@@ -18,8 +18,8 @@ import (
 )
 
 type LambdaLogTable struct {
-	// all tables must embed table.TableBase
-	table.TableBase[*LambdaLogTableConfig, *config.AwsConnection]
+	// all tables must embed table.TableImpl
+	table.TableImpl[string, *LambdaLogTableConfig, *config.AwsConnection]
 }
 
 func NewLambdaLogTable() table.Table {
@@ -37,80 +37,75 @@ func (c *LambdaLogTable) GetSourceOptions(sourceType string) []row_source.RowSou
 }
 
 func (c *LambdaLogTable) GetRowSchema() any {
-	return &models.AwsLambdaLog{}
+	return &rows.AwsLambdaLog{}
 }
 
 func (c *LambdaLogTable) GetConfigSchema() parse.Config {
 	return &LambdaLogTableConfig{}
 }
 
-func (c *LambdaLogTable) EnrichRow(row any, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
-	rawRecord, ok := row.(string)
-	if !ok {
-		return nil, fmt.Errorf("invalid row type: %T, expected string", row)
-	}
-
-	var record models.AwsLambdaLog
+func (c *LambdaLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+	var row rows.AwsLambdaLog
 	if sourceEnrichmentFields != nil {
-		record.CommonFields = *sourceEnrichmentFields
+		row.CommonFields = *sourceEnrichmentFields
 
 		ts := time.UnixMilli(int64(sourceEnrichmentFields.TpTimestamp))
-		record.Timestamp = &ts
+		row.Timestamp = &ts
 	}
 
 	// remove trailing newline
-	rawRecord = strings.TrimSuffix(rawRecord, "\n")
-	fields := strings.Fields(rawRecord)
+	rawRow = strings.TrimSuffix(rawRow, "\n")
+	fields := strings.Fields(rawRow)
 
 	switch fields[0] {
 	case "START", "END":
-		record.LogType = &fields[0]
-		record.RequestID = &fields[2]
+		row.LogType = &fields[0]
+		row.RequestID = &fields[2]
 	case "REPORT":
-		record.LogType = &fields[0]
-		record.RequestID = &fields[2]
+		row.LogType = &fields[0]
+		row.RequestID = &fields[2]
 		duration, err := strconv.ParseFloat(fields[4], 64)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing duration: %w", err)
 		}
-		record.Duration = &duration
+		row.Duration = &duration
 		billed, err := strconv.ParseFloat(fields[8], 64)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing billed duration: %w", err)
 		}
-		record.BilledDuration = &billed
+		row.BilledDuration = &billed
 		mem, err := strconv.Atoi(fields[12])
 		if err != nil {
 			return nil, fmt.Errorf("error parsing memory size: %w", err)
 		}
-		record.MemorySize = &mem
+		row.MemorySize = &mem
 		maxMem, err := strconv.Atoi(fields[17])
 		if err != nil {
 			return nil, fmt.Errorf("error parsing max memory used: %w", err)
 		}
-		record.MaxMemoryUsed = &maxMem
+		row.MaxMemoryUsed = &maxMem
 	default:
 		t := "LOG"
-		record.LogType = &t
+		row.LogType = &t
 		// TODO: #enrich should we overwrite the timestamp with that in the log entry?
-		record.RequestID = &fields[1]
-		record.LogLevel = &fields[2]
+		row.RequestID = &fields[1]
+		row.LogLevel = &fields[2]
 		strip := fmt.Sprintf("%s%s", strings.Join(fields[:3], "\t"), "\t")
-		stripped := strings.TrimPrefix(rawRecord, strip)
-		record.Message = &stripped
+		stripped := strings.TrimPrefix(rawRow, strip)
+		row.Message = &stripped
 	}
 
 	// Record standardization
-	record.TpID = xid.New().String()
-	record.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpID = xid.New().String()
+	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
 
 	// Hive fields
-	record.TpPartition = c.Identifier()
-	if record.TpIndex == "" {
-		record.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
+	row.TpPartition = c.Identifier()
+	if row.TpIndex == "" {
+		row.TpIndex = c.Identifier() // TODO: #refactor figure out how to get connection (account ID?)
 	}
 	// convert to date in format yy-mm-dd
-	record.TpDate = record.Timestamp.Format("2006-01-02")
+	row.TpDate = row.Timestamp.Format("2006-01-02")
 
-	return record, nil
+	return row, nil
 }
