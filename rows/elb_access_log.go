@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 )
 
-type AwsElbAccessLog struct {
+type ElbAccessLog struct {
 	enrichment.CommonFields
 
 	Type                   string    `json:"type" column:"type"`
@@ -47,8 +47,12 @@ type AwsElbAccessLog struct {
 	ConnTraceID            string    `json:"conn_trace_id" column:"conn_trace_id"`
 }
 
+func NewElbAccessLog() *ElbAccessLog {
+	return &ElbAccessLog{}
+}
+
 // InitialiseFromMap - initialise the struct from a map
-func (l *AwsElbAccessLog) InitialiseFromMap(m map[string]string) error {
+func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 	for key, value := range m {
 		switch key {
 		case "timestamp":

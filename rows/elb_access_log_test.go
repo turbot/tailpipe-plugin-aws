@@ -17,7 +17,7 @@ func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		want    *AwsElbAccessLog
+		want    *ElbAccessLog
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -58,7 +58,7 @@ func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
 				},
 			},
 
-			want: &AwsElbAccessLog{
+			want: &ElbAccessLog{
 
 				Type:                   "type",
 				Timestamp:              time.Date(2021, 07, 01, 00, 00, 00, 00, time.UTC),
@@ -199,7 +199,7 @@ func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := &AwsElbAccessLog{}
+			l := &ElbAccessLog{}
 			err := l.InitialiseFromMap(tt.args.m)
 			// Check if the error assertion passes or fails
 			if !tt.wantErr(t, err, "InitialiseFromMap()") {
@@ -211,7 +211,7 @@ func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
 			}
 			// Tactical - ignore tp fields
 			l.CommonFields = enrichment.CommonFields{}
-			equal := cmp.Equal(l, tt.want, cmpopts.IgnoreUnexported(AwsElbAccessLog{}))
+			equal := cmp.Equal(l, tt.want, cmpopts.IgnoreUnexported(ElbAccessLog{}))
 			if !equal {
 				t.Errorf("InitialiseFromMap() = %v, want %v", l, tt.want)
 			}

@@ -1,7 +1,9 @@
 package tables
 
 import (
-	"fmt"
+	"context"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 	"time"
 
 	"github.com/rs/xid"
@@ -16,11 +18,26 @@ import (
 // VPCFlowLogLogTable - table for VPC Flow Logs
 type VPCFlowLogLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[string, *VpcFlowLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.VpcFlowLog, *VpcFlowLogTableConfig, *config.AwsConnection]
 }
 
 func NewVPCFlowLogLogTable() table.Table {
 	return &VPCFlowLogLogTable{}
+}
+
+func (c *VPCFlowLogLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
+	// call base init
+	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
+		return err
+	}
+
+	c.initMappers()
+	return nil
+}
+
+func (c *VPCFlowLogLogTable) initMappers() {
+	// TODO switch on source
+	c.Mapper = mappers.NewVpcFlowlogMapper(c.Config.Fields)
 }
 
 // Identifier implements table.Table
@@ -31,7 +48,7 @@ func (c *VPCFlowLogLogTable) Identifier() string {
 // GetRowSchema implements table.Table
 // return an instance of the row struct
 func (c *VPCFlowLogLogTable) GetRowSchema() any {
-	return rows.AwsVpcFlowLog{}
+	return rows.VpcFlowLog{}
 }
 
 func (c *VPCFlowLogLogTable) GetConfigSchema() parse.Config {
@@ -39,13 +56,7 @@ func (c *VPCFlowLogLogTable) GetConfigSchema() parse.Config {
 }
 
 // EnrichRow implements table.Table
-func (c *VPCFlowLogLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
-	row, err := rows.FlowLogFromString(rawRow, c.Config.Fields)
-
-	if err != nil {
-		return nil, fmt.Errorf("error parsing row: %s", err)
-	}
-
+func (c *VPCFlowLogLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.VpcFlowLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields

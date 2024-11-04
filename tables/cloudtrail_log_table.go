@@ -30,11 +30,6 @@ func NewCloudTrailLogTable() table.Table {
 	return &CloudTrailLogTable{}
 }
 
-// Identifier implements table.Table
-func (c *CloudTrailLogTable) Identifier() string {
-	return "aws_cloudtrail_log"
-}
-
 func (c *CloudTrailLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
 	// call base init
 	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
@@ -48,12 +43,13 @@ func (c *CloudTrailLogTable) Init(ctx context.Context, connectionSchemaProvider 
 func (c *CloudTrailLogTable) initMappers() {
 	// TODO switch on source
 
-	// TODO KAI make sure tables add NewCloudwatchMapper if needed
-	// NOTE: add the cloudwatch mapper to ensure rows are in correct format
-	//s.AddMappers(artifact_mapper.NewCloudwatchMapper())
-
 	// if the source is an artifact source, we need a mapper
 	c.Mapper = mappers.NewCloudtrailMapper()
+}
+
+// Identifier implements table.Table
+func (c *CloudTrailLogTable) Identifier() string {
+	return "aws_cloudtrail_log"
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
@@ -83,7 +79,7 @@ func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
 }
 
 // EnrichRow implements table.Table
-func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (rows.CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields

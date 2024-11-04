@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 // CloudtrailMapper is a mapper that receives CloudTrailBatch objects and extracts CloudTrailLog records from them
@@ -15,7 +15,7 @@ type CloudtrailMapper struct {
 }
 
 // NewCloudtrailMapper creates a new CloudtrailMapper
-func NewCloudtrailMapper() artifact_mapper.Mapper[rows.CloudTrailLog] {
+func NewCloudtrailMapper() table.Mapper[rows.CloudTrailLog] {
 	return &CloudtrailMapper{}
 }
 
