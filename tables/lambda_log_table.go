@@ -44,6 +44,7 @@ func (c *LambdaLogTable) GetConfigSchema() parse.Config {
 	return &LambdaLogTableConfig{}
 }
 
+// TODO K why does this not fail to compile?
 func (c *LambdaLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
 	var row rows.AwsLambdaLog
 	if sourceEnrichmentFields != nil {

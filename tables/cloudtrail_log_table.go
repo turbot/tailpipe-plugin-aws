@@ -36,11 +36,11 @@ func (c *CloudTrailLogTable) Init(ctx context.Context, connectionSchemaProvider 
 		return err
 	}
 
-	c.initMappers()
+	c.initMapper()
 	return nil
 }
 
-func (c *CloudTrailLogTable) initMappers() {
+func (c *CloudTrailLogTable) initMapper() {
 	// TODO switch on source
 
 	// if the source is an artifact source, we need a mapper

@@ -33,11 +33,11 @@ func (c *S3ServerAccessLogTable) Init(ctx context.Context, connectionSchemaProvi
 		return err
 	}
 
-	c.initMappers()
+	c.initMapper()
 	return nil
 }
 
-func (c *S3ServerAccessLogTable) initMappers() {
+func (c *S3ServerAccessLogTable) initMapper() {
 	// TODO switch on source
 	c.Mapper = table.NewDelimitedLineMapper(rows.NewS3ServerAccessLog, s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced)
 }
@@ -47,7 +47,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 }
 
 func (c *S3ServerAccessLogTable) GetRowSchema() any {
-	return &rows.S3ServerAccessLog{}
+	return rows.NewS3ServerAccessLog
 }
 
 func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {

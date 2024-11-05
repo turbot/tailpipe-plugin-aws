@@ -33,11 +33,11 @@ func (c *ElbAccessLogTable) Init(ctx context.Context, connectionSchemaProvider t
 		return err
 	}
 
-	c.initMappers()
+	c.initMapper()
 	return nil
 }
 
-func (c *ElbAccessLogTable) initMappers() {
+func (c *ElbAccessLogTable) initMapper() {
 	// todo switch on source
 	c.Mapper = table.NewDelimitedLineMapper(rows.NewElbAccessLog, elbLogFormat, elbLogFormatNoConnTrace)
 }

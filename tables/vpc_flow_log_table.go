@@ -2,17 +2,17 @@ package tables
 
 import (
 	"context"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/config"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 // VPCFlowLogLogTable - table for VPC Flow Logs
@@ -31,11 +31,11 @@ func (c *VPCFlowLogLogTable) Init(ctx context.Context, connectionSchemaProvider 
 		return err
 	}
 
-	c.initMappers()
+	c.initMapper()
 	return nil
 }
 
-func (c *VPCFlowLogLogTable) initMappers() {
+func (c *VPCFlowLogLogTable) initMapper() {
 	// TODO switch on source
 	c.Mapper = mappers.NewVpcFlowlogMapper(c.Config.Fields)
 }
