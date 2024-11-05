@@ -47,7 +47,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 }
 
 func (c *S3ServerAccessLogTable) GetRowSchema() any {
-	return rows.NewS3ServerAccessLog
+	return rows.NewS3ServerAccessLog()
 }
 
 func (c *S3ServerAccessLogTable) GetConfigSchema() parse.Config {
