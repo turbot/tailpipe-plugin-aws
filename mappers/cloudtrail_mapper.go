@@ -4,19 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-aws/models"
 	"log/slog"
 
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_mapper"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
+	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-// CloudtrailMapper is a Mapper that receives AWSCloudTrailBatch objects and extracts AWSCloudTrail records from them
+// CloudtrailMapper is a mapper that receives CloudTrailBatch objects and extracts CloudTrailLog records from them
 type CloudtrailMapper struct {
 }
 
 // NewCloudtrailMapper creates a new CloudtrailMapper
-func NewCloudtrailMapper() artifact_mapper.Mapper {
+func NewCloudtrailMapper() table.Mapper[rows.CloudTrailLog] {
 	return &CloudtrailMapper{}
 }
 
@@ -24,25 +23,25 @@ func (c *CloudtrailMapper) Identifier() string {
 	return "cloudtrail_mapper"
 }
 
-// Map casts the data item as an AWSCloudTrailBatch and returns the records
-func (c *CloudtrailMapper) Map(_ context.Context, a *types.RowData) ([]*types.RowData, error) {
-	// the expected input type is a JSON byte[] deserializable to AWSCloudTrailBatch
-	jsonBytes, ok := a.Data.([]byte)
+// Map casts the data item as an CloudTrailBatch and returns the CloudTrailLog records
+func (c *CloudtrailMapper) Map(_ context.Context, a any) ([]rows.CloudTrailLog, error) {
+	// the expected input type is a JSON byte[] deserializable to CloudTrailBatch
+	jsonBytes, ok := a.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("expected byte[], got %T", a)
 	}
 
-	// decode json ito AWSCloudTrailBatch
-	var log models.AWSCloudTrailBatch
+	// decode json ito CloudTrailBatch
+	var log rows.CloudTrailBatch
 	err := json.Unmarshal(jsonBytes, &log)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding json: %w", err)
 	}
 
 	slog.Debug("CloudwatchMapper", "record count", len(log.Records))
-	var res = make([]*types.RowData, len(log.Records))
+	var res = make([]rows.CloudTrailLog, len(log.Records))
 	for i, record := range log.Records {
-		res[i] = types.NewData(record)
+		res[i] = record
 	}
 	return res, nil
 }

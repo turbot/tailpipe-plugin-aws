@@ -1,79 +1,54 @@
-package models
+package mappers
 
 import (
+	"context"
 	"fmt"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"log/slog"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/turbot/tailpipe-plugin-aws/rows"
 )
 
-// TODO is trhere an existing amazon sdk type we can use
-type AwsVpcFlowLog struct {
-	// embed required enrichment fields (be sure to skip in parquet)
-	enrichment.CommonFields
-
-	Timestamp               *time.Time `json:"timestamp,omitempty"`
-	Version                 *int32     `json:"version,omitempty"`
-	AccountID               *string    `json:"account_id,omitempty"`
-	InterfaceID             *string    `json:"interface_id,omitempty"`
-	SrcAddr                 *string    `json:"src_addr,omitempty"`
-	DstAddr                 *string    `json:"dst_addr,omitempty"`
-	SrcPort                 *int32     `json:"src_port,omitempty"`
-	DstPort                 *int32     `json:"dst_port,omitempty"`
-	Protocol                *int32     `json:"protocol,omitempty"`
-	Packets                 *int64     `json:"packets,omitempty"`
-	Bytes                   *int64     `json:"bytes,omitempty"`
-	Start                   *int64     `json:"start,omitempty"`
-	End                     *int64     `json:"end,omitempty"`
-	Action                  *string    `json:"action,omitempty"`
-	LogStatus               *string    `json:"log_status,omitempty"`
-	VPCID                   *string    `json:"vpc_id,omitempty"`
-	SubnetID                *string    `json:"subnet_id,omitempty"`
-	InstanceID              *string    `json:"instance_id,omitempty"`
-	TCPFlags                *int32     `json:"tcp_flags,omitempty"`
-	Type                    *string    `json:"type,omitempty"`
-	PktSrcAddr              *string    `json:"pkt_src_addr,omitempty"`
-	PktDstAddr              *string    `json:"pkt_dst_addr,omitempty"`
-	Region                  *string    `json:"region,omitempty"`
-	AzID                    *string    `json:"az_id,omitempty"`
-	SublocationType         *string    `json:"sublocation_type,omitempty"`
-	SublocationID           *string    `json:"sublocation_id,omitempty"`
-	PktSrcAWSService        *string    `json:"pkt_src_aws_service,omitempty"`
-	PktDstAWSService        *string    `json:"pkt_dst_aws_service,omitempty"`
-	FlowDirection           *string    `json:"flow_direction,omitempty"`
-	TrafficPath             *int32     `json:"traffic_path,omitempty"`
-	ECSClusterARN           *string    `json:"ecs_cluster_arn,omitempty"`
-	ECSClusterName          *string    `json:"ecs_cluster_name,omitempty"`
-	ECSContainerInstanceARN *string    `json:"ecs_container_instance_arn,omitempty"`
-	ECSContainerInstanceID  *string    `json:"ecs_container_instance_id,omitempty"`
-	ECSContainerID          *string    `json:"ecs_container_id,omitempty"`
-	ECSSecondContainerID    *string    `json:"ecs_second_container_id,omitempty"`
-	ECSServiceName          *string    `json:"ecs_service_name,omitempty"`
-	ECSTaskDefinitionARN    *string    `json:"ecs_task_definition_arn,omitempty"`
-	ECSTaskARN              *string    `json:"ecs_task_arn,omitempty"`
-	ECSTaskID               *string    `json:"ecs_task_id,omitempty"`
+// VpcFlowlogMapper is a mapper that receives string objects and extracts VpcFlowLog record
+type VpcFlowlogMapper struct {
+	schema []string
 }
 
-// fromString
+func NewVpcFlowlogMapper(schema []string) *VpcFlowlogMapper {
+	res := &VpcFlowlogMapper{
+		schema: schema,
+	}
 
-func FlowLogFromString(rowString string, schema []string) (*AwsVpcFlowLog, error) {
+	return res
+}
+
+func (c *VpcFlowlogMapper) Identifier() string {
+	return "flowlog_mapper"
+}
+
+// Map casts the data item as an string and returns the VpcFlowLog records
+func (c *VpcFlowlogMapper) Map(_ context.Context, a any) ([]*rows.VpcFlowLog, error) {
+	rowString, ok := a.(string)
+	if !ok {
+		return nil, fmt.Errorf("expectedstring, got %T", a)
+	}
 
 	fields := strings.Fields(rowString)
 
-	if len(fields) > len(schema) {
-		slog.Error("row has more fields than schema allows", "fields", fields, "schema", schema)
-		return nil, fmt.Errorf("row has more fields than schema allows")
+	if len(fields) > len(c.schema) {
+		slog.Error("row has more fields than c.schema allows", "fields", fields, "schema", c.schema)
+		return nil, fmt.Errorf("row has more fields than c.schema allows")
 	}
 
-	flowLog := &AwsVpcFlowLog{}
+	flowLog := &rows.VpcFlowLog{}
 	for i, field := range fields {
 		// skip empty fields
 		if field == "-" {
 			continue
 		}
-		switch schema[i] {
+		switch c.schema[i] {
 		case "timestamp":
 			timestamp, err := time.Parse(time.RFC3339, field)
 			if err != nil {
@@ -205,9 +180,10 @@ func FlowLogFromString(rowString string, schema []string) (*AwsVpcFlowLog, error
 		case "ecs-task-id":
 			flowLog.ECSTaskID = &field
 		default:
-			return nil, fmt.Errorf("unknown field: %s", schema[i])
+			return nil, fmt.Errorf("unknown field: %s", c.schema[i])
 		}
 	}
 
-	return flowLog, nil
+	return []*rows.VpcFlowLog{flowLog}, nil
+
 }

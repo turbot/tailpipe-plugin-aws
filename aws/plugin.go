@@ -1,13 +1,24 @@
 package aws
 
 import (
+	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
+type Plugin struct {
+	plugin.PluginImpl
+}
+
 func NewPlugin() (plugin.TailpipePlugin, error) {
-	p := plugin.NewPlugin("aws")
+	//slog.Info("AWS Plugin starting")
+	//time.Sleep(10 * time.Second)
+	//slog.Info("AWS Plugin started")
+
+	p := &Plugin{
+		PluginImpl: plugin.NewPluginImpl("aws", config.NewAwsConnection),
+	}
 
 	// register the tables that we provide
 	resources := &plugin.ResourceFunctions{
