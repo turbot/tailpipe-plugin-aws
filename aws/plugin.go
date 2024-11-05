@@ -2,6 +2,7 @@ package aws
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-aws/config"
@@ -21,7 +22,7 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 		}
 	}()
 	slog.Info("AWS Plugin starting")
-	//time.Sleep(10 * time.Second)
+	time.Sleep(10 * time.Second)
 	slog.Info("AWS Plugin started")
 
 	p := &Plugin{
