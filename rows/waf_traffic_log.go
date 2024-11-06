@@ -2,7 +2,7 @@ package rows
 
 import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"time"
+	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 )
 
 // Define a nested struct for httpRequest headers
@@ -27,16 +27,16 @@ type HttpRequest struct {
 type WafTrafficLog struct {
 	enrichment.CommonFields
 
-	Timestamp          *time.Time `json:"timestamp,omitempty"`
-	FormatVersion      *int32     `json:"format_version,omitempty"`
-	WebAclId           *string    `json:"web_acl_id,omitempty"`
-	TerminatingRuleId  *string    `json:"terminating_rule_id,omitempty"`
-	TerminatingRuleType *string    `json:"terminating_rule_type,omitempty"`
-	Action             *string    `json:"action,omitempty"`
-	HttpSourceName     *string    `json:"httpSourceName,omitempty"`
-	HttpSourceId       *string    `json:"httpSourceId,omitempty"`
-	RuleGroupList      []string   `json:"ruleGroupList,omitempty"`
-	RateBasedRuleList  []string   `json:"rateBasedRuleList,omitempty"`
-	NonTerminatingMatchingRules []string `json:"nonTerminatingMatchingRules,omitempty"`
-	HttpRequest        HttpRequest `json:"httpRequest,omitempty"`
+	Timestamp                   *helpers.UnixMillis `json:"timestamp,omitempty"`
+	FormatVersion               *int32              `json:"format_version,omitempty"`
+	WebAclId                    *string             `json:"web_acl_id,omitempty"`
+	TerminatingRuleId           *string             `json:"terminating_rule_id,omitempty"`
+	TerminatingRuleType         *string             `json:"terminating_rule_type,omitempty"`
+	Action                      *string             `json:"action,omitempty"`
+	HttpSourceName              *string             `json:"httpSourceName,omitempty"`
+	HttpSourceId                *string             `json:"httpSourceId,omitempty"`
+	RuleGroupList               []string            `json:"ruleGroupList,omitempty"`
+	RateBasedRuleList           []string            `json:"rateBasedRuleList,omitempty"`
+	NonTerminatingMatchingRules []string            `json:"nonTerminatingMatchingRules,omitempty"`
+	HttpRequest                 HttpRequest         `json:"httpRequest,omitempty"`
 }

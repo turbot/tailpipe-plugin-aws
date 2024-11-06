@@ -60,9 +60,9 @@ func (c *WafTrafficLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 		// the default file layout for Cloudtrail logs in S3
 		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 			// TODO #config finalise default cloudtrail file layout
-			FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
+			FileLayout: utils.ToStringPointer("waf-access-log-sample_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})(?P<hour>\\d{2})(?P<minute>\\d{2})(?P<second>\\d{2}).gz"),
 		}
-		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig))
+		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine(),)
 	}
 
 	return opts

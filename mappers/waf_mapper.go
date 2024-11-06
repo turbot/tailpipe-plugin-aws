@@ -9,7 +9,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-// WafMapper is a mapper that receives CloudTrailBatch objects and extracts CloudTrailLog records from them
 type WafMapper struct {
 }
 
@@ -23,17 +22,24 @@ func (c *WafMapper) Identifier() string {
 }
 
 func (c *WafMapper) Map(_ context.Context, a any) ([]rows.WafTrafficLog, error) {
-	jsonBytes, ok := a.([]byte)
-	if !ok {
-		return nil, fmt.Errorf("expected byte[], got %T", a)
+	var jsonBytes []byte
+
+	switch v := a.(type) {
+	case []byte:
+		jsonBytes = v
+	case string:
+		jsonBytes = []byte(v)
+	default:
+		return nil, fmt.Errorf("expected byte[] or string, got %T", a)
 	}
 
-	// decode json ito CloudTrailBatch
+	// decode JSON into WafTrafficLog
 	var log rows.WafTrafficLog
 	err := json.Unmarshal(jsonBytes, &log)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding json: %w", err)
+		return nil, fmt.Errorf("error decoding JSON: %w; partial log: %+v", err, log)
 	}
 
 	return []rows.WafTrafficLog{log}, nil
 }
+
