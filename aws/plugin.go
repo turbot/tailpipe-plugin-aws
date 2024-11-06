@@ -1,9 +1,6 @@
 package aws
 
 import (
-	"log/slog"
-	"time"
-
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/tables"
@@ -21,9 +18,6 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 			err = helpers.ToError(r)
 		}
 	}()
-	slog.Info("AWS Plugin starting")
-	time.Sleep(10 * time.Second)
-	slog.Info("AWS Plugin started")
 
 	p := &Plugin{
 		PluginImpl: plugin.NewPluginImpl("aws", config.NewAwsConnection),
