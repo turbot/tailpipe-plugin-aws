@@ -10,12 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -231,23 +229,9 @@ func (t *AlbAccessLogTable) GetSourceOptions(sourceType string) []row_source.Row
 }
 
 func (t *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.AlbAccessLog, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
-
-	// Record standardization
-	row.TpID = xid.New().String()
-	row.TpSourceType = "aws_alb_access_log"
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
-
-	// Set partition
-	row.TpPartition = t.Identifier()
-
-	// Use ALB name as the index
-	row.TpIndex = row.AlbName
-
-	// Set date in yyyy-mm-dd format
-	row.TpDate = row.Timestamp.Format("2006-01-02")
-
-	return row, nil
+    if err := row.EnrichRow(sourceEnrichmentFields); err != nil {
+        return nil, err
+    }
+    return row, nil
 }
+
