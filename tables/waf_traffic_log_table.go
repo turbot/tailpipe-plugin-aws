@@ -92,8 +92,13 @@ func (c *WafTrafficLogTable) EnrichRow(row rows.WafTrafficLog, sourceEnrichmentF
 	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
 
 	// Hive fields
-	row.TpPartition = "aws_waf_traffic_log"
-	row.TpIndex = strings.ReplaceAll(*row.HttpSourceId, "/", `_`)
+	// Check if row.HttpSourceId is not nil before dereferencing
+	if row.HttpSourceId != nil {
+		row.TpIndex = strings.ReplaceAll(*row.HttpSourceId, "/", `_`)
+	} else {
+		// Handle the case where HttpSourceId is nil, if needed
+		row.TpIndex = "" // or assign a default value if desired
+	}
 	// convert to date in format yy-mm-dd
 	row.TpDate = time.UnixMilli(int64(*row.Timestamp)).Format("2006-01-02")
 
