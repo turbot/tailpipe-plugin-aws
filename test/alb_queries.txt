@@ -127,22 +127,22 @@ D SELECT
 └───────────────┴─────────────┴────────────────────────────────┘
 
 
- SELECT
-      tp_index as account_id,
+SELECT
+      tp_index as alb_name,
       COUNT(*) as request_count,
       COUNT(DISTINCT client_ip) as unique_clients,
-      SUM(sent_bytes + received_bytes) / (1024*1024*1024) as total_gb
+      ROUND(AVG(request_processing_time + target_processing_time + response_processing_time), 3) as avg_total_time
   FROM
       aws_alb_access_log
-  WHERE
-      tp_date >= '2024-11-01'
   GROUP BY
       tp_index
   ORDER BY
       request_count DESC;
-┌──────────────┬───────────────┬────────────────┬─────────────────────┐
-│  account_id  │ request_count │ unique_clients │      total_gb       │
-│    int64     │     int64     │     int64      │       double        │
-├──────────────┼───────────────┼────────────────┼─────────────────────┤
-│ 123456789012 │         10000 │          10000 │ 0.07559083867818117 │
-└──────────────┴───────────────┴────────────────┴─────────────────────┘
+┌──────────────┬───────────────┬────────────────┬────────────────┐
+│   alb_name   │ request_count │ unique_clients │ avg_total_time │
+│   varchar    │     int64     │     int64      │     double     │
+├──────────────┼───────────────┼────────────────┼────────────────┤
+│ prod-web-alb │          3383 │           3383 │          0.355 │
+│ staging-alb  │          3358 │           3358 │          0.523 │
+│ prod-api-alb │          3259 │           3259 │           0.35 │
+└──────────────┴───────────────┴────────────────┴────────────────┘
