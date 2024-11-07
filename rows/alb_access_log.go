@@ -10,9 +10,15 @@ import (
     "github.com/turbot/tailpipe-plugin-sdk/helpers"
 )
 
-// AlbAccessLog represents a single ALB access log entry with enrichment fields
+// AlbAccessLog represents a single Application Load Balancer (ALB) access log entry.
+// It includes both AWS ALB-specific fields and Tailpipe enrichment fields for enhanced analysis.
+// The struct maps directly to the format of ALB access logs as documented by AWS:
+// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html// AlbAccessLog represents a single ALB access log entry with enrichment fields
 type AlbAccessLog struct {
     // Embed required enrichment fields
+
+    // CommonFields provides standard Tailpipe enrichment fields like tp_id, tp_timestamp, etc.
+    // These fields are used across all Tailpipe log types for consistent analysis    
     enrichment.CommonFields
 
     // Standard ALB fields
@@ -49,12 +55,30 @@ type AlbAccessLog struct {
     ClassificationReason *string   `json:"classification_reason,omitempty"`
 }
 
-// NewAlbAccessLog creates a new ALB access log entry
+// NewAlbAccessLog creates a new ALB access log entry with initialized fields.
+// Used by the mapper when creating new log entries from raw log lines.
 func NewAlbAccessLog() *AlbAccessLog {
     return &AlbAccessLog{}
 }
 
 // InitialiseFromMap initializes the struct from a map of string values
+// InitialiseFromMap populates an ALbAccessLog struct from a map of string values.
+// While this method was originally designed to work with DelimitedLineMapper, for ALB logs
+// we use a custom mapper (AlbLogMapper) due to the complex nature of the log format.
+// The custom mapper handles:
+// - Quoted strings that contain spaces (e.g., user agents, requests)
+// - Optional fields marked with "-"
+// - Compound fields like IP:port combinations
+// - Type conversion and validation
+//
+// The method processes each field by:
+// - Converting strings to appropriate types (int, float, time)
+// - Validating field formats and values
+// - Handling special field processing (IP:port splitting)
+// - Populating both native fields and enrichment fields (tp_*)
+// - Managing optional fields that might contain "-"
+//
+// Returns an error if any required field fails to parse or validate.
 func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
     for key, value := range m {
         switch key {
