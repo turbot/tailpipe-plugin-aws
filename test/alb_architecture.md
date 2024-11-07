@@ -1,11 +1,14 @@
+# Overview
+
 Here's the explanation of how ALB logs flow through Tailpipe to become Parquet files:
 
-1. Initial Processing
+## Initial Processing
+
 - Raw log line comes in as a string from S3 or other source
 - `AlbLogMapper.Map` parses this into structured data (`[]*rows.AlbAccessLog`)
 - The mapper handles all the complex string parsing (quotes, optional fields, etc.)
 
-2. Schema Generation
+## Schema Generation
 - SDK uses reflection on the `AlbAccessLog` struct
 - JSON tags define column names (e.g., `json:"type"` becomes column "type")
 - Go types are mapped to Parquet types:
@@ -16,13 +19,13 @@ Here's the explanation of how ALB logs flow through Tailpipe to become Parquet f
   - Pointer types (e.g., `*string`) become nullable columns
   - Arrays become repeated fields
 
-3. Record Writing
+## Record Writing
 - SDK batches records for efficiency (doesn't write one at a time)
 - Uses the generated schema to validate data
 - Handles type conversion automatically
 - Field order in Parquet matches struct field order
 
-4. Special Handling
+## Special Handling
 - `CommonFields` embed adds standard columns to every table (`tp_id`, `tp_timestamp`, etc.)
 - Timestamps get special treatment - stored as Unix milliseconds for efficiency
 - Optional fields (like `TargetIP *string`) only take space when present
@@ -57,4 +60,50 @@ graph TD
     D --> D1
     D1 --> D2
     D2 --> D3
+```
+
+## Enrichment flow
+
+- Raw Parsing (`InitialiseFromMap`):
+  - Converts string values to typed fields
+  - Handles empty/optional fields marked with "-"
+  - Parses complex fields (IP:port combinations)
+  - Reports parsing errors with context
+  
+- Enrichment (`EnrichRow`):
+  - Adds standard fields (tp_id, tp_timestamp, etc.)
+  - Derives relationships (IPs, domains, ARNs)
+  - Computes derived fields (dates, timestamps)
+  - Maintains data consistency
+  
+The benefit of this separation is that parsing logic stays focused on data conversion, while enrichment logic focuses on adding value. This makes both parts easier to maintain and test independently.
+
+```mermaid
+graph TD
+    A[Raw Log Line] --> B[InitialiseFromMap]
+    B --> C[Typed AlbAccessLog]
+    C --> D[EnrichRow]
+    D --> E[Enriched Record]
+    
+    subgraph "InitialiseFromMap"
+        P1[Parse Fields]
+        P2[Convert Types]
+        P3[Handle Optional Fields]
+        P4[Validate Data]
+    end
+    
+    subgraph "EnrichRow"
+        E1[Add Standard Fields]
+        E2[Add Source Fields]
+        E3[Compute Timestamps]
+        E4[Build Relationships]
+    end
+
+    B --> P1 --> P2 --> P3 --> P4
+    D --> E1 --> E2 --> E3 --> E4
+    
+    %% Show what feeds into relationships
+    C -- IP Info --> E4
+    C -- Domain Info --> E4
+    C -- ARN Info --> E4
 ```
