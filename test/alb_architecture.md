@@ -70,11 +70,17 @@ graph TD
   - Parses complex fields (IP:port combinations)
   - Reports parsing errors with context
   
-- Enrichment (`EnrichRow`):
+- Enrichment (EnrichRow):
+
   - Adds standard fields (tp_id, tp_timestamp, etc.)
-  - Derives relationships (IPs, domains, ARNs)
-  - Computes derived fields (dates, timestamps)
-  - Maintains data consistency
+  - Populates cross-reference fields:
+
+    - IPs: Maps client/target IPs to tp_source_ip, tp_destination_ip, tp_ips
+    - Domains: Maps domain_name to tp_domains
+   - AWS Resources: Maps target_group_arn to tp_akas
+
+ - Computes derived fields (dates, timestamps)
+ - Maintains data consistency  
   
 The benefit of this separation is that parsing logic stays focused on data conversion, while enrichment logic focuses on adding value. This makes both parts easier to maintain and test independently.
 
@@ -96,14 +102,14 @@ graph TD
         E1[Add Standard Fields]
         E2[Add Source Fields]
         E3[Compute Timestamps]
-        E4[Build Relationships]
+        E4[Populate Cross-Reference Fields]
     end
 
     B --> P1 --> P2 --> P3 --> P4
     D --> E1 --> E2 --> E3 --> E4
     
-    %% Show what feeds into relationships
-    C -- IP Info --> E4
-    C -- Domain Info --> E4
-    C -- ARN Info --> E4
+    %% Show specific field mappings
+    C -- ClientIP -> TpSourceIP\nTargetIP -> TpDestinationIP\nBoth -> TpIps --> E4
+    C -- DomainName -> TpDomains --> E4
+    C -- TargetGroupArn -> TpAkas --> E4
 ```
