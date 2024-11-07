@@ -220,12 +220,21 @@ func (t *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFi
     row.TpSourceType = "aws_alb_access_log"
     row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
 
-    // Set partition and index
+    // Set partition
     row.TpPartition = t.Identifier()
-    if t.Connection != nil && t.Connection.DefaultRegion != nil {
+
+    // Extract account ID from target group ARN
+    // ARN format: arn:aws:elasticloadbalancing:region:account-id:targetgroup/...
+    if row.TargetGroupArn != "" {
+        arnParts := strings.Split(row.TargetGroupArn, ":")
+        if len(arnParts) >= 5 {
+            row.TpIndex = arnParts[4] // account ID is the 5th component (index 4)
+        }
+    }
+
+    // Fallback to connection's default region if we couldn't get account ID
+    if row.TpIndex == "" && t.Connection != nil && t.Connection.DefaultRegion != nil {
         row.TpIndex = *t.Connection.DefaultRegion
-    } else {
-        row.TpIndex = "unknown"
     }
 
     // Set date in yyyy-mm-dd format
