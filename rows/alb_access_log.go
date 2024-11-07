@@ -15,8 +15,25 @@ import (
 // The struct maps directly to the format of ALB access logs as documented by AWS:
 // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html// AlbAccessLog represents a single ALB access log entry with enrichment fields
 type AlbAccessLog struct {
-	// CommonFields provides standard Tailpipe enrichment fields like tp_id, tp_timestamp, etc.
-	// These fields are used across all Tailpipe log types for consistent analysis
+    // CommonFields provides standard Tailpipe enrichment fields for consistent analysis across log types.
+    // Fields are populated from ALB log fields as follows:
+    // - tp_source_ip: from client IP
+    // - tp_destination_ip: from target IP 
+    // - tp_ips: array containing both client and target IPs
+    // - tp_domains: from domain_name field when present
+    // - tp_akas: from target_group_arn for AWS resource linking
+    // - tp_timestamp: from ALB timestamp field
+    // - tp_id: generated unique identifier
+    // - tp_source_type: set to "aws_alb_access_log"
+    // - tp_ingest_timestamp: set at processing time
+    // - tp_partition: set to table identifier
+    // - tp_index: set to ALB name
+    // - tp_date: derived from timestamp in yyyy-mm-dd format
+    
+    // The CommonFields enrichment happens in two places in the ALB implementation:
+    // 1. During log parsing in InitialiseFromMap, where we map certain ALB fields to their enrichment counterparts.
+    // 2. During row enrichment in EnrichRow.
+
 	enrichment.CommonFields
 
 	// Standard ALB fields
