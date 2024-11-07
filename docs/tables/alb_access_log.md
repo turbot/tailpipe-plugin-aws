@@ -1,6 +1,6 @@
 # Overview
 
-Here's the explanation of how ALB logs flow through Tailpipe to become Parquet files:
+Here's the explanation of how ALB logs flow through Tailpipe to become Parquet files. The main benefit of this system is that we just define our struct with the right tags and types, and the SDK handles all the complexity of Parquet file creation. We don't need to write any Parquet-specific code in our table implementation.
 
 ## Initial Processing
 
@@ -31,7 +31,45 @@ Here's the explanation of how ALB logs flow through Tailpipe to become Parquet f
 - Optional fields (like `TargetIP *string`) only take space when present
 - Arrays (like `TpIps []string`) become Parquet repeated fields
 
-The main benefit of this system is that we just define our struct with the right tags and types, and the SDK handles all the complexity of Parquet file creation. We don't need to write any Parquet-specific code in our table implementation.
+### Index Selection (tp_index)
+
+The `tp_index` field is critical for partitioning and querying data efficiently. For ALB logs, we map:
+
+```sql
+tp_index = alb_name
+```
+
+This means:
+- Each ALB's logs are grouped together
+- Quick filtering/querying by specific ALB
+- Efficient partitioning in data lake storage
+- Natural organization matching AWS infrastructure
+
+For example:
+```bash
+prod-web-alb   → All prod web ALB logs
+prod-api-alb   → All prod API ALB logs
+staging-alb    → All staging ALB logs
+```
+
+This mapping allows queries like:
+```sql
+-- Get all prod ALB traffic
+SELECT * FROM aws_alb_access_log WHERE tp_index LIKE 'prod-%';
+
+-- Compare traffic across environments
+SELECT 
+    tp_index,
+    COUNT(*) as requests,
+    COUNT(DISTINCT client_ip) as unique_clients
+FROM aws_alb_access_log
+GROUP BY tp_index;
+```
+
+Alternative index strategies we considered but rejected:
+- Account ID: Too broad, most logs from same account
+- Region: Too broad, most logs from same region
+- Target Group: Too granular, splits related traffic
 
 
 ```mermaid
