@@ -297,3 +297,88 @@ Key findings:
 - Multiple tools used per attacker
 - Systematic targeting of all ALB environments
 - Focus on common vulnerabilities (actuator, debug endpoints, config files)
+
+
+# Testing ALB Log Processing
+
+## Test Data Generation
+
+Testing ALB log processing requires realistic log data that includes both normal traffic patterns and attack scenarios. We use a Python generator script that creates synthetic ALB logs with the following characteristics:
+
+### Normal Traffic
+- Distributed across multiple ALBs (prod-web-alb, prod-api-alb, staging-alb)
+- Realistic URLs mapped to specific ALBs
+- Common user agents (browsers, mobile devices, legitimate API clients)
+- Expected HTTP methods and status codes
+- Variable response times with production environments being faster
+
+### Attack Patterns
+- SQL injection attempts
+- Path traversal attacks
+- Admin console scanning
+- Vulnerability probing
+- Traffic from known malicious IP ranges
+- Scanner user agents
+- Coordinated attack campaigns
+
+### Generator Configuration
+The generator supports customization of:
+- Number of log lines
+- Start date for logs
+- ALB names and target groups
+- URL patterns
+- Attack frequencies
+- IP ranges for attackers
+
+## Running Tests
+
+1. First, generate test data:
+```bash
+python3 alb_generate.py
+```
+
+2. Create a test configuration file, e.g.
+
+```hcl
+partition "aws_alb_access_log" "alb_test" {
+    plugin = "aws"
+    source "file_system" {
+        paths = ["/home/jon/tpsrc/tailpipe-plugin-aws/test/alb-test.log"]
+        extensions = [".log"]
+    }
+}
+```
+
+3. Run Tailpipe:
+```bash
+TAILPIPE_LOG_LEVEL=debug ./tailpipe collect aws_alb_access_log.alb_test
+```
+
+### Key Test Scenarios
+
+When testing ALB log processing, verify:
+
+1. Field Parsing
+   - Complex fields (IP:port combinations)
+   - Quoted strings with spaces
+   - Optional fields marked with "-"
+   - Timestamps in correct format
+
+2. Enrichment Logic
+   - Standard fields (tp_id, tp_timestamp)
+   - IP cross-references (source, destination, list)
+   - Domain references
+   - AWS resource references (target group ARNs)
+
+3. Error Handling
+   - Malformed log lines
+   - Missing required fields
+   - Invalid field values
+   - Incorrect field types
+
+4. Performance
+   - Large log file processing
+   - Memory usage with batch processing
+   - Processing time per record
+
+The included query examples in the previous section can be used to validate the processed data matches expected patterns.
