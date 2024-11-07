@@ -32,7 +32,7 @@ func (c *VpcFlowlogMapper) Identifier() string {
 func (c *VpcFlowlogMapper) Map(_ context.Context, a any) ([]*rows.VpcFlowLog, error) {
 	rowString, ok := a.(string)
 	if !ok {
-		return nil, fmt.Errorf("expectedstring, got %T", a)
+		return nil, fmt.Errorf("expected string, got %T", a)
 	}
 
 	fields := strings.Fields(rowString)
