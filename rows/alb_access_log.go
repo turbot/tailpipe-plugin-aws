@@ -15,8 +15,6 @@ import (
 // The struct maps directly to the format of ALB access logs as documented by AWS:
 // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html// AlbAccessLog represents a single ALB access log entry with enrichment fields
 type AlbAccessLog struct {
-	// Embed required enrichment fields
-
 	// CommonFields provides standard Tailpipe enrichment fields like tp_id, tp_timestamp, etc.
 	// These fields are used across all Tailpipe log types for consistent analysis
 	enrichment.CommonFields
