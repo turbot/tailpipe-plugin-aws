@@ -94,6 +94,20 @@ Findings:
 
 ### SQL Injection Attempts
 ```sql
+WITH filtered_requests AS (
+    SELECT
+        client_ip,
+        user_agent,
+        request as sample_request,
+        timestamp,
+        ROW_NUMBER() OVER (PARTITION BY client_ip, user_agent ORDER BY timestamp) AS row_num
+    FROM aws_alb_access_log
+    WHERE 
+        request LIKE '%UNION SELECT%' OR
+        request LIKE '%OR 1=1%' OR
+        request LIKE '%--\\%' OR
+        request LIKE '%'' OR ''%'
+)
 SELECT
     client_ip,
     user_agent,
@@ -105,7 +119,8 @@ FROM filtered_requests
 WHERE row_num <= 3
 GROUP BY client_ip, user_agent
 HAVING COUNT(*) > 1
-ORDER BY attempt_count DESC;
+ORDER BY attempt_count DESC
+LIMIT 10;
 ```
 
 Detected multiple SQL injection attempts from IPs in ranges:
@@ -115,24 +130,44 @@ Detected multiple SQL injection attempts from IPs in ranges:
 
 ### Cross-ALB Attack Patterns
 ```sql
-WITH suspicious_paths AS (...)
-SELECT
-    client_ip,
-    user_agent,
-    COUNT(DISTINCT alb_name) as albs_targeted,
-    COUNT(*) as total_probes,
-    STRING_AGG(DISTINCT alb_name, ', ') as targeted_albs,
-    STRING_AGG(sample_request, ' | ') as sample_requests,
-    MIN(timestamp) as first_seen,
-    MAX(timestamp) as last_seen,
-    EXTRACT(MINUTES FROM MAX(timestamp) - MIN(timestamp)) as campaign_duration_mins
-FROM suspicious_paths
-WHERE row_num <= 3
-GROUP BY client_ip, user_agent
-HAVING
-    COUNT(DISTINCT alb_name) > 1 AND
-    COUNT(*) >= 3
-ORDER BY albs_targeted DESC, total_probes DESC;
+WITH suspicious_paths AS (
+      SELECT
+          client_ip,
+          user_agent,
+          alb_name,
+          request as sample_request,
+          timestamp,
+          ROW_NUMBER() OVER (PARTITION BY client_ip, alb_name ORDER BY timestamp) AS row_num
+      FROM aws_alb_access_log
+      WHERE
+          request LIKE '%actuator%' OR
+          request LIKE '%metrics%' OR
+          request LIKE '%phpinfo%' OR
+          request LIKE '%server-status%' OR
+          request LIKE '%jndi:ldap%' OR
+          request LIKE '%class.module.classLoader%' OR
+          request LIKE '%.env%' OR
+          request LIKE '%wp-config%' OR
+          request LIKE '%/debug%'
+  )
+  SELECT
+      client_ip,
+      user_agent,
+      COUNT(DISTINCT alb_name) as albs_targeted,
+      COUNT(*) as total_probes,
+      STRING_AGG(DISTINCT alb_name, ', ') as targeted_albs,
+      STRING_AGG(sample_request, ' | ') as sample_requests,
+      MIN(timestamp) as first_seen,
+      MAX(timestamp) as last_seen,
+      EXTRACT(MINUTES FROM MAX(timestamp) - MIN(timestamp)) as campaign_duration_mins
+  FROM suspicious_paths
+  WHERE row_num <= 3
+  GROUP BY client_ip, user_agent
+  HAVING
+      COUNT(DISTINCT alb_name) > 1 AND  -- Targeting multiple ALBs
+      COUNT(*) >= 3                     -- At least 3 probe attempts
+  ORDER BY albs_targeted DESC, total_probes DESC
+  LIMIT 10;
 ```
 
 Key findings:
