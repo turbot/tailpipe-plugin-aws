@@ -1,0 +1,346 @@
+SELECT
+        CASE
+            WHEN user_agent LIKE '%Mobile%' THEN 'Mobile'
+            WHEN user_agent LIKE '%Chrome%' THEN 'Chrome'
+            WHEN user_agent LIKE '%Firefox%' THEN 'Firefox'
+            WHEN user_agent LIKE '%Safari%' THEN 'Safari'
+            WHEN user_agent LIKE '%bot%' OR user_agent LIKE '%Bot%' THEN 'Bot'
+            ELSE 'Other'
+        END as client_type,
+        COUNT(*) as request_count
+    FROM aws_alb_access_log
+    GROUP BY client_type
+    ORDER BY request_count DESC;
+┌─────────────┬───────────────┐
+│ client_type │ request_count │
+│   varchar   │     int64     │
+├─────────────┼───────────────┤
+│ Other       │          6337 │
+│ Mobile      │          1842 │
+│ Chrome      │          1821 │
+└─────────────┴───────────────┘
+
+
+D SELECT
+      ssl_protocol,
+      ssl_cipher,
+      COUNT(*) as count,
+      ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
+  FROM aws_alb_access_log
+  WHERE ssl_protocol != '-'
+  GROUP BY ssl_protocol, ssl_cipher
+  ORDER BY count DESC;
+┌──────────────┬─────────────────────────────┬───────┬────────────┐
+│ ssl_protocol │         ssl_cipher          │ count │ percentage │
+│   varchar    │           varchar           │ int64 │   double   │
+├──────────────┼─────────────────────────────┼───────┼────────────┤
+│ TLSv1.2      │ TLS_AES_128_GCM_SHA256      │  1721 │      17.21 │
+│ TLSv1.2      │ ECDHE-RSA-AES128-GCM-SHA256 │  1686 │      16.86 │
+│ TLSv1.3      │ TLS_AES_128_GCM_SHA256      │  1682 │      16.82 │
+│ TLSv1.3      │ ECDHE-RSA-AES256-GCM-SHA384 │  1655 │      16.55 │
+│ TLSv1.3      │ ECDHE-RSA-AES128-GCM-SHA256 │  1635 │      16.35 │
+│ TLSv1.2      │ ECDHE-RSA-AES256-GCM-SHA384 │  1621 │      16.21 │
+└──────────────┴─────────────────────────────┴───────┴────────────┘
+
+D SELECT
+      EXTRACT(hour FROM timestamp) as hour_of_day,
+      COUNT(*) as request_count
+  FROM aws_alb_access_log
+  GROUP BY hour_of_day
+  ORDER BY request_count DESC;
+┌─────────────┬───────────────┐
+│ hour_of_day │ request_count │
+│    int64    │     int64     │
+├─────────────┼───────────────┤
+│           6 │           681 │
+│           4 │           671 │
+│          13 │           665 │
+│          10 │           661 │
+│           0 │           660 │
+│          12 │           658 │
+│           2 │           655 │
+│           5 │           653 │
+│           7 │           653 │
+│           8 │           652 │
+│           3 │           646 │
+│           9 │           646 │
+│          14 │           646 │
+│           1 │           645 │
+│          11 │           640 │
+│          15 │           168 │
+├─────────────┴───────────────┤
+│ 16 rows           2 columns │
+└─────────────────────────────┘
+
+ SELECT
+      DATE_TRUNC('hour', timestamp) as hour,
+      COUNT(*) as total_requests,
+      SUM(CASE WHEN alb_status_code >= 400 THEN 1 ELSE 0 END) as error_count,
+      ROUND(SUM(CASE WHEN alb_status_code >= 400 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as error_rate
+  FROM aws_alb_access_log
+  GROUP BY hour
+  ORDER BY hour;
+┌─────────────────────┬────────────────┬─────────────┬────────────┐
+│        hour         │ total_requests │ error_count │ error_rate │
+│      timestamp      │     int64      │   int128    │   double   │
+├─────────────────────┼────────────────┼─────────────┼────────────┤
+│ 2024-11-01 00:00:00 │            660 │         143 │      21.67 │
+│ 2024-11-01 01:00:00 │            645 │         127 │      19.69 │
+│ 2024-11-01 02:00:00 │            655 │         126 │      19.24 │
+│ 2024-11-01 03:00:00 │            646 │         146 │       22.6 │
+│ 2024-11-01 04:00:00 │            671 │         142 │      21.16 │
+│ 2024-11-01 05:00:00 │            653 │         126 │       19.3 │
+│ 2024-11-01 06:00:00 │            681 │         154 │      22.61 │
+│ 2024-11-01 07:00:00 │            653 │         133 │      20.37 │
+│ 2024-11-01 08:00:00 │            652 │         140 │      21.47 │
+│ 2024-11-01 09:00:00 │            646 │         134 │      20.74 │
+│ 2024-11-01 10:00:00 │            661 │         137 │      20.73 │
+│ 2024-11-01 11:00:00 │            640 │         148 │      23.13 │
+│ 2024-11-01 12:00:00 │            658 │         133 │      20.21 │
+│ 2024-11-01 13:00:00 │            665 │         156 │      23.46 │
+│ 2024-11-01 14:00:00 │            646 │         142 │      21.98 │
+│ 2024-11-01 15:00:00 │            168 │          38 │      22.62 │
+├─────────────────────┴────────────────┴─────────────┴────────────┤
+│ 16 rows                                               4 columns │
+
+D SELECT
+      client_ip,
+      COUNT(*) as error_count,
+      STRING_AGG(request, ', ') as sample_requests
+  FROM (
+      SELECT DISTINCT client_ip, request
+      FROM aws_alb_access_log
+      WHERE alb_status_code >= 400
+      ORDER BY client_ip, request
+      LIMIT 3
+  ) AS limited_requests
+  GROUP BY client_ip
+  ORDER BY error_count DESC
+  LIMIT 10;
+┌───────────────┬─────────────┬────────────────────────────────┐
+│   client_ip   │ error_count │        sample_requests         │
+│    varchar    │    int64    │            varchar             │
+├───────────────┼─────────────┼────────────────────────────────┤
+│ 0.11.129.163  │           1 │ POST /.git/config HTTP/1.1     │
+│ 0.152.188.231 │           1 │ DELETE /admin/console HTTP/1.1 │
+│ 0.23.226.38   │           1 │ GET /assets/main.css HTTP/1.1  │
+└───────────────┴─────────────┴────────────────────────────────┘
+
+
+SELECT
+      tp_index as alb_name,
+      COUNT(*) as request_count,
+      COUNT(DISTINCT client_ip) as unique_clients,
+      ROUND(AVG(request_processing_time + target_processing_time + response_processing_time), 3) as avg_total_time
+  FROM
+      aws_alb_access_log
+  GROUP BY
+      tp_index
+  ORDER BY
+      request_count DESC;
+┌──────────────┬───────────────┬────────────────┬────────────────┐
+│   alb_name   │ request_count │ unique_clients │ avg_total_time │
+│   varchar    │     int64     │     int64      │     double     │
+├──────────────┼───────────────┼────────────────┼────────────────┤
+│ prod-web-alb │          3383 │           3383 │          0.355 │
+│ staging-alb  │          3358 │           3358 │          0.523 │
+│ prod-api-alb │          3259 │           3259 │           0.35 │
+└──────────────┴───────────────┴────────────────┴────────────────┘
+
+SELECT
+      client_ip,
+      COUNT(*) AS attempt_count,
+      STRING_AGG(sample_request, ', ') AS sample_requests
+  FROM (
+      SELECT
+          client_ip,
+          request AS sample_request,
+          ROW_NUMBER() OVER (PARTITION BY client_ip ORDER BY request) AS row_num
+      FROM aws_alb_access_log
+      WHERE LOWER(request) LIKE '%admin%'
+         OR LOWER(request) LIKE '%config%'
+         OR LOWER(request) LIKE '%backup%'
+         OR LOWER(request) LIKE '%wp-login%'
+         OR LOWER(request) LIKE '%\.git%'
+         OR LOWER(request) LIKE '%\.env%'
+  ) AS filtered_requests
+  WHERE row_num <= 3
+  GROUP BY client_ip
+  ORDER BY attempt_count DESC
+  LIMIT 10;
+┌─────────────────┬───────────────┬────────────────────────────────┐
+│    client_ip    │ attempt_count │        sample_requests         │
+│     varchar     │     int64     │            varchar             │
+├─────────────────┼───────────────┼────────────────────────────────┤
+│ 113.200.10.162  │             1 │ DELETE /admin/console HTTP/1.1 │
+│ 114.92.174.192  │             1 │ GET /wp-admin HTTP/1.1         │
+│ 132.99.103.116  │             1 │ GET /admin/console HTTP/1.1    │
+│ 164.150.124.249 │             1 │ DELETE /admin/console HTTP/1.1 │
+│ 170.43.125.124  │             1 │ DELETE /wp-admin HTTP/1.1      │
+│ 18.2.92.232     │             1 │ POST /.git/config HTTP/1.1     │
+│ 186.129.248.225 │             1 │ GET /admin/console HTTP/1.1    │
+│ 187.118.20.57   │             1 │ GET /wp-admin HTTP/1.1         │
+│ 187.70.219.101  │             1 │ GET /admin/console HTTP/1.1    │
+│ 190.108.8.160   │             1 │ GET /.git/config HTTP/1.1      │
+├─────────────────┴───────────────┴────────────────────────────────┤
+│ 10 rows                                                3 columns │
+└──────────────────────────────────────────────────────────────────┘
+
+ SELECT
+      user_agent,
+      COUNT(*) AS request_count,
+      COUNT(DISTINCT client_ip) AS unique_ips,
+      STRING_AGG(sample_request, ', ') AS sample_requests
+  FROM (
+      SELECT
+          user_agent,
+          client_ip,
+          request AS sample_request,
+          ROW_NUMBER() OVER (PARTITION BY user_agent ORDER BY request) AS row_num
+      FROM aws_alb_access_log
+      WHERE user_agent NOT LIKE '%Mozilla%'
+        AND user_agent NOT LIKE '%Chrome%'
+        AND user_agent NOT LIKE '%Safari%'
+        AND user_agent NOT LIKE '%Edge%'
+        AND user_agent NOT LIKE '%Firefox%'
+  ) AS filtered_requests
+  WHERE row_num <= 3
+  GROUP BY user_agent
+  HAVING COUNT(*) > 5
+  ORDER BY request_count DESC
+  LIMIT 10;
+┌────────────┬───────────────┬────────────┬─────────────────┐
+│ user_agent │ request_count │ unique_ips │ sample_requests │
+│  varchar   │     int64     │   int64    │     varchar     │
+├────────────┴───────────────┴────────────┴─────────────────┤
+│                          0 rows                           │
+└───────────────────────────────────────────────────────────┘
+
+SELECT
+      client_ip,
+      COUNT(DISTINCT sample_request) AS unique_paths,
+      COUNT(*) AS total_requests,
+      STRING_AGG(sample_request, ', ') AS sample_requests
+  FROM (
+      SELECT
+          client_ip,
+          request AS sample_request,
+          ROW_NUMBER() OVER (PARTITION BY client_ip ORDER BY request) AS row_num
+      FROM aws_alb_access_log
+      WHERE request NOT LIKE '%.css'
+        AND request NOT LIKE '%.js'
+        AND request NOT LIKE '%.png'
+        AND request NOT LIKE '%.jpg'
+  ) AS filtered_requests
+  WHERE row_num <= 3
+  GROUP BY client_ip
+  HAVING COUNT(DISTINCT sample_request) > 5
+  ORDER BY unique_paths DESC
+  LIMIT 10;
+┌───────────┬──────────────┬────────────────┬─────────────────┐
+│ client_ip │ unique_paths │ total_requests │ sample_requests │
+│  varchar  │    int64     │     int64      │     varchar     │
+├───────────┴──────────────┴────────────────┴─────────────────┤
+│                           0 rows                            │
+└─────────────────────────────────────────────────────────────┘
+
+D SELECT
+      client_ip,
+      user_agent,
+      COUNT(*) AS attempt_count,
+      STRING_AGG(sample_request, ' | ') AS sample_requests,
+      MIN(timestamp) AS first_seen,
+      MAX(timestamp) AS last_seen
+  FROM (
+      SELECT
+          client_ip,
+          user_agent,
+          request AS sample_request,
+          timestamp,
+          ROW_NUMBER() OVER (PARTITION BY client_ip, user_agent ORDER BY timestamp) AS row_num
+      FROM aws_alb_access_log
+      WHERE
+          request LIKE '%UNION SELECT%' OR
+          request LIKE '%OR 1=1%' OR
+          request LIKE '%--\\%' OR
+          request LIKE '%'' OR ''%'
+  ) AS filtered_requests
+  WHERE row_num <= 3
+  GROUP BY client_ip, user_agent
+  HAVING COUNT(*) > 1
+  ORDER BY attempt_count DESC
+  LIMIT 10;
+┌─────────────────┬──────────────────────┬───────────────┬──────────────────────────────┬────────────────────────────┬────────────────────────────┐
+│    client_ip    │      user_agent      │ attempt_count │       sample_requests        │         first_seen         │         last_seen          │
+│     varchar     │       varchar        │     int64     │           varchar            │         timestamp          │         timestamp          │
+├─────────────────┼──────────────────────┼───────────────┼──────────────────────────────┼────────────────────────────┼────────────────────────────┤
+│ 185.181.39.39   │ WhatWeb/0.5.5        │             3 │ GET /search?q=1' UNION SEL…  │ 2024-11-01 00:24:01.343922 │ 2024-11-01 00:48:04.63788  │
+│ 185.181.183.244 │ WhatWeb/0.5.5        │             3 │ GET /api/products?category…  │ 2024-11-01 00:24:42.481762 │ 2024-11-01 01:04:33.171301 │
+│ 185.181.147.41  │ Qualys SSL Assessm…  │             3 │ GET /api/products?category…  │ 2024-11-01 00:57:01.760879 │ 2024-11-01 00:59:59.466732 │
+│ 185.181.95.188  │ zgrab/0.x            │             3 │ POST /search?q=1' UNION SE…  │ 2024-11-01 00:52:06.183064 │ 2024-11-01 01:24:50.253022 │
+│ 193.27.228.135  │ subfinder/v2.5.5     │             3 │ GET /api/products?category…  │ 2024-11-01 02:12:02.011166 │ 2024-11-01 02:44:39.100384 │
+│ 185.181.21.23   │ Go-http-client/2.0   │             3 │ POST /users?id=1 OR 1=1 HT…  │ 2024-11-01 00:50:02.893712 │ 2024-11-01 01:09:09.166732 │
+│ 185.181.26.16   │ sqlmap/1.6.12 (htt…  │             3 │ GET /search?q=1' UNION SEL…  │ 2024-11-01 00:09:58.759586 │ 2024-11-01 00:30:58.160239 │
+│ 45.155.205.16   │ Nuclei/2.9.1 (http…  │             3 │ GET /users?id=1 OR 1=1 HTT…  │ 2024-11-01 02:25:33.955685 │ 2024-11-01 02:54:58.355605 │
+│ 185.181.129.31  │ Nmap Scripting Eng…  │             3 │ GET /users?id=1 OR 1=1 HTT…  │ 2024-11-01 01:48:31.295923 │ 2024-11-01 02:19:46.078848 │
+│ 185.181.178.132 │ subfinder/v2.5.5     │             3 │ POST /users?id=1 OR 1=1 HT…  │ 2024-11-01 01:53:05.825775 │ 2024-11-01 02:35:30.717043 │
+├─────────────────┴──────────────────────┴───────────────┴──────────────────────────────┴────────────────────────────┴────────────────────────────┤
+│ 10 rows                                                                                                                               6 columns │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+ WITH suspicious_paths AS (
+      SELECT
+          client_ip,
+          user_agent,
+          alb_name,
+          request as sample_request,
+          timestamp,
+          ROW_NUMBER() OVER (PARTITION BY client_ip, alb_name ORDER BY timestamp) AS row_num
+      FROM aws_alb_access_log
+      WHERE
+          request LIKE '%actuator%' OR
+          request LIKE '%metrics%' OR
+          request LIKE '%phpinfo%' OR
+          request LIKE '%server-status%' OR
+          request LIKE '%jndi:ldap%' OR
+          request LIKE '%class.module.classLoader%' OR
+          request LIKE '%.env%' OR
+          request LIKE '%wp-config%' OR
+          request LIKE '%/debug%'
+  )
+  SELECT
+      client_ip,
+      user_agent,
+      COUNT(DISTINCT alb_name) as albs_targeted,
+      COUNT(*) as total_probes,
+      STRING_AGG(DISTINCT alb_name, ', ') as targeted_albs,
+      STRING_AGG(sample_request, ' | ') as sample_requests,
+      MIN(timestamp) as first_seen,
+      MAX(timestamp) as last_seen,
+      EXTRACT(MINUTES FROM MAX(timestamp) - MIN(timestamp)) as campaign_duration_mins
+  FROM suspicious_paths
+  WHERE row_num <= 3
+  GROUP BY client_ip, user_agent
+  HAVING
+      COUNT(DISTINCT alb_name) > 1 AND  -- Targeting multiple ALBs
+      COUNT(*) >= 3                     -- At least 3 probe attempts
+  ORDER BY albs_targeted DESC, total_probes DESC
+  LIMIT 10;
+┌────────────────┬──────────────────────┬───────────────┬───┬──────────────────────┬──────────────────────┬──────────────────────┐
+│   client_ip    │      user_agent      │ albs_targeted │ … │      first_seen      │      last_seen       │ campaign_duration_…  │
+│    varchar     │       varchar        │     int64     │   │      timestamp       │      timestamp       │        int64         │
+├────────────────┼──────────────────────┼───────────────┼───┼──────────────────────┼──────────────────────┼──────────────────────┤
+│ 45.155.205.109 │ subfinder/v2.5.5     │             3 │ … │ 2024-11-01 01:28:3…  │ 2024-11-01 02:50:4…  │                   22 │
+│ 45.155.205.9   │ WhatWeb/0.5.5        │             3 │ … │ 2024-11-01 00:04:1…  │ 2024-11-01 01:41:2…  │                   37 │
+│ 45.155.205.243 │ python-requests/2.…  │             3 │ … │ 2024-11-01 00:11:1…  │ 2024-11-01 01:47:5…  │                   36 │
+│ 45.155.205.66  │ subfinder/v2.5.5     │             3 │ … │ 2024-11-01 00:03:2…  │ 2024-11-01 00:32:1…  │                   28 │
+│ 193.27.228.118 │ Go-http-client/2.0   │             3 │ … │ 2024-11-01 00:23:1…  │ 2024-11-01 02:18:0…  │                   54 │
+│ 193.27.228.126 │ dirbuster/1.0-RC1    │             3 │ … │ 2024-11-01 01:01:2…  │ 2024-11-01 02:49:2…  │                   47 │
+│ 193.27.228.71  │ python-requests/2.…  │             3 │ … │ 2024-11-01 00:55:2…  │ 2024-11-01 02:09:0…  │                   13 │
+│ 185.181.125.99 │ WhatWeb/0.5.5        │             3 │ … │ 2024-11-01 00:30:5…  │ 2024-11-01 02:02:2…  │                   31 │
+│ 193.27.228.155 │ Nmap Scripting Eng…  │             3 │ … │ 2024-11-01 01:17:4…  │ 2024-11-01 02:55:5…  │                   38 │
+│ 45.155.205.44  │ nikto/2.1.6          │             3 │ … │ 2024-11-01 01:04:2…  │ 2024-11-01 02:26:4…  │                   22 │
+├────────────────┴──────────────────────┴───────────────┴───┴──────────────────────┴──────────────────────┴──────────────────────┤
+│ 10 rows                                                                                                    9 columns (6 shown) │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
