@@ -55,14 +55,14 @@ staging-alb    → All staging ALB logs
 This mapping allows queries like:
 ```sql
 -- Get all prod ALB traffic
-SELECT * FROM aws_alb_access_log WHERE tp_index LIKE 'prod-%';
+SELECT * FROM alb_access_log WHERE tp_index LIKE 'prod-%';
 
 -- Compare traffic across environments
 SELECT 
     tp_index,
     COUNT(*) as requests,
     COUNT(DISTINCT client_ip) as unique_clients
-FROM aws_alb_access_log
+FROM alb_access_log
 GROUP BY tp_index;
 ```
 
@@ -168,7 +168,7 @@ SELECT
         ELSE 'Other'
     END as client_type,
     COUNT(*) as request_count
-FROM aws_alb_access_log
+FROM alb_access_log
 GROUP BY client_type
 ORDER BY request_count DESC;
 ```
@@ -184,7 +184,7 @@ SELECT
     ssl_cipher,
     COUNT(*) as count,
     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
-FROM aws_alb_access_log
+FROM alb_access_log
 WHERE ssl_protocol != '-'
 GROUP BY ssl_protocol, ssl_cipher
 ORDER BY count DESC;
@@ -202,7 +202,7 @@ Shows the distribution of requests across different hours of the day.
 SELECT
     EXTRACT(hour FROM timestamp) as hour_of_day,
     COUNT(*) as request_count
-FROM aws_alb_access_log
+FROM alb_access_log
 GROUP BY hour_of_day
 ORDER BY request_count DESC;
 ```
@@ -218,7 +218,7 @@ SELECT
     COUNT(*) as total_requests,
     SUM(CASE WHEN alb_status_code >= 400 THEN 1 ELSE 0 END) as error_count,
     ROUND(SUM(CASE WHEN alb_status_code >= 400 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as error_rate
-FROM aws_alb_access_log
+FROM alb_access_log
 GROUP BY hour
 ORDER BY hour;
 ```
@@ -234,7 +234,7 @@ SELECT
     COUNT(*) as request_count,
     COUNT(DISTINCT client_ip) as unique_clients,
     ROUND(AVG(request_processing_time + target_processing_time + response_processing_time), 3) as avg_total_time
-FROM aws_alb_access_log
+FROM alb_access_log
 GROUP BY tp_index
 ORDER BY request_count DESC;
 ```
@@ -255,7 +255,7 @@ WITH filtered_requests AS (
         request as sample_request,
         timestamp,
         ROW_NUMBER() OVER (PARTITION BY client_ip, user_agent ORDER BY timestamp) AS row_num
-    FROM aws_alb_access_log
+    FROM alb_access_log
     WHERE 
         request LIKE '%UNION SELECT%' OR
         request LIKE '%OR 1=1%' OR
@@ -292,7 +292,7 @@ WITH suspicious_paths AS (
           request as sample_request,
           timestamp,
           ROW_NUMBER() OVER (PARTITION BY client_ip, alb_name ORDER BY timestamp) AS row_num
-      FROM aws_alb_access_log
+      FROM alb_access_log
       WHERE
           request LIKE '%actuator%' OR
           request LIKE '%metrics%' OR
@@ -378,7 +378,7 @@ python3 alb_generate.py
 2. Create a test configuration file, e.g.
 
 ```hcl
-partition "aws_alb_access_log" "alb_test" {
+partition "alb_access_log" "alb_test" {
     plugin = "aws"
     source "file_system" {
         paths = ["/home/jon/tpsrc/tailpipe-plugin-aws/test/alb-test.log"]
@@ -389,7 +389,7 @@ partition "aws_alb_access_log" "alb_test" {
 
 3. Run Tailpipe:
 ```bash
-TAILPIPE_LOG_LEVEL=debug ./tailpipe collect aws_alb_access_log.alb_test
+TAILPIPE_LOG_LEVEL=debug ./tailpipe collect alb_access_log.alb_test
 ```
 
 ### Key Test Scenarios
