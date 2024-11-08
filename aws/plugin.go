@@ -34,6 +34,7 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 			tables.NewSecurityHubFindingLogTable,
 			tables.NewWafTrafficLogTable,
 			tables.NewAlbAccessLogTable,
+			tables.NewCCostAndUsageLogTable,
 		},
 	}
 
