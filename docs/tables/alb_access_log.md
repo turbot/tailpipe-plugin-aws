@@ -370,4 +370,4 @@ The generator supports customization of:
 
 ## Running Tests
 
-See [tests](../tests).
+See [tests](../../tests).
