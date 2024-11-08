@@ -10,7 +10,6 @@ import (
 
 	"github.com/rs/xid"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 )
 
 // AlbAccessLog represents a single Application Load Balancer (ALB) access log entry.
@@ -24,7 +23,7 @@ import (
 //
 // Enrichment fields are populated as follows:
 // - tp_source_ip: from client IP
-// - tp_destination_ip: from target IP 
+// - tp_destination_ip: from target IP
 // - tp_ips: array containing both client and target IPs
 // - tp_domains: from domain_name field
 // - tp_akas: from target_group_arn for AWS resource linking
@@ -242,8 +241,8 @@ func (l *AlbAccessLog) EnrichRow(sourceEnrichmentFields *enrichment.CommonFields
 
 	// Standard record enrichment
 	l.TpID = xid.New().String()
-	l.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(l.Timestamp.UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
-	l.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
+	l.TpTimestamp = l.Timestamp
+	l.TpIngestTimestamp = time.Now()
 	l.TpDate = l.Timestamp.Format("2006-01-02")
 	// Use ALB name as the index
 	l.TpIndex = l.AlbName
