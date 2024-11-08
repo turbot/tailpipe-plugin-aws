@@ -13,7 +13,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -88,8 +87,8 @@ func (c *WafTrafficLogTable) EnrichRow(row rows.WafTrafficLog, sourceEnrichmentF
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpSourceType = "aws_waf_traffic_log"
-	row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(*row.Timestamp))*int64(time.Millisecond))
-	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
+	row.TpTimestamp = *row.Timestamp
+	row.TpIngestTimestamp = time.Now()
 
 	// Hive fields
 	// Check if row.HttpSourceId is not nil before dereferencing
@@ -100,7 +99,7 @@ func (c *WafTrafficLogTable) EnrichRow(row rows.WafTrafficLog, sourceEnrichmentF
 		row.TpIndex = "" // or assign a default value if desired
 	}
 	// convert to date in format yy-mm-dd
-	row.TpDate = time.UnixMilli(int64(*row.Timestamp)).Format("2006-01-02")
+	row.TpDate = row.Timestamp.Format("2006-01-02")
 
 	return row, nil
 }

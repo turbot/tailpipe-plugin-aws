@@ -83,7 +83,7 @@ func (c *VPCFlowLogLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFie
 	if row.Timestamp != nil {
 		// convert to date in format yy-mm-dd
 		row.TpDate = row.Timestamp.In(time.UTC).Format("2006-01-02")
-		row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(row.Timestamp.UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
+		row.TpTimestamp = *row.Timestamp
 	} else if row.Start != nil {
 		// convert to date in format yy-mm-dd
 		// TODO is Start unix millis?? if so why do we convert it for TpTimestamp

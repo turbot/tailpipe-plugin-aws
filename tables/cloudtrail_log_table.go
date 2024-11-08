@@ -13,7 +13,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -88,8 +87,9 @@ func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentF
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpSourceType = "aws_cloudtrail_log"
-	row.TpTimestamp = time.Unix(0, int64(row.EventTime)*int64(time.Millisecond))
-	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
+	row.TpTimestamp = *row.EventTime
+	row.TpIngestTimestamp = time.Now()
+
 	if row.SourceIPAddress != nil {
 		row.TpSourceIP = row.SourceIPAddress
 		row.TpIps = append(row.TpIps, *row.SourceIPAddress)
@@ -115,7 +115,7 @@ func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentF
 	row.TpPartition = "default" // TODO - should be based on the definition in HCL
 	row.TpIndex = row.RecipientAccountId
 	// convert to date in format yy-mm-dd
-	row.TpDate = time.UnixMilli(int64(row.EventTime)).Format("2006-01-02")
+	row.TpDate = row.EventTime.Format("2006-01-02")
 
 	return row, nil
 }
