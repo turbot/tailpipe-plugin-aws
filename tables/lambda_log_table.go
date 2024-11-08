@@ -11,7 +11,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -50,7 +49,7 @@ func (c *LambdaLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrich
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 
-		ts := time.UnixMilli(int64(sourceEnrichmentFields.TpTimestamp))
+		ts := sourceEnrichmentFields.TpTimestamp
 		row.Timestamp = &ts
 	}
 
@@ -98,7 +97,7 @@ func (c *LambdaLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrich
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Now()
 
 	// Hive fields
 	row.TpPartition = c.Identifier()

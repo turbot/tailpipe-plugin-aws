@@ -2,7 +2,6 @@ package tables
 
 import (
 	"context"
-	"time"
 
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
@@ -11,7 +10,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -83,7 +81,7 @@ func (c *SecurityHubFindingLogTable) EnrichRow(row rows.SecurityHubFindingLog, s
 
 	row.TpSourceType = "aws_securityhub_finding_log"
 	if row.Time != nil {
-		row.TpTimestamp = helpers.UnixMillis(row.Time.UnixNano() / int64(time.Millisecond))
+		row.TpTimestamp = *row.Time
 	}
 	if row.Account != nil {
 		row.TpIndex = *row.Account
