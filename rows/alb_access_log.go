@@ -242,8 +242,8 @@ func (l *AlbAccessLog) EnrichRow(sourceEnrichmentFields *enrichment.CommonFields
 
 	// Standard record enrichment
 	l.TpID = xid.New().String()
-	l.TpTimestamp = helpers.UnixMillis(l.Timestamp.UnixNano() / int64(time.Millisecond))
-	l.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	l.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(l.Timestamp.UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
+	l.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 	l.TpDate = l.Timestamp.Format("2006-01-02")
 	// Use ALB name as the index
 	l.TpIndex = l.AlbName

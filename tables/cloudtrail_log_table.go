@@ -88,8 +88,8 @@ func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentF
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpSourceType = "aws_cloudtrail_log"
-	row.TpTimestamp = row.EventTime
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpTimestamp = time.Unix(0, int64(row.EventTime)*int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 	if row.SourceIPAddress != nil {
 		row.TpSourceIP = row.SourceIPAddress
 		row.TpIps = append(row.TpIps, *row.SourceIPAddress)

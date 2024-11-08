@@ -88,8 +88,8 @@ func (c *WafTrafficLogTable) EnrichRow(row rows.WafTrafficLog, sourceEnrichmentF
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpSourceType = "aws_waf_traffic_log"
-	row.TpTimestamp = helpers.UnixMillis(*row.Timestamp)
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(*row.Timestamp))*int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 
 	// Hive fields
 	// Check if row.HttpSourceId is not nil before dereferencing

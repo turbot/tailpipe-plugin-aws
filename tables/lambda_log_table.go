@@ -50,7 +50,7 @@ func (c *LambdaLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrich
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 
-		ts := time.UnixMilli(int64(sourceEnrichmentFields.TpTimestamp))
+		ts := time.UnixMilli(sourceEnrichmentFields.TpTimestamp.UnixMilli())
 		row.Timestamp = &ts
 	}
 
@@ -98,7 +98,7 @@ func (c *LambdaLogTable) EnrichRow(rawRow string, sourceEnrichmentFields *enrich
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 
 	// Hive fields
 	row.TpPartition = c.Identifier()

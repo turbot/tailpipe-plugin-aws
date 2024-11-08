@@ -70,7 +70,7 @@ func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, sourceEnrichmentFi
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 	row.TpSourceType = "aws_elb_access_log" // TODO: #refactor move to source?
 
 	// Hive Fields

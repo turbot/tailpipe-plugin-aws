@@ -61,7 +61,7 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing timestamp: %w", err)
 			}
 			l.Timestamp = ts
-			l.TpTimestamp = helpers.UnixMillis(ts.UnixNano() / int64(time.Millisecond))
+			l.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(ts.UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 		case "type":
 			l.Type = value
 		case "elb":

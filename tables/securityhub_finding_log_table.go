@@ -83,7 +83,7 @@ func (c *SecurityHubFindingLogTable) EnrichRow(row rows.SecurityHubFindingLog, s
 
 	row.TpSourceType = "aws_securityhub_finding_log"
 	if row.Time != nil {
-		row.TpTimestamp = helpers.UnixMillis(row.Time.UnixNano() / int64(time.Millisecond))
+		row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(row.Time.UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 	}
 	if row.Account != nil {
 		row.TpIndex = *row.Account

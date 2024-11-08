@@ -70,7 +70,7 @@ func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEn
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Unix(0, int64(helpers.UnixMillis(time.Now().UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 	row.TpSourceType = "aws.s3_server_access_log"
 
 	// Hive Fields

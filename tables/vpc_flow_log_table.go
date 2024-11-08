@@ -70,7 +70,7 @@ func (c *VPCFlowLogLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFie
 	row.TpSourceType = c.Identifier()
 	//row.TpSourceName = ???
 	//row.TpSourceLocation = ???
-	row.TpIngestTimestamp = helpers.UnixMillis(time.Now().UnixNano() / int64(time.Millisecond))
+	row.TpIngestTimestamp = time.Now()
 
 	// Hive fields
 	// TODO - should be based on the definition in HCL
@@ -83,15 +83,14 @@ func (c *VPCFlowLogLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFie
 	if row.Timestamp != nil {
 		// convert to date in format yy-mm-dd
 		row.TpDate = row.Timestamp.In(time.UTC).Format("2006-01-02")
-		row.TpTimestamp = helpers.UnixMillis(row.Timestamp.UnixNano() / int64(time.Millisecond))
-
+		row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(row.Timestamp.UnixNano()/int64(time.Millisecond)))*int64(time.Millisecond))
 	} else if row.Start != nil {
 		// convert to date in format yy-mm-dd
 		// TODO is Start unix millis?? if so why do we convert it for TpTimestamp
 		row.TpDate = time.UnixMilli(*row.Start).Format("2006-01-02")
 
 		//convert from unis seconds to milliseconds
-		row.TpTimestamp = helpers.UnixMillis(*row.Start * 1000)
+		row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(*row.Start*1000))*int64(time.Millisecond))
 	}
 
 	//row.TpAkas = ???
