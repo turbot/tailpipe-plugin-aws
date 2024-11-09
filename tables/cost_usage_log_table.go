@@ -94,8 +94,10 @@ func (c *CostAndUsageLogTable) EnrichRow(row rows.CostAndUsageLog, sourceEnrichm
 	// TODO - should we use the BillingPeriodEndDate instead?
 	if row.InvoiceDate != nil {
 		row.TpTimestamp = *row.InvoiceDate
-	} else {
+	} else if row.BillingPeriodStartDate != nil {
 		row.TpTimestamp = *row.BillingPeriodStartDate
+	} else if row.BillingPeriodEndDate != nil {
+		row.TpTimestamp = *row.BillingPeriodEndDate
 	}
 
 	row.TpIngestTimestamp = time.Now()
@@ -115,8 +117,10 @@ func (c *CostAndUsageLogTable) EnrichRow(row rows.CostAndUsageLog, sourceEnrichm
 	// convert to date in format yy-mm-dd
 	if row.InvoiceDate != nil {
 		row.TpDate = row.InvoiceDate.Format("2006-01-02")
-	} else {
+	} else if row.BillingPeriodStartDate != nil {
 		row.TpDate = row.BillingPeriodStartDate.Format("2006-01-02")
+	} else if row.BillingPeriodEndDate != nil {
+		row.TpDate = row.BillingPeriodEndDate.Format("2006-01-02")
 	}
 
 	return row, nil
