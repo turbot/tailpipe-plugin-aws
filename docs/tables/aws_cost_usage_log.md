@@ -9,9 +9,9 @@ select
   linked_account_name,
   sum(total_cost) as monthly_total_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   linked_account_id, linked_account_name
 order by
@@ -26,9 +26,10 @@ select
   product_name,
   sum(total_cost) as total_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
+  and product_name != ''
 group by
   product_name
 order by
@@ -44,9 +45,9 @@ select
   tp_date,
   sum(total_cost) as daily_total_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   tp_date
 order by
@@ -61,9 +62,10 @@ select
   usage_type,
   sum(total_cost) as total_usage_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
+  and usage_type != ''
 group by
   usage_type
 order by
@@ -78,10 +80,10 @@ select
   operation,
   sum(total_cost) as total_operation_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  operation is not null
-  and tp_date >= date_trunc('month', current_date)
+  operation != ''
+  and tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   operation
 order by
@@ -96,9 +98,9 @@ Calculates the average daily cost for the current month, providing a baseline fo
 select
   avg(total_cost) as average_daily_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date);
+  tp_date >= cast(date_trunc('month', current_date) as varchar);
 ```
 
 ## 7. Top Accounts by Usage Quantity
@@ -110,9 +112,9 @@ select
   linked_account_name,
   sum(usage_quantity) as total_usage_quantity
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   linked_account_id, linked_account_name
 order by
@@ -128,10 +130,11 @@ select
   product_name,
   sum(tax_amount) as total_tax_amount
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
   tax_amount > 0
-  and tp_date >= date_trunc('month', current_date)
+  and tp_date >= cast(date_trunc('year', current_date) as varchar)
+  and product_name != ''
 group by
   product_name
 order by
@@ -147,16 +150,16 @@ select
   linked_account_name,
   sum(credits) as total_credits
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   linked_account_id, linked_account_name
 order by
   total_credits desc;
 ```
 
-## 10. Cost Allocation by Product Code
+## 10. Cost Allocation by Product Code (Top 10)
 Provides a cost breakdown by product code, aiding in identifying high-cost products.
 
 ```sql
@@ -164,13 +167,15 @@ select
   product_code,
   sum(total_cost) as total_product_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
+  and product_code != ''
 group by
   product_code
 order by
-  total_product_cost desc;
+  total_product_cost desc
+limit 10;
 ```
 
 ## 11. Highest Cost by Resource Item Description
@@ -181,9 +186,9 @@ select
   item_description,
   sum(total_cost) as total_item_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   item_description
 order by
@@ -201,7 +206,7 @@ select
   date_trunc('month', tp_date) as month,
   sum(total_cost) as monthly_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 group by
   payer_account_id, payer_account_name, month
 order by
@@ -217,9 +222,9 @@ select
   linked_account_name,
   sum(tax_amount) as monthly_tax_amount
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   linked_account_id, linked_account_name
 order by
@@ -235,7 +240,7 @@ select
   billing_period_end_date,
   sum(total_cost) as billing_period_total_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 group by
   billing_period_start_date, billing_period_end_date
 order by
@@ -251,9 +256,9 @@ select
   currency_code,
   sum(total_cost) as total_currency_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   currency_code
 order by
@@ -268,9 +273,9 @@ select
   product_code,
   sum(usage_quantity) as total_usage_quantity
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   product_code
 order by
@@ -286,9 +291,9 @@ select
   seller_of_record,
   sum(total_cost) as total_seller_cost
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   seller_of_record
 order by
@@ -303,10 +308,10 @@ select
   product_name,
   avg(blended_rate) as average_blended_rate
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
   blended_rate is not null
-  and tp_date >= date_trunc('month', current_date)
+  and tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   product_name
 order by
@@ -322,9 +327,9 @@ select
   invoice_id,
   sum(cost_before_tax) as total_cost_before_tax
 from
-  aws_cost_and_usage_log
+  aws_cost_usage_log
 where
-  tp_date >= date_trunc('month', current_date)
+  tp_date >= cast(date_trunc('month', current_date) as varchar)
 group by
   invoice_id
 order by
@@ -337,24 +342,24 @@ Calculates the month-over-month cost change percentage for each product, providi
 
 ```sql
 with monthly_costs as (
-  select
-    product_name,
-    date_trunc('month', tp_date) as month,
-    sum(total_cost) as monthly_cost
-  from
-    aws_cost_and_usage_log
-  group by
-    product_name, month
-),
-monthly_changes as (
-  select
-    product_name,
-    month,
-    monthly_cost,
-    lag(monthly_cost) over (partition by product_name order by month) as previous_month_cost
-  from
-    monthly_costs
-)
+    select
+      product_name,
+      date_trunc('month', cast(tp_date as date)) as month,
+      sum(total_cost) as monthly_cost
+    from
+      aws_cost_usage_log
+    group by
+      product_name, month
+  ),
+  monthly_changes as (
+    select
+      product_name,
+      month,
+      monthly_cost,
+      lag(monthly_cost) over (partition by product_name order by month) as previous_month_cost
+    from
+      monthly_costs
+  )
 select
   product_name,
   month,
@@ -363,6 +368,8 @@ from
   monthly_changes
 where
   previous_month_cost is not null
+  and product_name != ''
+  and cost_change_percentage != 0
 order by
   product_name, month;
 ```

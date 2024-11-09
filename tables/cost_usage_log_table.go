@@ -60,7 +60,7 @@ func (c *CostAndUsageLogTable) GetSourceOptions(sourceType string) []row_source.
 	// cost and usage csv reports are stored in S3
 	case artifact_source.FileSystemSourceIdentifier:
 		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
-			FileLayout: utils.ToStringPointer("/Users/pskrbasu/s3-logs/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
+			FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
 		}
 		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine(), artifact_source.WithSkipHeaderRow())
 
