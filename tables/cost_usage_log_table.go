@@ -47,7 +47,7 @@ func (c *CostAndUsageLogTable) initMapper() {
 
 // Identifier implements table.Table
 func (c *CostAndUsageLogTable) Identifier() string {
-	return "aws_cost_and_usage_log"
+	return "aws_cost_usage_log"
 }
 
 // GetSourceOptions returns any options which should be passed to the given source type
@@ -57,9 +57,10 @@ func (c *CostAndUsageLogTable) GetSourceOptions(sourceType string) []row_source.
 	switch sourceType {
 
 	// TODO - update to use AwsS3BucketSourceIdentifier (using FileSystemSourceIdentifier for now)
+	// cost and usage csv reports are stored in S3
 	case artifact_source.FileSystemSourceIdentifier:
 		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
-			FileLayout: utils.ToStringPointer("/Users/pskrbasu/s3-logs/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})/ecsv_10_2024.csv"),
+			FileLayout: utils.ToStringPointer("/Users/pskrbasu/s3-logs/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
 		}
 		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine(), artifact_source.WithSkipHeaderRow())
 
@@ -87,7 +88,16 @@ func (c *CostAndUsageLogTable) EnrichRow(row rows.CostAndUsageLog, sourceEnrichm
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpSourceType = "aws_cost_and_usage_log"
-	row.TpTimestamp = *row.InvoiceDate
+
+	// we are using the invoice date as the tp_timestamp, but we dont always get the invoice date
+	// so we use the BillingPeriodStartDate as a fallback
+	// TODO - should we use the BillingPeriodEndDate instead?
+	if row.InvoiceDate != nil {
+		row.TpTimestamp = *row.InvoiceDate
+	} else {
+		row.TpTimestamp = *row.BillingPeriodStartDate
+	}
+
 	row.TpIngestTimestamp = time.Now()
 	// if row.PayerAccountName != nil {
 	// 	row.TpSourceIP = row.PayerAccountName
@@ -95,10 +105,19 @@ func (c *CostAndUsageLogTable) EnrichRow(row rows.CostAndUsageLog, sourceEnrichm
 	// }
 
 	// Hive fields
-	row.TpPartition = "default" // TODO - should be based on the definition in HCL
-	row.TpIndex = *row.PayerAccountId
+	// for some rows we dont get the linked account id, so we use the payer account id as a fallback
+	// TODO - should we use the payer account id instead?
+	if row.LinkedAccountId != nil {
+		row.TpIndex = *row.LinkedAccountId
+	} else {
+		row.TpIndex = *row.PayerAccountId
+	}
 	// convert to date in format yy-mm-dd
-	row.TpDate = row.InvoiceDate.Format("2006-01-02")
+	if row.InvoiceDate != nil {
+		row.TpDate = row.InvoiceDate.Format("2006-01-02")
+	} else {
+		row.TpDate = row.BillingPeriodStartDate.Format("2006-01-02")
+	}
 
 	return row, nil
 }

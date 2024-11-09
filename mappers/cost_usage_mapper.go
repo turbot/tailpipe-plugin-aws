@@ -43,6 +43,7 @@ func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) ([]rows.CostAndUsa
 	var logs []rows.CostAndUsageLog
 	for _, row := range records {
 		// TODO - find a better way of doing this parsing
+		// this works for now, since the csv columns are fixed and ordered
 		slog.Debug("<< row", "...", row)
 		log := rows.CostAndUsageLog{
 			InvoiceID:              &row[0],
