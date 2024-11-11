@@ -71,6 +71,8 @@ Alternative index strategies we considered but rejected:
 - Region: Too broad, most logs from same region
 - Target Group: Too granular, splits related traffic
 
+## Collection flow
+
 
 ```mermaid
 graph TD
