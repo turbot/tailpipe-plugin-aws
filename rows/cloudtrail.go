@@ -1,6 +1,8 @@
 package rows
 
 import (
+	"time"
+
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 )
@@ -21,7 +23,7 @@ type CloudTrailLog struct {
 	EventID             string              `json:"eventID"`
 	EventName           string              `json:"eventName"`
 	EventSource         string              `json:"eventSource"`
-	EventTime           helpers.UnixMillis  `json:"eventTime"`
+	EventTime           *time.Time          `json:"eventTime"`
 	EventType           string              `json:"eventType"`
 	EventVersion        string              `json:"eventVersion"`
 	ManagementEvent     *bool               `json:"managementEvent,omitempty" `
