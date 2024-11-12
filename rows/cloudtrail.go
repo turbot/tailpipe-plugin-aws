@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 type CloudTrailBatch struct {
@@ -15,35 +15,35 @@ type CloudTrailLog struct {
 	// embed required enrichment fields (be sure to skip in parquet)
 	enrichment.CommonFields
 
-	AdditionalEventData *helpers.JSONString `json:"additionalEventData,omitempty"`
-	APIVersion          *string             `json:"apiVersion,omitempty"`
-	AwsRegion           string              `json:"awsRegion"`
-	ErrorCode           *string             `json:"errorCode,omitempty"`
-	ErrorMessage        *string             `json:"errorMessage,omitempty"`
-	EventID             string              `json:"eventID"`
-	EventName           string              `json:"eventName"`
-	EventSource         string              `json:"eventSource"`
-	EventTime           *time.Time          `json:"eventTime"`
-	EventType           string              `json:"eventType"`
-	EventVersion        string              `json:"eventVersion"`
-	ManagementEvent     *bool               `json:"managementEvent,omitempty" `
-	ReadOnly            *bool               `json:"readOnly,omitempty"`
-	RecipientAccountId  string              `json:"recipientAccountId,omitempty" `
-	RequestID           *string             `json:"requestID,omitempty" `
-	RequestParameters   *helpers.JSONString `json:"requestParameters,omitempty" `
-	Resources           []*Resource         `json:"resources,omitempty" `
-	ResponseElements    *helpers.JSONString `json:"responseElements,omitempty" `
-	ServiceEventDetails *helpers.JSONString `json:"serviceEventDetails,omitempty"`
-	SharedEventID       *string             `json:"sharedEventID,omitempty"`
-	SourceIPAddress     *string             `json:"sourceIPAddress,omitempty"`
-	UserAgent           *string             `json:"userAgent,omitempty"`
-	UserIdentity        UserIdentity        `json:"userIdentity"`
-	VpcEndpointId       string              `json:"vpcEndpointId,omitempty"`
-	EventCategory       string              `json:"eventCategory,omitempty"`
+	AdditionalEventData *types.JSONString `json:"additionalEventData,omitempty"`
+	APIVersion          *string           `json:"apiVersion,omitempty"`
+	AwsRegion           string            `json:"awsRegion"`
+	ErrorCode           *string           `json:"errorCode,omitempty"`
+	ErrorMessage        *string           `json:"errorMessage,omitempty"`
+	EventID             string            `json:"eventID"`
+	EventName           string            `json:"eventName"`
+	EventSource         string            `json:"eventSource"`
+	EventTime           *time.Time        `json:"eventTime"`
+	EventType           string            `json:"eventType"`
+	EventVersion        string            `json:"eventVersion"`
+	ManagementEvent     *bool             `json:"managementEvent,omitempty" `
+	ReadOnly            *bool             `json:"readOnly,omitempty"`
+	RecipientAccountId  string            `json:"recipientAccountId,omitempty" `
+	RequestID           *string           `json:"requestID,omitempty" `
+	RequestParameters   *types.JSONString `json:"requestParameters,omitempty" `
+	Resources           []*Resource       `json:"resources,omitempty" `
+	ResponseElements    *types.JSONString `json:"responseElements,omitempty" `
+	ServiceEventDetails *types.JSONString `json:"serviceEventDetails,omitempty"`
+	SharedEventID       *string           `json:"sharedEventID,omitempty"`
+	SourceIPAddress     *string           `json:"sourceIPAddress,omitempty"`
+	UserAgent           *string           `json:"userAgent,omitempty"`
+	UserIdentity        UserIdentity      `json:"userIdentity"`
+	VpcEndpointId       string            `json:"vpcEndpointId,omitempty"`
+	EventCategory       string            `json:"eventCategory,omitempty"`
 	// TODO - this looks like a bool, but is in the JSON as a string ... should we convert it?
-	SessionCredentialFromConsole *string             `json:"sessionCredentialFromConsole,omitempty"`
-	EdgeDeviceDetails            *helpers.JSONString `json:"edgeDeviceDetails,omitempty"`
-	TLSDetails                   *TLSDetails         `json:"tlsDetails,omitempty"`
+	SessionCredentialFromConsole *string           `json:"sessionCredentialFromConsole,omitempty"`
+	EdgeDeviceDetails            *types.JSONString `json:"edgeDeviceDetails,omitempty"`
+	TLSDetails                   *TLSDetails       `json:"tlsDetails,omitempty"`
 }
 
 type UserIdentity struct {
@@ -72,8 +72,8 @@ type SessionContext struct {
 }
 
 type SessionAttributes struct {
-	MfaAuthenticated *string             `json:"mfaAuthenticated,omitempty"`
-	CreationDate     *helpers.UnixMillis `json:"creationDate,omitempty"`
+	MfaAuthenticated *string           `json:"mfaAuthenticated,omitempty"`
+	CreationDate     *types.UnixMillis `json:"creationDate,omitempty"`
 }
 
 type SessionIssuer struct {
@@ -85,8 +85,8 @@ type SessionIssuer struct {
 }
 
 type WebIdFederationData struct {
-	FederatedProvider *string             `json:"federatedProvider,omitempty"`
-	Attributes        *helpers.JSONString `json:"attributes,omitempty"`
+	FederatedProvider *string           `json:"federatedProvider,omitempty"`
+	Attributes        *types.JSONString `json:"attributes,omitempty"`
 }
 
 type TLSDetails struct {

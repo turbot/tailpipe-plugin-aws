@@ -9,7 +9,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
@@ -90,7 +89,7 @@ func (c *VPCFlowLogLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFie
 		row.TpDate = time.UnixMilli(*row.Start).Format("2006-01-02")
 
 		//convert from unis seconds to milliseconds
-		row.TpTimestamp = time.Unix(0, int64(helpers.UnixMillis(*row.Start*1000))*int64(time.Millisecond))
+		row.TpTimestamp = time.Unix(0, int64(*row.Start*1000)*int64(time.Millisecond))
 	}
 
 	//row.TpAkas = ???

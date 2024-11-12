@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 type SecurityHubFindingsMapper struct {
@@ -46,7 +46,7 @@ func (m *SecurityHubFindingsMapper) Map(_ context.Context, a any) ([]rows.Securi
 		return nil, fmt.Errorf("error marshalling row data: %w", err)
 	}
 
-	dataJsonString := helpers.JSONString(s)
+	dataJsonString := types.JSONString(s)
 	b.DetailFindings = &dataJsonString
 
 	return []rows.SecurityHubFindingLog{b}, nil
