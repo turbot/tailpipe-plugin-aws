@@ -31,6 +31,7 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 			tables.NewElbAccessLogTable,
 			tables.NewS3ServerAccessLogTable,
 			tables.NewLambdaLogTable,
+			tables.NewGuardDutyFindingTable,
 			tables.NewSecurityHubFindingLogTable,
 			tables.NewWafTrafficLogTable,
 			tables.NewAlbAccessLogTable,
