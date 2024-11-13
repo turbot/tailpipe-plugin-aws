@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
@@ -114,10 +115,10 @@ func (c *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrich
 	// Hive fields
 	// for some rows we dont get the linked account id, so we use the payer account id as a fallback
 	// TODO - should we use the payer account id instead?
-	if row.LinkedAccountId != nil {
-		row.TpIndex = *row.LinkedAccountId
+	if accountId := typehelpers.SafeString(row.LinkedAccountId); accountId != "" {
+		row.TpIndex = accountId
 	} else {
-		row.TpIndex = *row.PayerAccountId
+		row.TpIndex = typehelpers.SafeString(row.PayerAccountId)
 	}
 	// convert to date in format yy-mm-dd
 	if row.InvoiceDate != nil {
