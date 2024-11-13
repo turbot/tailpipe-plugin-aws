@@ -18,12 +18,17 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
-// GuardDutyFindingTable - table for GuardDuty Findings
-type GuardDutyFindingTable struct {
-	table.TableImpl[rows.GuardDutyFinding, *GuardDutyFindingTableConfig, *config.AwsConnection]
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewGuardDutyFindingTable)
 }
 
-func NewGuardDutyFindingTable() table.Table {
+// GuardDutyFindingTable - table for GuardDuty Findings
+type GuardDutyFindingTable struct {
+	table.TableImpl[*rows.GuardDutyFinding, *GuardDutyFindingTableConfig, *config.AwsConnection]
+}
+
+func NewGuardDutyFindingTable() table.Enricher[*rows.GuardDutyFinding] {
 	return &GuardDutyFindingTable{}
 }
 
@@ -50,12 +55,12 @@ func (c *GuardDutyFindingTable) GetSourceOptions(sourceType string) []row_source
 		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 			FileLayout: utils.ToStringPointer("AWSLogs/[0-9]+/GuardDuty/[a-z0-9-]+/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/[0-9a-fA-F-]+\\.jsonl\\.gz"),
 		}
-		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),artifact_source.WithRowPerLine())
+		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine())
 	}
 	return opts
 }
 
-func (c *GuardDutyFindingTable) GetRowSchema() any {
+func (c *GuardDutyFindingTable) GetRowSchema() types.RowStruct {
 	return rows.GuardDutyFinding{}
 }
 
@@ -63,7 +68,7 @@ func (c *GuardDutyFindingTable) GetConfigSchema() parse.Config {
 	return &GuardDutyFindingTableConfig{}
 }
 
-func (c *GuardDutyFindingTable) EnrichRow(row rows.GuardDutyFinding, sourceEnrichmentFields *enrichment.CommonFields) (rows.GuardDutyFinding, error) {
+func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnrichmentFields *enrichment.CommonFields) (*rows.GuardDutyFinding, error) {
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 	}

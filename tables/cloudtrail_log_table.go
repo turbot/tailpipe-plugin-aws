@@ -19,13 +19,18 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewCloudTrailLogTable)
+}
+
 // CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
 }
 
-func NewCloudTrailLogTable() table.Table {
+func NewCloudTrailLogTable() table.Enricher[*rows.CloudTrailLog] {
 	return &CloudTrailLogTable{}
 }
 
@@ -69,7 +74,7 @@ func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 }
 
 // GetRowSchema implements table.Table
-func (c *CloudTrailLogTable) GetRowSchema() any {
+func (c *CloudTrailLogTable) GetRowSchema() types.RowStruct {
 	return rows.CloudTrailLog{}
 }
 
@@ -78,7 +83,7 @@ func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
 }
 
 // EnrichRow implements table.Table
-func (c *CloudTrailLogTable) EnrichRow(row rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (rows.CloudTrailLog, error) {
+func (c *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields

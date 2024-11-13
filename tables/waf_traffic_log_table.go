@@ -19,13 +19,18 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewWafTrafficLogTable)
+}
+
 // WafTrafficLogTable - table for Waf traffic logs
 type WafTrafficLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[rows.WafTrafficLog, *WafTrafficLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.WafTrafficLog, *WafTrafficLogTableConfig, *config.AwsConnection]
 }
 
-func NewWafTrafficLogTable() table.Table {
+func NewWafTrafficLogTable() table.Enricher[*rows.WafTrafficLog] {
 	return &WafTrafficLogTable{}
 }
 
@@ -69,7 +74,7 @@ func (c *WafTrafficLogTable) GetSourceOptions(sourceType string) []row_source.Ro
 }
 
 // GetRowSchema implements table.Table
-func (c *WafTrafficLogTable) GetRowSchema() any {
+func (c *WafTrafficLogTable) GetRowSchema() types.RowStruct {
 	return rows.WafTrafficLog{}
 }
 
@@ -78,8 +83,7 @@ func (c *WafTrafficLogTable) GetConfigSchema() parse.Config {
 }
 
 // EnrichRow implements table.Table
-func (c *WafTrafficLogTable) EnrichRow(row rows.WafTrafficLog, sourceEnrichmentFields *enrichment.CommonFields) (rows.WafTrafficLog, error) {
-	// initialize the enrichment fields to any fields provided by the source
+func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 	}

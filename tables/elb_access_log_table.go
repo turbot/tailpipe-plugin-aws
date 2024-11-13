@@ -15,6 +15,11 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewElbAccessLogTable)
+}
+
 const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
 const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
@@ -22,7 +27,7 @@ type ElbAccessLogTable struct {
 	table.TableImpl[*rows.ElbAccessLog, *ElbAccessLogTableConfig, *config.AwsConnection]
 }
 
-func NewElbAccessLogTable() table.Table {
+func NewElbAccessLogTable() table.Enricher[*rows.ElbAccessLog] {
 	return &ElbAccessLogTable{}
 }
 
@@ -45,7 +50,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 	return "aws_elb_access_log"
 }
 
-func (c *ElbAccessLogTable) GetRowSchema() any {
+func (c *ElbAccessLogTable) GetRowSchema() types.RowStruct {
 	return &rows.ElbAccessLog{}
 }
 

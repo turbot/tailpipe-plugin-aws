@@ -15,6 +15,11 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewS3ServerAccessLogTable)
+}
+
 const s3ServerAccessLogFormat = `$bucket_owner $bucket [$timestamp] $remote_ip $requester $request_id $operation $key "$request_uri" $http_status $error_code $bytes_sent $object_size $total_time $turn_around_time "$referer" "$user_agent" $version_id $host_id $signature_version $cipher_suite $authentication_type $host_header $tls_version $access_point_arn $acl_required`
 const s3ServerAccessLogFormatReduced = `$bucket_owner $bucket [$timestamp] $remote_ip $requester $request_id $operation $key "$request_uri" $http_status $error_code $bytes_sent $object_size $total_time $turn_around_time "$referer" "$user_agent" $version_id $host_id $signature_version $cipher_suite $authentication_type $host_header $tls_version $access_point_arn`
 
@@ -22,7 +27,7 @@ type S3ServerAccessLogTable struct {
 	table.TableImpl[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *config.AwsConnection]
 }
 
-func NewS3ServerAccessLogTable() table.Table {
+func NewS3ServerAccessLogTable() table.Enricher[*rows.S3ServerAccessLog] {
 	return &S3ServerAccessLogTable{}
 }
 
@@ -45,7 +50,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 	return "aws_s3_server_access_log"
 }
 
-func (c *S3ServerAccessLogTable) GetRowSchema() any {
+func (c *S3ServerAccessLogTable) GetRowSchema() types.RowStruct {
 	return rows.NewS3ServerAccessLog()
 }
 
@@ -59,7 +64,7 @@ func (c *S3ServerAccessLogTable) GetSourceOptions(sourceType string) []row_sourc
 	}
 }
 
-func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (any, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.S3ServerAccessLog, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// add any source enrichment fields

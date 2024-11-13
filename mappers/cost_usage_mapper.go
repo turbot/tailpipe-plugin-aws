@@ -18,7 +18,7 @@ type CostAndUsageLogMapper struct {
 }
 
 // NewCostAndUsageMapper creates a new CostAndUsageLogMapper
-func NewCostAndUsageMapper() table.Mapper[rows.CostAndUsageLog] {
+func NewCostAndUsageMapper() table.Mapper[*rows.CostAndUsageLog] {
 	return &CostAndUsageLogMapper{}
 }
 
@@ -26,7 +26,7 @@ func (c *CostAndUsageLogMapper) Identifier() string {
 	return "cost_and_usage_mapper"
 }
 
-func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) ([]rows.CostAndUsageLog, error) {
+func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) ([]*rows.CostAndUsageLog, error) {
 	slog.Debug(">> Inside Map")
 	csvData, ok := a.(string)
 	if !ok {
@@ -40,12 +40,12 @@ func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) ([]rows.CostAndUsa
 		return nil, err
 	}
 	slog.Debug("<< records", "...", records)
-	var logs []rows.CostAndUsageLog
+	var logs []*rows.CostAndUsageLog
 	for _, row := range records {
 		// TODO - find a better way of doing this parsing
 		// this works for now, since the csv columns are fixed and ordered
 		slog.Debug("<< row", "...", row)
-		log := rows.CostAndUsageLog{
+		log := &rows.CostAndUsageLog{
 			InvoiceID:              &row[0],
 			PayerAccountId:         &row[1],
 			LinkedAccountId:        &row[2],

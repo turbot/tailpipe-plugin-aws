@@ -5,9 +5,8 @@ package tables
 
 import (
 	"context"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
-
 	"github.com/turbot/tailpipe-plugin-aws/config"
+	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
@@ -15,13 +14,19 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
+	"log/slog"
 )
+
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewAlbAccessLogTable)
+}
 
 type AlbAccessLogTable struct {
 	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *config.AwsConnection]
 }
 
-func NewAlbAccessLogTable() table.Table {
+func NewAlbAccessLogTable() table.Enricher[*rows.AlbAccessLog] {
 	return &AlbAccessLogTable{}
 }
 
@@ -32,6 +37,10 @@ func (t *AlbAccessLogTable) Init(ctx context.Context, connectionSchemaProvider t
 
 	// Set the mapper
 	t.Mapper = mappers.NewAlbAccessLogMapper()
+
+	var enricher table.Enricher[*rows.AlbAccessLog]
+	enricher = t
+	slog.Info("Enricher: %v", enricher)
 	return nil
 }
 
@@ -39,7 +48,7 @@ func (t *AlbAccessLogTable) Identifier() string {
 	return "aws_alb_access_log"
 }
 
-func (t *AlbAccessLogTable) GetRowSchema() any {
+func (t *AlbAccessLogTable) GetRowSchema() types.RowStruct {
 	return &rows.AlbAccessLog{}
 }
 

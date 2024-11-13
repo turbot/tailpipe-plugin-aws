@@ -12,16 +12,18 @@ type CloudTrailBatch struct {
 }
 
 type CloudTrailLog struct {
-	// embed required enrichment fields (be sure to skip in parquet)
+	// embed required enrichment fields
 	enrichment.CommonFields
 
+	// TODO json fields should be snake case - these are probably camel case because
+	// they are coming from the AWS SDK? in which case we should just use a mapper
 	AdditionalEventData *types.JSONString `json:"additionalEventData,omitempty"`
 	APIVersion          *string           `json:"apiVersion,omitempty"`
 	AwsRegion           string            `json:"awsRegion"`
 	ErrorCode           *string           `json:"errorCode,omitempty"`
 	ErrorMessage        *string           `json:"errorMessage,omitempty"`
 	EventID             string            `json:"eventID"`
-	EventName           string            `json:"eventName"`
+	EventName           string            `json:"eventName" parquet:"type=JSON"`
 	EventSource         string            `json:"eventSource"`
 	EventTime           *time.Time        `json:"eventTime"`
 	EventType           string            `json:"eventType"`

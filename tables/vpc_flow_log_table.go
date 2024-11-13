@@ -14,13 +14,18 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewVPCFlowLogLogTable)
+}
+
 // VPCFlowLogLogTable - table for VPC Flow Logs
 type VPCFlowLogLogTable struct {
 	// all tables must embed table.TableImpl
 	table.TableImpl[*rows.VpcFlowLog, *VpcFlowLogTableConfig, *config.AwsConnection]
 }
 
-func NewVPCFlowLogLogTable() table.Table {
+func NewVPCFlowLogLogTable() table.Enricher[*rows.VpcFlowLog] {
 	return &VPCFlowLogLogTable{}
 }
 
@@ -46,7 +51,7 @@ func (c *VPCFlowLogLogTable) Identifier() string {
 
 // GetRowSchema implements table.Table
 // return an instance of the row struct
-func (c *VPCFlowLogLogTable) GetRowSchema() any {
+func (c *VPCFlowLogLogTable) GetRowSchema() types.RowStruct {
 	return rows.VpcFlowLog{}
 }
 

@@ -16,12 +16,17 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
-type SecurityHubFindingLogTable struct {
-	// all tables must embed table.TableImpl
-	table.TableImpl[rows.SecurityHubFindingLog, *SecurityHubFindingLogTableConfig, *config.AwsConnection]
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewSecurityHubFindingLogTable)
 }
 
-func NewSecurityHubFindingLogTable() table.Table {
+type SecurityHubFindingLogTable struct {
+	// all tables must embed table.TableImpl
+	table.TableImpl[*rows.SecurityHubFindingLog, *SecurityHubFindingLogTableConfig, *config.AwsConnection]
+}
+
+func NewSecurityHubFindingLogTable() table.Enricher[*rows.SecurityHubFindingLog] {
 	return &SecurityHubFindingLogTable{}
 }
 
@@ -60,7 +65,7 @@ func (c *SecurityHubFindingLogTable) initMapper() {
 	c.Mapper = mappers.NewSecurityHubFindingsMapper()
 }
 
-func (c *SecurityHubFindingLogTable) GetRowSchema() any {
+func (c *SecurityHubFindingLogTable) GetRowSchema() types.RowStruct {
 	return &rows.SecurityHubFindingLog{}
 }
 
@@ -68,8 +73,7 @@ func (c *SecurityHubFindingLogTable) GetConfigSchema() parse.Config {
 	return &SecurityHubFindingLogTableConfig{}
 }
 
-// TODO K why does this not fail to compile?
-func (c *SecurityHubFindingLogTable) EnrichRow(row rows.SecurityHubFindingLog, sourceEnrichmentFields *enrichment.CommonFields) (rows.SecurityHubFindingLog, error) {
+func (c *SecurityHubFindingLogTable) EnrichRow(row *rows.SecurityHubFindingLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.SecurityHubFindingLog, error) {
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 	}

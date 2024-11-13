@@ -13,7 +13,7 @@ import (
 type SecurityHubFindingsMapper struct {
 }
 
-func NewSecurityHubFindingsMapper() table.Mapper[rows.SecurityHubFindingLog] {
+func NewSecurityHubFindingsMapper() table.Mapper[*rows.SecurityHubFindingLog] {
 	res := &SecurityHubFindingsMapper{}
 
 	return res
@@ -23,7 +23,7 @@ func (c *SecurityHubFindingsMapper) Identifier() string {
 	return "securityhub_finding_mapper"
 }
 
-func (m *SecurityHubFindingsMapper) Map(_ context.Context, a any) ([]rows.SecurityHubFindingLog, error) {
+func (m *SecurityHubFindingsMapper) Map(_ context.Context, a any) ([]*rows.SecurityHubFindingLog, error) {
 	var b rows.SecurityHubFindingLog
 
 	// If `a` is a []uint8, unmarshal it into the expected struct
@@ -49,6 +49,6 @@ func (m *SecurityHubFindingsMapper) Map(_ context.Context, a any) ([]rows.Securi
 	dataJsonString := types.JSONString(s)
 	b.DetailFindings = &dataJsonString
 
-	return []rows.SecurityHubFindingLog{b}, nil
+	return []*rows.SecurityHubFindingLog{&b}, nil
 
 }

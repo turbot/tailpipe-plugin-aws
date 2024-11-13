@@ -17,7 +17,7 @@ type GuardDutyMapper struct {
 }
 
 // NewGuardDutyMapper creates a new GuardDutyMapper
-func NewGuardDutyMapper() table.Mapper[rows.GuardDutyFinding] {
+func NewGuardDutyMapper() table.Mapper[*rows.GuardDutyFinding] {
 	return &GuardDutyMapper{}
 }
 
@@ -26,7 +26,7 @@ func (g *GuardDutyMapper) Identifier() string {
 }
 
 // Map casts the data item as a GuardDutyBatch and returns the GuardDutyFinding records
-func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]rows.GuardDutyFinding, error) {
+func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]*rows.GuardDutyFinding, error) {
 	var jsonBytes []byte
 	// The expected input type is a JSON byte[] deserializable to GuardDutyBatch
 	switch v := a.(type) {
@@ -46,7 +46,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]rows.GuardDutyFinding
 	}
 
 	// Populate `GuardDutyFinding` instance with values from `types.Finding`
-	row := rows.GuardDutyFinding{
+	row := &rows.GuardDutyFinding{
 		AccountId:     finding.AccountId,
 		Arn:           finding.Arn,
 		Description:   finding.Description,
@@ -144,5 +144,5 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]rows.GuardDutyFinding
 			}
 		}
 	}
-	return []rows.GuardDutyFinding{row}, nil
+	return []*rows.GuardDutyFinding{row}, nil
 }

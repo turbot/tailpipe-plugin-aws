@@ -18,13 +18,18 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
+// register the table from the package init function
+func init() {
+	table.RegisterTable(NewCostAndUsageLogTable)
+}
+
 // CostAndUsageLogTable - table for CostAndUsageLogs
 type CostAndUsageLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *config.AwsConnection]
 }
 
-func NewCCostAndUsageLogTable() table.Table {
+func NewCostAndUsageLogTable() table.Enricher[*rows.CostAndUsageLog] {
 	return &CostAndUsageLogTable{}
 }
 
@@ -70,7 +75,7 @@ func (c *CostAndUsageLogTable) GetSourceOptions(sourceType string) []row_source.
 }
 
 // GetRowSchema implements table.Table
-func (c *CostAndUsageLogTable) GetRowSchema() any {
+func (c *CostAndUsageLogTable) GetRowSchema() types.RowStruct {
 	return rows.CostAndUsageLog{}
 }
 
@@ -79,7 +84,7 @@ func (c *CostAndUsageLogTable) GetConfigSchema() parse.Config {
 }
 
 // EnrichRow implements table.Table
-func (c *CostAndUsageLogTable) EnrichRow(row rows.CostAndUsageLog, sourceEnrichmentFields *enrichment.CommonFields) (rows.CostAndUsageLog, error) {
+func (c *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CostAndUsageLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields

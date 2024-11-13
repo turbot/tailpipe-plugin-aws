@@ -3,9 +3,10 @@ package aws
 import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-aws/config"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	// reference the table package to ensure that the tables are registered by the init functions
+	_ "github.com/turbot/tailpipe-plugin-aws/tables"
 )
 
 type Plugin struct {
@@ -19,27 +20,13 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 		}
 	}()
 
+	//fmt.Println(tables.AlbAccessLogTable{})
 	p := &Plugin{
 		PluginImpl: plugin.NewPluginImpl("aws", config.NewAwsConnection),
 	}
 
-	// register the tables that we provide
-	resources := &plugin.ResourceFunctions{
-		Tables: []func() table.Table{
-			tables.NewCloudTrailLogTable,
-			tables.NewVPCFlowLogLogTable,
-			tables.NewElbAccessLogTable,
-			tables.NewS3ServerAccessLogTable,
-			tables.NewLambdaLogTable,
-			tables.NewGuardDutyFindingTable,
-			tables.NewSecurityHubFindingLogTable,
-			tables.NewWafTrafficLogTable,
-			tables.NewAlbAccessLogTable,
-			tables.NewCCostAndUsageLogTable,
-		},
-	}
-
-	if err := p.RegisterResources(resources); err != nil {
+	// initialise table factory
+	if err := table.Factory.Init(); err != nil {
 		return nil, err
 	}
 

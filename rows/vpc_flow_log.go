@@ -5,9 +5,8 @@ import (
 	"time"
 )
 
-// TODO is there an existing amazon sdk type we can use
 type VpcFlowLog struct {
-	// embed required enrichment fields (be sure to skip in parquet)
+	// embed required enrichment fields
 	enrichment.CommonFields
 
 	Timestamp               *time.Time `json:"timestamp,omitempty"`
