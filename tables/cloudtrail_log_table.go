@@ -120,7 +120,7 @@ func (c *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichment
 	row.TpPartition = "default" // TODO - should be based on the definition in HCL
 	row.TpIndex = row.RecipientAccountId
 	// convert to date in format yy-mm-dd
-	row.TpDate = row.EventTime.Format("2006-01-02")
+	row.TpDate = row.EventTime.Truncate(24 * time.Hour)
 
 	return row, nil
 }

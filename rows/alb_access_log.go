@@ -243,7 +243,8 @@ func (l *AlbAccessLog) EnrichRow(sourceEnrichmentFields *enrichment.CommonFields
 	l.TpID = xid.New().String()
 	l.TpTimestamp = l.Timestamp
 	l.TpIngestTimestamp = time.Now()
-	l.TpDate = l.Timestamp.Format("2006-01-02")
+	// truncate timestamp to date
+	l.TpDate = l.Timestamp.Truncate(24 * time.Hour)
 	// Use ALB name as the index
 	l.TpIndex = l.AlbName
 

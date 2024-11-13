@@ -84,7 +84,7 @@ func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnri
 	}
 
 	row.TpIndex = *row.AccountId
-	row.TpDate = row.CreatedAt.Format("2006-01-02")
+	row.TpDate = row.CreatedAt.Truncate(24 * time.Hour)
 
 	return row, nil
 }

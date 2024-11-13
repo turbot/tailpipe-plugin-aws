@@ -121,11 +121,11 @@ func (c *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrich
 	}
 	// convert to date in format yy-mm-dd
 	if row.InvoiceDate != nil {
-		row.TpDate = row.InvoiceDate.Format("2006-01-02")
+		row.TpDate = row.InvoiceDate.Truncate(24 * time.Hour)
 	} else if row.BillingPeriodStartDate != nil {
-		row.TpDate = row.BillingPeriodStartDate.Format("2006-01-02")
+		row.TpDate = row.BillingPeriodStartDate.Truncate(24 * time.Hour)
 	} else if row.BillingPeriodEndDate != nil {
-		row.TpDate = row.BillingPeriodEndDate.Format("2006-01-02")
+		row.TpDate = row.BillingPeriodEndDate.Truncate(24 * time.Hour)
 	}
 
 	return row, nil

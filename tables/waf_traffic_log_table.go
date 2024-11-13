@@ -103,7 +103,7 @@ func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichment
 		row.TpIndex = "" // or assign a default value if desired
 	}
 	// convert to date in format yy-mm-dd
-	row.TpDate = row.Timestamp.Format("2006-01-02")
+	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
 	return row, nil
 }
