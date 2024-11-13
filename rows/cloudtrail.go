@@ -23,7 +23,7 @@ type CloudTrailLog struct {
 	ErrorCode           *string           `json:"errorCode,omitempty"`
 	ErrorMessage        *string           `json:"errorMessage,omitempty"`
 	EventID             string            `json:"eventID"`
-	EventName           string            `json:"eventName" parquet:"type=JSON"`
+	EventName           string            `json:"eventName"`
 	EventSource         string            `json:"eventSource"`
 	EventTime           *time.Time        `json:"eventTime"`
 	EventType           string            `json:"eventType"`
