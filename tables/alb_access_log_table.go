@@ -4,7 +4,6 @@ package tables
 // This implementation handles parsing and structuring ALB access logs into queryable data.
 
 import (
-	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"time"
 
 	"github.com/rs/xid"
@@ -12,6 +11,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
