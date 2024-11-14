@@ -34,7 +34,7 @@ package tables
 //
 //	switch sourceType {
 //	case artifact_source.AwsS3BucketSourceIdentifier:
-//		// the default file layout for Cloudtrail logs in S3
+//		// the default file layout for SecurityHub logs in S3
 //		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 //			// TODO #config finalise default cloudtrail file layout
 //			FileLayout: utils.ToStringPointer("security_hub_findings_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})(?P<hour>\\d{2})(?P<minute>\\d{2})(?P<second>\\d{2})"),
