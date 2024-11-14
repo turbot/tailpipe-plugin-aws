@@ -7,7 +7,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
-type CloudTrailBatch struct {
+type CloudTrailLogBatch struct {
 	Records []CloudTrailLog `json:"Records"`
 }
 
