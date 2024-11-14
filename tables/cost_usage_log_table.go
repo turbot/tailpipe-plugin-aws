@@ -1,7 +1,7 @@
 package tables
 
 import (
-	"context"
+	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"time"
 
 	"github.com/rs/xid"
@@ -13,15 +13,13 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable(NewCostAndUsageLogTable)
+	table.RegisterTable[*CostAndUsageLogTable]()
 }
 
 // CostAndUsageLogTable - table for CostAndUsageLogs
@@ -30,62 +28,31 @@ type CostAndUsageLogTable struct {
 	table.TableImpl[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *config.AwsConnection]
 }
 
-func NewCostAndUsageLogTable() table.Enricher[*rows.CostAndUsageLog] {
-	return &CostAndUsageLogTable{}
-}
-
-func (c *CostAndUsageLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
-	// call base init
-	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
-		return err
-	}
-
-	c.initMapper()
-	return nil
-}
-
-func (c *CostAndUsageLogTable) initMapper() {
-	// TODO switch on source
-
-	// if the source is an artifact source, we need a mapper
-	c.Mapper = mappers.NewCostAndUsageMapper()
-}
-
 // Identifier implements table.Table
-func (c *CostAndUsageLogTable) Identifier() string {
+func (t *CostAndUsageLogTable) Identifier() string {
 	return "aws_cost_usage_log"
 }
 
-// GetSourceOptions returns any options which should be passed to the given source type
-func (c *CostAndUsageLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
-	var opts []row_source.RowSourceOption
-
-	switch sourceType {
-
-	// TODO - update to use AwsS3BucketSourceIdentifier (using FileSystemSourceIdentifier for now)
-	// cost and usage csv reports are stored in S3
-	case artifact_source.FileSystemSourceIdentifier:
-		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
-			FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
-		}
-		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine(), artifact_source.WithSkipHeaderRow())
-
+func (t *CostAndUsageLogTable) SupportedSource() []table.SourceMetadata[*rows.CostAndUsageLog] {
+	// TODO fix FileLayout
+	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
 	}
 
-	return opts
-}
-
-// GetRowSchema implements table.Table
-func (c *CostAndUsageLogTable) GetRowSchema() types.RowStruct {
-	return rows.CostAndUsageLog{}
-}
-
-func (c *CostAndUsageLogTable) GetConfigSchema() parse.Config {
-	return &CostAndUsageLogTableConfig{}
+	return []table.SourceMetadata[*rows.CostAndUsageLog]{
+		{
+			// any artifact source
+			SourceName: constants.ArtifactSourceIdentifier,
+			MapperFunc: mappers.NewCostAndUsageMapper,
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
+				artifact_source.WithRowPerLine(), artifact_source.WithSkipHeaderRow()},
+		},
+	}
 }
 
 // EnrichRow implements table.Table
-func (c *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CostAndUsageLog, error) {
+func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CostAndUsageLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
