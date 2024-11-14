@@ -20,7 +20,7 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 	}()
 
 	p := &Plugin{
-		PluginImpl: plugin.NewPluginImpl("aws", config.NewAwsConnection),
+		PluginImpl: plugin.NewPluginImpl[*config.AwsConnection]("aws"),
 	}
 
 	return p, nil

@@ -19,7 +19,7 @@ import (
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable[*CostAndUsageLogTable]()
+	table.RegisterTable[*rows.CostAndUsageLog, *CostAndUsageLogTable]()
 }
 
 // CostAndUsageLogTable - table for CostAndUsageLogs
@@ -33,13 +33,13 @@ func (t *CostAndUsageLogTable) Identifier() string {
 	return "aws_cost_usage_log"
 }
 
-func (t *CostAndUsageLogTable) SupportedSource() []table.SourceMetadata[*rows.CostAndUsageLog] {
+func (t *CostAndUsageLogTable) SupportedSource() []*table.SourceMetadata[*rows.CostAndUsageLog] {
 	// TODO fix FileLayout
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
 	}
 
-	return []table.SourceMetadata[*rows.CostAndUsageLog]{
+	return []*table.SourceMetadata[*rows.CostAndUsageLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,

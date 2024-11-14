@@ -19,7 +19,7 @@ import (
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable[*CloudTrailLogTable]()
+	table.RegisterTable[*rows.CloudTrailLog, *CloudTrailLogTable]()
 }
 
 // CloudTrailLogTable - table for CloudTrailLog logs
@@ -28,14 +28,14 @@ type CloudTrailLogTable struct {
 	table.TableImpl[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
 }
 
-func (t *CloudTrailLogTable) SupportedSource() []table.SourceMetadata[*rows.CloudTrailLog] {
+func (t *CloudTrailLogTable) SupportedSource() []*table.SourceMetadata[*rows.CloudTrailLog] {
 	// the default file layout for CloudTrail logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		// TODO #config finalise default cloudtrail file layout
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
 	}
 
-	return []table.SourceMetadata[*rows.CloudTrailLog]{
+	return []*table.SourceMetadata[*rows.CloudTrailLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,

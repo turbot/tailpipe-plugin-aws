@@ -1,7 +1,5 @@
 package config
 
-import "github.com/turbot/tailpipe-plugin-sdk/parse"
-
 type AwsConnection struct {
 	Regions               []string `hcl:"regions,optional"`
 	DefaultRegion         *string  `hcl:"default_region"`
@@ -14,10 +12,6 @@ type AwsConnection struct {
 	IgnoreErrorCodes      []string `hcl:"ignore_error_codes,optional"`
 	EndpointUrl           *string  `hcl:"endpoint_url"`
 	S3ForcePathStyle      *bool    `hcl:"s3_force_path_style"`
-}
-
-func NewAwsConnection() parse.Config {
-	return &AwsConnection{}
 }
 
 func (c *AwsConnection) Validate() error {

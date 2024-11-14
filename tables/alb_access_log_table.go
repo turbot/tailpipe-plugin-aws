@@ -19,15 +19,15 @@ import (
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable[*AlbAccessLogTable]()
+	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTable]()
 }
 
 type AlbAccessLogTable struct {
 	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *config.AwsConnection]
 }
 
-func (t *AlbAccessLogTable) SupportedSource() []table.SourceMetadata[*rows.AlbAccessLog] {
-	return []table.SourceMetadata[*rows.AlbAccessLog]{
+func (t *AlbAccessLogTable) SupportedSource() []*table.SourceMetadata[*rows.AlbAccessLog] {
+	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
@@ -65,7 +65,6 @@ func (*AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFiel
 		row.TpDestinationIP = row.TargetIP
 		row.TpIps = append(row.TpIps, *row.TargetIP)
 	}
-
 	// Domain enrichment
 	if row.DomainName != "" {
 		row.TpDomains = append(row.TpDomains, row.DomainName)
