@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 // AlbLogMapper handles the mapping of ALB log lines to structured data.
@@ -19,7 +20,7 @@ import (
 // - Mixed data types requiring careful parsing and validation
 type AlbAccessLogMapper struct{}
 
-func NewAlbAccessLogMapper() *AlbAccessLogMapper {
+func NewAlbAccessLogMapper() table.Mapper[*rows.AlbAccessLog] {
 	return &AlbAccessLogMapper{}
 }
 

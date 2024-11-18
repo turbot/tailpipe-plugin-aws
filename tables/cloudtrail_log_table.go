@@ -1,7 +1,7 @@
 package tables
 
 import (
-	"context"
+	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"strings"
 	"time"
 
@@ -13,15 +13,13 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/parse"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable(NewCloudTrailLogTable)
+	table.RegisterTable[*rows.CloudTrailLog, *CloudTrailLogTable]()
 }
 
 // CloudTrailLogTable - table for CloudTrailLog logs
@@ -30,60 +28,30 @@ type CloudTrailLogTable struct {
 	table.TableImpl[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
 }
 
-func NewCloudTrailLogTable() table.Enricher[*rows.CloudTrailLog] {
-	return &CloudTrailLogTable{}
-}
-
-func (c *CloudTrailLogTable) Init(ctx context.Context, connectionSchemaProvider table.ConnectionSchemaProvider, req *types.CollectRequest) error {
-	// call base init
-	if err := c.TableImpl.Init(ctx, connectionSchemaProvider, req); err != nil {
-		return err
+func (t *CloudTrailLogTable) SupportedSources() []*table.SourceMetadata[*rows.CloudTrailLog] {
+	// the default file layout for CloudTrail logs in S3
+	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+		// TODO #config finalise default cloudtrail file layout
+		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
 	}
 
-	c.initMapper()
-	return nil
-}
-
-func (c *CloudTrailLogTable) initMapper() {
-	// TODO switch on source
-
-	// if the source is an artifact source, we need a mapper
-	c.Mapper = mappers.NewCloudTrailLogMapper()
+	return []*table.SourceMetadata[*rows.CloudTrailLog]{
+		{
+			// any artifact source
+			SourceName: constants.ArtifactSourceIdentifier,
+			MapperFunc: mappers.NewCloudTrailLogMapper,
+			Options:    []row_source.RowSourceOption{artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig)},
+		},
+	}
 }
 
 // Identifier implements table.Table
-func (c *CloudTrailLogTable) Identifier() string {
+func (t *CloudTrailLogTable) Identifier() string {
 	return "aws_cloudtrail_log"
 }
 
-// GetSourceOptions returns any options which should be passed to the given source type
-func (c *CloudTrailLogTable) GetSourceOptions(sourceType string) []row_source.RowSourceOption {
-	var opts []row_source.RowSourceOption
-
-	switch sourceType {
-	case artifact_source.AwsS3BucketSourceIdentifier:
-		// the default file layout for CloudTrail logs in S3
-		defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
-			// TODO #config finalise default CloudTrail log file layout
-			FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
-		}
-		opts = append(opts, artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig))
-	}
-
-	return opts
-}
-
-// GetRowSchema implements table.Table
-func (c *CloudTrailLogTable) GetRowSchema() types.RowStruct {
-	return rows.CloudTrailLog{}
-}
-
-func (c *CloudTrailLogTable) GetConfigSchema() parse.Config {
-	return &CloudTrailLogTableConfig{}
-}
-
 // EnrichRow implements table.Table
-func (c *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CloudTrailLog, error) {
+func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
