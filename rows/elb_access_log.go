@@ -69,17 +69,12 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 			if value != "-" && strings.Contains(value, ":") {
 				ip := strings.Split(value, ":")[0]
 				l.ClientIP = ip
-				// TODO MOVE TO ENRICH
-				l.TpSourceIP = &ip
-				l.TpIps = append(l.TpIps, ip)
 				l.ClientPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
 			}
 		case "target":
 			if value != "-" && strings.Contains(value, ":") {
 				ip := strings.Split(value, ":")[0]
 				l.TargetIP = &ip
-				l.TpDestinationIP = &ip
-				l.TpIps = append(l.TpIps, ip)
 				l.TargetPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
 			}
 		case "request_processing_time":
