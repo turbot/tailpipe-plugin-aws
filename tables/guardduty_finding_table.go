@@ -1,5 +1,20 @@
 package tables
 
+//import (
+//	"github.com/rs/xid"
+//	"github.com/turbot/pipe-fittings/utils"
+//	"github.com/turbot/tailpipe-plugin-aws/config"
+//	"github.com/turbot/tailpipe-plugin-aws/mappers"
+//	"github.com/turbot/tailpipe-plugin-aws/rows"
+//	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+//	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
+//	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+//	"github.com/turbot/tailpipe-plugin-sdk/parse"
+//	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+//	"github.com/turbot/tailpipe-plugin-sdk/table"
+//	"github.com/turbot/tailpipe-plugin-sdk/types"
+//	"time"
+//)
 //
 //// register the table from the package init function
 //func init() {

@@ -28,7 +28,7 @@ type CloudTrailLogTable struct {
 	table.TableImpl[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
 }
 
-func (t *CloudTrailLogTable) SupportedSource() []*table.SourceMetadata[*rows.CloudTrailLog] {
+func (t *CloudTrailLogTable) SupportedSources() []*table.SourceMetadata[*rows.CloudTrailLog] {
 	// the default file layout for CloudTrail logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		// TODO #config finalise default cloudtrail file layout

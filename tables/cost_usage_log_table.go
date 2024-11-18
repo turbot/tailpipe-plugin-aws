@@ -33,7 +33,7 @@ func (t *CostAndUsageLogTable) Identifier() string {
 	return "aws_cost_usage_log"
 }
 
-func (t *CostAndUsageLogTable) SupportedSource() []*table.SourceMetadata[*rows.CostAndUsageLog] {
+func (t *CostAndUsageLogTable) SupportedSources() []*table.SourceMetadata[*rows.CostAndUsageLog] {
 	// TODO fix FileLayout
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),

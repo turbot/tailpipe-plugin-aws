@@ -17,7 +17,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-// register the table from the package init function
 func init() {
 	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTable]()
 }
@@ -26,7 +25,7 @@ type AlbAccessLogTable struct {
 	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *config.AwsConnection]
 }
 
-func (t *AlbAccessLogTable) SupportedSource() []*table.SourceMetadata[*rows.AlbAccessLog] {
+func (t *AlbAccessLogTable) SupportedSources() []*table.SourceMetadata[*rows.AlbAccessLog] {
 	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source
