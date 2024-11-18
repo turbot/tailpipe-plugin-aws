@@ -1,17 +1,18 @@
 package tables
 
 import (
-	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
+	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -31,7 +32,6 @@ type CloudTrailLogTable struct {
 func (t *CloudTrailLogTable) SupportedSources() []*table.SourceMetadata[*rows.CloudTrailLog] {
 	// the default file layout for CloudTrail logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
-		// TODO #config finalise default cloudtrail file layout
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
 	}
 
