@@ -59,7 +59,6 @@ func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichment
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpSourceType = "aws_cloudtrail_log"
 	row.TpTimestamp = *row.EventTime
 	row.TpIngestTimestamp = time.Now()
 
@@ -85,7 +84,6 @@ func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichment
 	}
 
 	// Hive fields
-	row.TpPartition = "default" // TODO - should be based on the definition in HCL
 	row.TpIndex = row.RecipientAccountId
 	// convert to date in format yy-mm-dd
 	row.TpDate = row.EventTime.Truncate(24 * time.Hour)
