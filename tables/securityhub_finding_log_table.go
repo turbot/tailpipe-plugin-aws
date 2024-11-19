@@ -13,7 +13,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const SecurityHubFindingLogTableIdentifier = "aws_security_hub_finding_log"
+const SecurityHubFindingLogTableIdentifier = "aws_securityhub_finding_log"
 
 // register the table from the package init function
 func init() {
