@@ -1,14 +1,11 @@
 package tables
 
-// Package tables implements the AWS ALB (Application Load Balancer) access log table.
-// This implementation handles parsing and structuring ALB access logs into queryable data.
-
 import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/tailpipe-plugin-aws/config"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -16,6 +13,11 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
+
+const AlbAccessLogTableIdentifier = "aws_alb_access_log"
+
+const albLogFormat = `$type $timestamp $alb $client $target $request_processing_time $target_processing_time $response_processing_time $alb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
+const albLogFormatNoConnTrace = `$type $timestamp $alb $client $target $request_processing_time $target_processing_time $response_processing_time $alb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
 func init() {
 	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTable]()
@@ -25,23 +27,31 @@ type AlbAccessLogTable struct {
 	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *config.AwsConnection]
 }
 
-func (t *AlbAccessLogTable) SupportedSources() []*table.SourceMetadata[*rows.AlbAccessLog] {
+func (c *AlbAccessLogTable) initMapper() func() table.Mapper[*rows.AlbAccessLog] {
+	f := func() table.Mapper[*rows.AlbAccessLog] {
+		return table.NewDelimitedLineMapper(rows.NewAlbAccessLog, albLogFormat, albLogFormatNoConnTrace)
+	}
+	return f
+}
+
+func (c *AlbAccessLogTable) SupportedSources() []*table.SourceMetadata[*rows.AlbAccessLog] {
 	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewAlbAccessLogMapper,
-			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
+			MapperFunc: c.initMapper(),
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithRowPerLine(),
+			},
 		},
 	}
 }
 
-func (t *AlbAccessLogTable) Identifier() string {
-	return "aws_alb_access_log"
+func (c *AlbAccessLogTable) Identifier() string {
+	return AlbAccessLogTableIdentifier
 }
 
-func (*AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.AlbAccessLog, error) {
-	// Add source enrichment fields if provided
+func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.AlbAccessLog, error) {
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 	}
@@ -50,10 +60,9 @@ func (*AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFiel
 	row.TpID = xid.New().String()
 	row.TpTimestamp = row.Timestamp
 	row.TpIngestTimestamp = time.Now()
-	// truncate timestamp to date
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-	// Use ALB name as the index
-	row.TpIndex = row.AlbName
+
+	row.TpIndex = row.Alb // TODO: #enrichment figure out how to get the account id / better index
 
 	// IP-related enrichment
 	if row.ClientIP != "" {

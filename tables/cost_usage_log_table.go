@@ -1,10 +1,10 @@
 package tables
 
 import (
-	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"time"
 
 	"github.com/rs/xid"
+
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
@@ -12,6 +12,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
+	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -60,7 +61,7 @@ func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrich
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpSourceType = "aws_cost_and_usage_log"
+	row.TpIngestTimestamp = time.Now()
 
 	// we are using the invoice date as the tp_timestamp, but we dont always get the invoice date
 	// so we use the BillingPeriodStartDate as a fallback
@@ -72,8 +73,8 @@ func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrich
 	} else if row.BillingPeriodEndDate != nil {
 		row.TpTimestamp = *row.BillingPeriodEndDate
 	}
+	row.TpDate = row.TpTimestamp.Truncate(24 * time.Hour)
 
-	row.TpIngestTimestamp = time.Now()
 	// if row.PayerAccountName != nil {
 	// 	row.TpSourceIP = row.PayerAccountName
 	// 	row.TpIps = append(row.TpIps, *row.PayerAccountName)
@@ -86,14 +87,6 @@ func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrich
 		row.TpIndex = accountId
 	} else {
 		row.TpIndex = typehelpers.SafeString(row.PayerAccountId)
-	}
-	// convert to date in format yy-mm-dd
-	if row.InvoiceDate != nil {
-		row.TpDate = row.InvoiceDate.Truncate(24 * time.Hour)
-	} else if row.BillingPeriodStartDate != nil {
-		row.TpDate = row.BillingPeriodStartDate.Truncate(24 * time.Hour)
-	} else if row.BillingPeriodEndDate != nil {
-		row.TpDate = row.BillingPeriodEndDate.Truncate(24 * time.Hour)
 	}
 
 	return row, nil

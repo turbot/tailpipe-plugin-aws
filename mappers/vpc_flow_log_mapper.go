@@ -11,25 +11,25 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 )
 
-// VpcFlowlogMapper is a mapper that receives string objects and extracts VpcFlowLog record
-type VpcFlowlogMapper struct {
+// VpcFlowLogMapper is a mapper that receives string objects and extracts VpcFlowLog record
+type VpcFlowLogMapper struct {
 	schema []string
 }
 
-func NewVpcFlowlogMapper(schema []string) *VpcFlowlogMapper {
-	res := &VpcFlowlogMapper{
+func NewVpcFlowLogMapper(schema []string) *VpcFlowLogMapper {
+	res := &VpcFlowLogMapper{
 		schema: schema,
 	}
 
 	return res
 }
 
-func (c *VpcFlowlogMapper) Identifier() string {
-	return "flowlog_mapper"
+func (c *VpcFlowLogMapper) Identifier() string {
+	return "vpc_flow_log_mapper"
 }
 
 // Map casts the data item as an string and returns the VpcFlowLog records
-func (c *VpcFlowlogMapper) Map(_ context.Context, a any) ([]*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogMapper) Map(_ context.Context, a any) ([]*rows.VpcFlowLog, error) {
 	rowString, ok := a.(string)
 	if !ok {
 		return nil, fmt.Errorf("expected string, got %T", a)

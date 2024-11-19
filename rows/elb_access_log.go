@@ -43,7 +43,7 @@ type ElbAccessLog struct {
 	TargetStatusList       *string   `json:"target_status_list,omitempty"`
 	Classification         *string   `json:"classification,omitempty"`
 	ClassificationReason   *string   `json:"classification_reason,omitempty"`
-	ConnTraceID            string    `json:"conn_trace_id"`
+	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
 }
 
 func NewElbAccessLog() *ElbAccessLog {
@@ -52,7 +52,11 @@ func NewElbAccessLog() *ElbAccessLog {
 
 // InitialiseFromMap - initialise the struct from a map
 func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
+	var err error
 	for key, value := range m {
+		if value == "-" {
+			continue
+		}
 		switch key {
 		case "timestamp":
 			ts, err := time.Parse(time.RFC3339, value)
@@ -60,78 +64,69 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing timestamp: %w", err)
 			}
 			l.Timestamp = ts
-			l.TpTimestamp = ts
 		case "type":
 			l.Type = value
 		case "elb":
 			l.Elb = value
 		case "client":
-			if value != "-" && strings.Contains(value, ":") {
-				ip := strings.Split(value, ":")[0]
+			if strings.Contains(value, ":") {
+				parts := strings.Split(value, ":")
+				ip := parts[0]
 				l.ClientIP = ip
-				// TODO MOVE TO ENRICH
-				l.TpSourceIP = &ip
-				l.TpIps = append(l.TpIps, ip)
-				l.ClientPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
+				l.ClientPort, err = strconv.Atoi(parts[1])
+				if err != nil {
+					return fmt.Errorf("error parsing client_port: %w", err)
+				}
 			}
 		case "target":
-			if value != "-" && strings.Contains(value, ":") {
-				ip := strings.Split(value, ":")[0]
+			if strings.Contains(value, ":") {
+				parts := strings.Split(value, ":")
+				ip := parts[0]
 				l.TargetIP = &ip
-				l.TpDestinationIP = &ip
-				l.TpIps = append(l.TpIps, ip)
-				l.TargetPort, _ = strconv.Atoi(strings.Split(value, ":")[1])
+				l.TargetPort, err = strconv.Atoi(parts[1])
+				if err != nil {
+					return fmt.Errorf("error parsing target_port: %w", err)
+				}
 			}
 		case "request_processing_time":
-			rpt, err := strconv.ParseFloat(value, 64)
+			l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
 			if err != nil {
 				return fmt.Errorf("error parsing request_processing_time: %w", err)
 			}
-			l.RequestProcessingTime = rpt
 		case "target_processing_time":
-			tpt, err := strconv.ParseFloat(value, 64)
+			l.TargetProcessingTime, err = strconv.ParseFloat(value, 64)
 			if err != nil {
 				return fmt.Errorf("error parsing target_processing_time: %w", err)
 			}
-			l.TargetProcessingTime = tpt
 		case "response_processing_time":
-			rpt, err := strconv.ParseFloat(value, 64)
+			l.ResponseProcessingTime, err = strconv.ParseFloat(value, 64)
 			if err != nil {
 				return fmt.Errorf("error parsing response_processing_time: %w", err)
 			}
-			l.ResponseProcessingTime = rpt
 		case "elb_status_code":
-			if value != "-" {
-				esc, err := strconv.Atoi(value)
-				if err != nil {
-					return fmt.Errorf("error parsing elb_status_code: %w", err)
-				}
-				l.ElbStatusCode = &esc
+			esc, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing elb_status_code: %w", err)
 			}
+			l.ElbStatusCode = &esc
 		case "target_status_code":
-			if value != "-" {
-				tsc, err := strconv.Atoi(value)
-				if err != nil {
-					return fmt.Errorf("error parsing target_status_code: %w", err)
-				}
-				l.TargetStatusCode = &tsc
+			tsc, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing target_status_code: %w", err)
 			}
+			l.TargetStatusCode = &tsc
 		case "received_bytes":
-			if value != "-" {
-				rb, err := strconv.ParseInt(value, 10, 64)
-				if err != nil {
-					return fmt.Errorf("error parsing received_bytes: %w", err)
-				}
-				l.ReceivedBytes = &rb
+			rb, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing received_bytes: %w", err)
 			}
+			l.ReceivedBytes = &rb
 		case "sent_bytes":
-			if value != "-" {
-				sb, err := strconv.ParseInt(value, 10, 64)
-				if err != nil {
-					return fmt.Errorf("error parsing sent_bytes: %w", err)
-				}
-				l.SentBytes = &sb
+			sb, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing sent_bytes: %w", err)
 			}
+			l.SentBytes = &sb
 		case "request":
 			l.Request = value
 		case "user_agent":
@@ -146,23 +141,18 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.TraceID = value
 		case "domain_name":
 			l.DomainName = value
-			l.TpDomains = append(l.TpDomains, value)
 		case "chosen_cert_arn":
 			l.ChosenCertArn = value
 		case "matched_rule_priority":
-			if value != "-" {
-				mrp, err := strconv.Atoi(value)
-				if err != nil {
-					return fmt.Errorf("error parsing matched_rule_priority: %w", err)
-				}
-				l.MatchedRulePriority = mrp
+			l.MatchedRulePriority, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing matched_rule_priority: %w", err)
 			}
 		case "request_creation_time":
-			rct, err := time.Parse(time.RFC3339, value)
+			l.RequestCreationTime, err = time.Parse(time.RFC3339, value)
 			if err != nil {
 				return fmt.Errorf("error parsing request_creation_time: %w", err)
 			}
-			l.RequestCreationTime = rct
 		case "actions_executed":
 			l.ActionsExecuted = value
 		case "redirect_url":
@@ -178,7 +168,7 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "classification_reason":
 			l.ClassificationReason = &value
 		case "conn_trace_id":
-			l.ConnTraceID = value
+			l.ConnTraceID = &value
 		}
 	}
 	return nil

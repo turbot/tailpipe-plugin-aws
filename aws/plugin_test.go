@@ -1,8 +1,9 @@
 package aws
 
 import (
-	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"testing"
+
+	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 )
 
 func TestConformance(t *testing.T) {

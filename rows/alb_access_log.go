@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 )
 
@@ -41,7 +42,7 @@ type AlbAccessLog struct {
 	// Standard ALB fields
 	Type                   string    `json:"type"`
 	Timestamp              time.Time `json:"timestamp"`
-	AlbName                string    `json:"alb_name"`
+	Alb                    string    `json:"alb"`
 	ClientIP               string    `json:"client_ip"`
 	ClientPort             int       `json:"client_port"`
 	TargetIP               *string   `json:"target_ip,omitempty"`
@@ -64,169 +65,138 @@ type AlbAccessLog struct {
 	MatchedRulePriority    int       `json:"matched_rule_priority"`
 	RequestCreationTime    time.Time `json:"request_creation_time"`
 	ActionsExecuted        string    `json:"actions_executed"`
-	RedirectUrl            *string   `json:"redirect_url,omitempty"`
+	RedirectURL            *string   `json:"redirect_url,omitempty"`
 	ErrorReason            *string   `json:"error_reason,omitempty"`
 	TargetList             *string   `json:"target_list,omitempty"`
 	TargetStatusList       *string   `json:"target_status_list,omitempty"`
 	Classification         *string   `json:"classification,omitempty"`
 	ClassificationReason   *string   `json:"classification_reason,omitempty"`
+	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
 }
 
-// NewAlbAccessLog creates a new ALB access log entry with initialized fields.
-// Used by the mapper when creating new log entries from raw log lines.
 func NewAlbAccessLog() *AlbAccessLog {
 	return &AlbAccessLog{}
 }
 
-// parseField handles parsing of individual fields with proper error handling
-func (l *AlbAccessLog) parseField(fieldName, value string) error {
-	if value == "-" {
-		return nil
-	}
-
-	switch fieldName {
-	case "timestamp":
-		ts, err := time.Parse(time.RFC3339Nano, value)
-		if err != nil {
-			return fmt.Errorf("error parsing timestamp: %w", err)
-		}
-		l.Timestamp = ts
-	case "type":
-		l.Type = value
-	case "alb":
-		l.AlbName = value
-	case "client":
-		parts := strings.Split(value, ":")
-		if len(parts) == 2 {
-			l.ClientIP = parts[0]
-			port, err := strconv.Atoi(parts[1])
-			if err != nil {
-				return fmt.Errorf("error parsing client port: %w", err)
-			}
-			l.ClientPort = port
-		}
-	case "target":
-		parts := strings.Split(value, ":")
-		if len(parts) == 2 {
-			ip := parts[0]
-			l.TargetIP = &ip
-			port, err := strconv.Atoi(parts[1])
-			if err != nil {
-				return fmt.Errorf("error parsing target port: %w", err)
-			}
-			l.TargetPort = port
-		}
-	case "request_processing_time":
-		rpt, err := strconv.ParseFloat(value, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing request_processing_time: %w", err)
-		}
-		l.RequestProcessingTime = rpt
-	case "target_processing_time":
-		tpt, err := strconv.ParseFloat(value, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing target_processing_time: %w", err)
-		}
-		l.TargetProcessingTime = tpt
-	case "response_processing_time":
-		rpt, err := strconv.ParseFloat(value, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing response_processing_time: %w", err)
-		}
-		l.ResponseProcessingTime = rpt
-	case "alb_status_code":
-		code, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("error parsing alb_status_code: %w", err)
-		}
-		l.AlbStatusCode = &code
-	case "target_status_code":
-		code, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("error parsing target_status_code: %w", err)
-		}
-		l.TargetStatusCode = &code
-	case "received_bytes":
-		bytes, err := strconv.ParseInt(value, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing received_bytes: %w", err)
-		}
-		l.ReceivedBytes = &bytes
-	case "sent_bytes":
-		bytes, err := strconv.ParseInt(value, 10, 64)
-		if err != nil {
-			return fmt.Errorf("error parsing sent_bytes: %w", err)
-		}
-		l.SentBytes = &bytes
-	case "request":
-		l.Request = strings.Trim(value, "\"")
-	case "user_agent":
-		l.UserAgent = strings.Trim(value, "\"")
-	case "ssl_cipher":
-		l.SslCipher = value
-	case "ssl_protocol":
-		l.SslProtocol = value
-	case "target_group_arn":
-		l.TargetGroupArn = value
-	case "trace_id":
-		l.TraceId = strings.Trim(value, "\"")
-	case "domain_name":
-		l.DomainName = strings.Trim(value, "\"")
-	case "chosen_cert_arn":
-		l.ChosenCertArn = strings.Trim(value, "\"")
-	case "matched_rule_priority":
-		priority, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("error parsing matched_rule_priority: %w", err)
-		}
-		l.MatchedRulePriority = priority
-	case "request_creation_time":
-		rct, err := time.Parse(time.RFC3339Nano, value)
-		if err != nil {
-			return fmt.Errorf("error parsing request_creation_time: %w", err)
-		}
-		l.RequestCreationTime = rct
-	case "actions_executed":
-		l.ActionsExecuted = strings.Trim(value, "\"")
-	case "redirect_url":
-		if value != "-" {
-			v := strings.Trim(value, "\"")
-			l.RedirectUrl = &v
-		}
-	case "error_reason":
-		if value != "-" {
-			v := strings.Trim(value, "\"")
-			l.ErrorReason = &v
-		}
-	case "target_list":
-		if value != "-" {
-			v := strings.Trim(value, "\"")
-			l.TargetList = &v
-		}
-	case "target_status_list":
-		if value != "-" {
-			v := strings.Trim(value, "\"")
-			l.TargetStatusList = &v
-		}
-	case "classification":
-		if value != "-" {
-			v := strings.Trim(value, "\"")
-			l.Classification = &v
-		}
-	case "classification_reason":
-		if value != "-" {
-			v := strings.Trim(value, "\"")
-			l.ClassificationReason = &v
-		}
-	}
-	return nil
-}
-
 // InitialiseFromMap initializes the struct from a map of string values
 func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
-	for fieldName, value := range m {
-		if err := l.parseField(fieldName, value); err != nil {
-			return fmt.Errorf("error parsing field %s: %w", fieldName, err)
+	var err error
+	for key, value := range m {
+		if value == "-" {
+			continue
+		}
+		switch key {
+		case "timestamp":
+			ts, err := time.Parse(time.RFC3339, value)
+			if err != nil {
+				return fmt.Errorf("error parsing timestamp: %w", err)
+			}
+			l.Timestamp = ts
+		case "type":
+			l.Type = value
+		case "alb":
+			l.Alb = value
+		case "client":
+			if strings.Contains(value, ":") {
+				parts := strings.Split(value, ":")
+				ip := parts[0]
+				l.ClientIP = ip
+				l.ClientPort, err = strconv.Atoi(parts[1])
+				if err != nil {
+					return fmt.Errorf("error parsing client_port: %w", err)
+				}
+			}
+		case "target":
+			if strings.Contains(value, ":") {
+				parts := strings.Split(value, ":")
+				ip := parts[0]
+				l.TargetIP = &ip
+				l.TargetPort, err = strconv.Atoi(parts[1])
+				if err != nil {
+					return fmt.Errorf("error parsing target_port: %w", err)
+				}
+			}
+		case "request_processing_time":
+			l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing request_processing_time: %w", err)
+			}
+		case "target_processing_time":
+			l.TargetProcessingTime, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing target_processing_time: %w", err)
+			}
+		case "response_processing_time":
+			l.ResponseProcessingTime, err = strconv.ParseFloat(value, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing response_processing_time: %w", err)
+			}
+		case "alb_status_code":
+			asc, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing elb_status_code: %w", err)
+			}
+			l.AlbStatusCode = &asc
+		case "target_status_code":
+			tsc, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing target_status_code: %w", err)
+			}
+			l.TargetStatusCode = &tsc
+		case "received_bytes":
+			rb, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing received_bytes: %w", err)
+			}
+			l.ReceivedBytes = &rb
+		case "sent_bytes":
+			sb, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing sent_bytes: %w", err)
+			}
+			l.SentBytes = &sb
+		case "request":
+			l.Request = value
+		case "user_agent":
+			l.UserAgent = value
+		case "ssl_cipher":
+			l.SslCipher = value
+		case "ssl_protocol":
+			l.SslProtocol = value
+		case "target_group_arn":
+			l.TargetGroupArn = value
+		case "trace_id":
+			l.TraceId = value
+		case "domain_name":
+			l.DomainName = value
+		case "chosen_cert_arn":
+			l.ChosenCertArn = value
+		case "matched_rule_priority":
+			l.MatchedRulePriority, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing matched_rule_priority: %w", err)
+			}
+		case "request_creation_time":
+			l.RequestCreationTime, err = time.Parse(time.RFC3339, value)
+			if err != nil {
+				return fmt.Errorf("error parsing request_creation_time: %w", err)
+			}
+		case "actions_executed":
+			l.ActionsExecuted = value
+		case "redirect_url":
+			l.RedirectURL = &value
+		case "error_reason":
+			l.ErrorReason = &value
+		case "target_list":
+			l.TargetList = &value
+		case "target_status_list":
+			l.TargetStatusList = &value
+		case "classification":
+			l.Classification = &value
+		case "classification_reason":
+			l.ClassificationReason = &value
+		case "conn_trace_id":
+			l.ConnTraceID = &value
 		}
 	}
 	return nil
@@ -246,7 +216,7 @@ func (l *AlbAccessLog) EnrichRow(sourceEnrichmentFields *enrichment.CommonFields
 	// truncate timestamp to date
 	l.TpDate = l.Timestamp.Truncate(24 * time.Hour)
 	// Use ALB name as the index
-	l.TpIndex = l.AlbName
+	l.TpIndex = l.Alb
 
 	// IP-related enrichment
 	if l.ClientIP != "" {

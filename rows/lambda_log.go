@@ -6,7 +6,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 )
 
-type AwsLambdaLog struct {
+type LambdaLog struct {
 	enrichment.CommonFields
 
 	Timestamp *time.Time `json:"timestamp,omitempty"`
