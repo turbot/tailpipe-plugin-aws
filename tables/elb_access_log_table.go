@@ -63,13 +63,21 @@ func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, sourceEnrichmentFi
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
-	row.TpIndex = "default" // TODO: #enrichment figure out how to get account id / other index
+	row.TpIndex = row.Elb // TODO: #enrichment figure out how to get account id / other index
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
 	if row.TargetIP != nil {
 		row.TpDestinationIP = row.TargetIP
 		row.TpIps = append(row.TpIps, *row.TargetIP)
+	}
+
+	if row.DomainName != "" {
+		row.TpDomains = append(row.TpDomains, row.DomainName)
+	}
+
+	if row.TargetGroupArn != "" {
+		row.TpAkas = append(row.TpAkas, row.TargetGroupArn)
 	}
 
 	return row, nil

@@ -1,13 +1,15 @@
 package rows
 
 import (
+	"testing"
+	"time"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"testing"
-	"time"
 )
 
 func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
