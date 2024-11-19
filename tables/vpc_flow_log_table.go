@@ -71,8 +71,6 @@ func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields
 	row.TpIngestTimestamp = time.Now()
 
 	// Hive fields
-	// TODO - should be based on the definition in HCL
-	row.TpPartition = "default"
 	if row.AccountID != nil {
 		row.TpIndex = *row.AccountID
 	}
