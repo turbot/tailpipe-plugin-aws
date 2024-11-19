@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/guardduty/types"
@@ -64,7 +63,6 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]*rows.GuardDutyFindin
 		Severity:      finding.Severity,
 		Title:         finding.Title,
 		Type:          finding.Type,
-		UpdatedAt:     finding.UpdatedAt,
 	}
 	if finding.Service.Action != nil {
 		if finding.Service.Action.ActionType != nil {
@@ -93,12 +91,19 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]*rows.GuardDutyFindin
 
 	// Parse `CreatedAt` if it's provided
 	if finding.CreatedAt != nil {
-		createdAt, err := time.Parse(time.RFC3339, *finding.CreatedAt)
-		if err == nil {
-			row.CreatedAt = createdAt
-		} else {
-			slog.Warn("GuardDutyMapper", "error parsing CreatedAt", err)
+		row.CreatedAt, err = time.Parse(time.RFC3339, *finding.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing CreatedAt: %w", err)
 		}
+	}
+
+	if finding.UpdatedAt != nil {
+		var updatedAt time.Time
+		updatedAt, err = time.Parse(time.RFC3339, *finding.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing UpdatedAt: %w", err)
+		}
+		row.UpdatedAt = &updatedAt
 	}
 
 	// Parse `EventFirstSeen` and `EventLastSeen`
@@ -126,8 +131,15 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]*rows.GuardDutyFindin
 		row.InstanceState = finding.Resource.InstanceDetails.InstanceState
 		row.InstanceType = finding.Resource.InstanceDetails.InstanceType
 		row.OutpostArn = finding.Resource.InstanceDetails.OutpostArn
-		row.LaunchTime = finding.Resource.InstanceDetails.LaunchTime
 
+		if finding.Resource.InstanceDetails.LaunchTime != nil {
+			var launchTime time.Time
+			launchTime, err = time.Parse(time.RFC3339, *finding.Resource.InstanceDetails.LaunchTime)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing LaunchTime: %w", err)
+			}
+			row.LaunchTime = &launchTime
+		}
 		// Network details
 		if len(finding.Resource.InstanceDetails.NetworkInterfaces) > 0 {
 			ni := finding.Resource.InstanceDetails.NetworkInterfaces[0]

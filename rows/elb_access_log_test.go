@@ -93,7 +93,7 @@ func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
 				TargetStatusList:       utils.ToStringPointer("list"),
 				Classification:         utils.ToStringPointer("x"),
 				ClassificationReason:   utils.ToStringPointer("reason"),
-				ConnTraceID:            "abcd",
+				ConnTraceID:            utils.ToStringPointer("abcd"),
 			},
 			wantErr: assert.NoError,
 		},
