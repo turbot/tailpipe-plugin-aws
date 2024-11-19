@@ -1,6 +1,10 @@
 package tables
 
 import (
+	"time"
+
+	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
@@ -40,7 +44,6 @@ func (c *SecurityHubFindingLogTable) SupportedSources() []*table.SourceMetadata[
 			MapperFunc: mappers.NewSecurityHubFindingsMapper,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
-				artifact_source.WithRowPerLine(),
 			},
 		},
 	}
@@ -51,6 +54,9 @@ func (c *SecurityHubFindingLogTable) EnrichRow(row *rows.SecurityHubFindingLog, 
 		row.CommonFields = *sourceEnrichmentFields
 	}
 
+	row.TpID = xid.New().String()
+	row.TpIngestTimestamp = time.Now()
+
 	for _, resource := range row.Resources {
 		newAkas := awsAkasFromArn(*resource)
 		row.TpAkas = append(row.TpAkas, newAkas...)
@@ -58,6 +64,7 @@ func (c *SecurityHubFindingLogTable) EnrichRow(row *rows.SecurityHubFindingLog, 
 
 	if row.Time != nil {
 		row.TpTimestamp = *row.Time
+		row.TpDate = row.Time.Truncate(24 * time.Hour)
 	}
 	if row.Account != nil {
 		row.TpIndex = *row.Account
