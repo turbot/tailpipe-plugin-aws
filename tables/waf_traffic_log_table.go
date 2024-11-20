@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -28,7 +26,7 @@ func init() {
 // WafTrafficLogTable - table for Waf traffic logs
 type WafTrafficLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.WafTrafficLog, *WafTrafficLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.WafTrafficLog, *WafTrafficLogTableConfig, *artifact_source.AwsConnection]
 }
 
 func (c *WafTrafficLogTable) SupportedSources() []*table.SourceMetadata[*rows.WafTrafficLog] {

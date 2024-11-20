@@ -22,11 +22,15 @@ type VpcFlowLogTableConfig struct {
 	Fields []string `hcl:"fields,optional"`
 }
 
-func (c *VpcFlowLogTableConfig) Validate() error {
+func (c VpcFlowLogTableConfig) Validate() error {
 	// set default fields if none are specified
 	if len(c.Fields) == 0 {
 		c.Fields = DefaultFlowLogFields
 	}
 
 	return nil
+}
+
+func (VpcFlowLogTableConfig) Identifier() string {
+	return VpcFlowLogTableIdentifier
 }

@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -23,7 +21,7 @@ func init() {
 
 type LambdaLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.LambdaLog, *LambdaLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.LambdaLog, *LambdaLogTableConfig, *artifact_source.AwsConnection]
 }
 
 func (c *LambdaLogTable) Identifier() string {

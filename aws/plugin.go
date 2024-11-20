@@ -2,7 +2,6 @@ package aws
 
 import (
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	// reference the table package to ensure that the tables are registered by the init functions
 	_ "github.com/turbot/tailpipe-plugin-aws/tables"
@@ -20,7 +19,7 @@ func NewPlugin() (_ plugin.TailpipePlugin, err error) {
 	}()
 
 	p := &Plugin{
-		PluginImpl: plugin.NewPluginImpl[*config.AwsConnection]("aws"),
+		PluginImpl: plugin.NewPluginImpl("aws"),
 	}
 
 	return p, nil
