@@ -7,7 +7,6 @@ import (
 
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -18,6 +17,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
+const CostUsageLogTableIdentifier = "aws_cost_usage_log"
+
 // register the table from the package init function
 func init() {
 	table.RegisterTable[*rows.CostAndUsageLog, *CostAndUsageLogTable]()
@@ -26,12 +27,12 @@ func init() {
 // CostAndUsageLogTable - table for CostAndUsageLogs
 type CostAndUsageLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *artifact_source.AwsConnection]
 }
 
 // Identifier implements table.Table
 func (t *CostAndUsageLogTable) Identifier() string {
-	return "aws_cost_usage_log"
+	return CostUsageLogTableIdentifier
 }
 
 func (t *CostAndUsageLogTable) SupportedSources() []*table.SourceMetadata[*rows.CostAndUsageLog] {

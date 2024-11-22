@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -24,7 +22,7 @@ func init() {
 }
 
 type S3ServerAccessLogTable struct {
-	table.TableImpl[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *artifact_source.AwsConnection]
 }
 
 func (c *S3ServerAccessLogTable) Identifier() string {

@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -18,6 +16,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
+const CloudTrailLogTableIdentifier = "aws_cloudtrail_log"
+
 // register the table from the package init function
 func init() {
 	table.RegisterTable[*rows.CloudTrailLog, *CloudTrailLogTable]()
@@ -26,7 +26,7 @@ func init() {
 // CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct {
 	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *artifact_source.AwsConnection]
 }
 
 func (t *CloudTrailLogTable) SupportedSources() []*table.SourceMetadata[*rows.CloudTrailLog] {
@@ -47,7 +47,7 @@ func (t *CloudTrailLogTable) SupportedSources() []*table.SourceMetadata[*rows.Cl
 
 // Identifier implements table.Table
 func (t *CloudTrailLogTable) Identifier() string {
-	return "aws_cloudtrail_log"
+	return CloudTrailLogTableIdentifier
 }
 
 // EnrichRow implements table.Table

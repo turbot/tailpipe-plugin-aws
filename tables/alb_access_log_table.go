@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -24,7 +22,7 @@ func init() {
 }
 
 type AlbAccessLogTable struct {
-	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *artifact_source.AwsConnection]
 }
 
 func (c *AlbAccessLogTable) initMapper() func() table.Mapper[*rows.AlbAccessLog] {

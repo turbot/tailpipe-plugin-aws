@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
-	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -25,7 +23,7 @@ const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_
 const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
 type ElbAccessLogTable struct {
-	table.TableImpl[*rows.ElbAccessLog, *ElbAccessLogTableConfig, *config.AwsConnection]
+	table.TableImpl[*rows.ElbAccessLog, *ElbAccessLogTableConfig, *artifact_source.AwsConnection]
 }
 
 func (c *ElbAccessLogTable) initMapper() func() table.Mapper[*rows.ElbAccessLog] {
