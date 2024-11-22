@@ -1,4 +1,6 @@
-package artifact_source
+package config
+
+const PluginName = "aws"
 
 // TODO TEMP
 // this has been moved to the sdk for now until we move the sources back to the plugin
