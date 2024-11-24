@@ -15,37 +15,35 @@ type CloudTrailLog struct {
 	// embed required enrichment fields
 	enrichment.CommonFields
 
-	// TODO json fields should be snake case - these are probably camel case because
-	// they are coming from the AWS SDK? in which case we should just use a mapper
-	AdditionalEventData *types.JSONString `json:"additionalEventData,omitempty"`
-	APIVersion          *string           `json:"apiVersion,omitempty"`
-	AwsRegion           string            `json:"awsRegion"`
-	ErrorCode           *string           `json:"errorCode,omitempty"`
-	ErrorMessage        *string           `json:"errorMessage,omitempty"`
-	EventID             string            `json:"eventID"`
-	EventName           string            `json:"eventName"`
-	EventSource         string            `json:"eventSource"`
-	EventTime           *time.Time        `json:"eventTime"`
-	EventType           string            `json:"eventType"`
-	EventVersion        string            `json:"eventVersion"`
-	ManagementEvent     *bool             `json:"managementEvent,omitempty" `
-	ReadOnly            *bool             `json:"readOnly,omitempty"`
-	RecipientAccountId  string            `json:"recipientAccountId,omitempty" `
-	RequestID           *string           `json:"requestID,omitempty" `
-	RequestParameters   *types.JSONString `json:"requestParameters,omitempty" `
-	Resources           []*Resource       `json:"resources,omitempty" `
-	ResponseElements    *types.JSONString `json:"responseElements,omitempty" `
-	ServiceEventDetails *types.JSONString `json:"serviceEventDetails,omitempty"`
-	SharedEventID       *string           `json:"sharedEventID,omitempty"`
-	SourceIPAddress     *string           `json:"sourceIPAddress,omitempty"`
-	UserAgent           *string           `json:"userAgent,omitempty"`
-	UserIdentity        UserIdentity      `json:"userIdentity"`
-	VpcEndpointId       string            `json:"vpcEndpointId,omitempty"`
-	EventCategory       string            `json:"eventCategory,omitempty"`
-	// TODO - this looks like a bool, but is in the JSON as a string ... should we convert it?
-	SessionCredentialFromConsole *string           `json:"sessionCredentialFromConsole,omitempty"`
-	EdgeDeviceDetails            *types.JSONString `json:"edgeDeviceDetails,omitempty"`
-	TLSDetails                   *TLSDetails       `json:"tlsDetails,omitempty"`
+	// json tags for marshalling to/from the source & parquet tags handle the parquet column names for the table
+	AdditionalEventData          *map[string]interface{} `json:"additionalEventData,omitempty" parquet:"name=additional_event_data, type=JSON"`
+	APIVersion                   *string                 `json:"apiVersion,omitempty" parquet:"name=api_version"`
+	AwsRegion                    string                  `json:"awsRegion" parquet:"name=aws_region"`
+	ErrorCode                    *string                 `json:"errorCode,omitempty" parquet:"name=error_code"`
+	ErrorMessage                 *string                 `json:"errorMessage,omitempty" parquet:"name=error_message"`
+	EventID                      string                  `json:"eventID" parquet:"name=event_id"`
+	EventName                    string                  `json:"eventName" parquet:"name=event_name"`
+	EventSource                  string                  `json:"eventSource" parquet:"name=event_source"`
+	EventTime                    *time.Time              `json:"eventTime" parquet:"name=event_time"`
+	EventType                    string                  `json:"eventType" parquet:"name=event_type"`
+	EventVersion                 string                  `json:"eventVersion" parquet:"name=event_version"`
+	ManagementEvent              *bool                   `json:"managementEvent,omitempty" parquet:"name=management_event"`
+	ReadOnly                     *bool                   `json:"readOnly,omitempty" parquet:"name=read_only"`
+	RecipientAccountId           string                  `json:"recipientAccountId,omitempty" parquet:"name=recipient_account_id"`
+	RequestID                    *string                 `json:"requestID,omitempty" parquet:"name=request_id"`
+	RequestParameters            *map[string]interface{} `json:"requestParameters,omitempty" parquet:"name=request_parameters, type=JSON"`
+	Resources                    []*Resource             `json:"resources,omitempty" parquet:"name=resources, type=JSON"`
+	ResponseElements             *map[string]interface{} `json:"responseElements,omitempty" parquet:"name=response_elements, type=JSON"`
+	ServiceEventDetails          *map[string]interface{} `json:"serviceEventDetails,omitempty" parquet:"name=service_event_details, type=JSON"`
+	SharedEventID                *string                 `json:"sharedEventID,omitempty" parquet:"name=shared_event_id"`
+	SourceIPAddress              *string                 `json:"sourceIPAddress,omitempty" parquet:"name=source_ip_address"`
+	UserAgent                    *string                 `json:"userAgent,omitempty" parquet:"name=user_agent"`
+	UserIdentity                 UserIdentity            `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
+	VpcEndpointId                string                  `json:"vpcEndpointId,omitempty" parquet:"name=vpc_endpoint_id"`
+	EventCategory                string                  `json:"eventCategory,omitempty" parquet:"name=event_category"`
+	SessionCredentialFromConsole *string                 `json:"sessionCredentialFromConsole,omitempty" parquet:"name=session_credential_from_console"`
+	EdgeDeviceDetails            *map[string]interface{} `json:"edgeDeviceDetails,omitempty" parquet:"name=edge_device_details, type=JSON"`
+	TLSDetails                   *TLSDetails             `json:"tlsDetails,omitempty" parquet:"name=tls_details, type=JSON"`
 }
 
 type UserIdentity struct {
