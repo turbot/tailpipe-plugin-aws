@@ -33,7 +33,7 @@ type GuardDutyFinding struct {
 	InstanceType       *string    `json:"instance_type"`
 	OutpostArn         *string    `json:"outpost_arn"`
 	LaunchTime         *time.Time `json:"launch_time"`
-	Ipv6Addresses      []string   `json:"ipv6_addresses"`
+	Ipv6Addresses      []string   `json:"ipv6_addresses" parquet:"type=JSON"`
 	NetworkInterfaceId string     `json:"network_interface_id"`
 	PrivateDnsName     string     `json:"private_dns_name"`
 	PrivateIpAddress   string     `json:"private_ip_address"`
