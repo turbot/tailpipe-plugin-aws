@@ -16,20 +16,21 @@ const S3ServerAccessLogTableIdentifier = "aws_s3_server_access_log"
 const s3ServerAccessLogFormat = `$bucket_owner $bucket [$timestamp] $remote_ip $requester $request_id $operation $key "$request_uri" $http_status $error_code $bytes_sent $object_size $total_time $turn_around_time "$referer" "$user_agent" $version_id $host_id $signature_version $cipher_suite $authentication_type $host_header $tls_version $access_point_arn $acl_required`
 const s3ServerAccessLogFormatReduced = `$bucket_owner $bucket [$timestamp] $remote_ip $requester $request_id $operation $key "$request_uri" $http_status $error_code $bytes_sent $object_size $total_time $turn_around_time "$referer" "$user_agent" $version_id $host_id $signature_version $cipher_suite $authentication_type $host_header $tls_version $access_point_arn`
 
-// register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.S3ServerAccessLog, *S3ServerAccessLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *S3ServerAccessLogTable]()
 }
 
-type S3ServerAccessLogTable struct {
-	table.TableImpl[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *artifact_source.AwsConnection]
-}
+type S3ServerAccessLogTable struct{}
 
 func (c *S3ServerAccessLogTable) Identifier() string {
 	return S3ServerAccessLogTableIdentifier
 }
 
-func (c *S3ServerAccessLogTable) SupportedSources() []*table.SourceMetadata[*rows.S3ServerAccessLog] {
+func (c *S3ServerAccessLogTable) SupportedSources(*S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
 	return []*table.SourceMetadata[*rows.S3ServerAccessLog]{
 		{
 			// any artifact source

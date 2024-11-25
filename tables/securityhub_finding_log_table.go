@@ -19,19 +19,16 @@ const SecurityHubFindingLogTableIdentifier = "aws_securityhub_finding_log"
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.SecurityHubFindingLog, *SecurityHubFindingLogTable]()
+	table.RegisterTable[*rows.SecurityHubFindingLog, *SecurityHubFindingLogTableConfig, *SecurityHubFindingLogTable]()
 }
 
-type SecurityHubFindingLogTable struct {
-	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.SecurityHubFindingLog, *SecurityHubFindingLogTableConfig, *artifact_source.AwsConnection]
-}
+type SecurityHubFindingLogTable struct{}
 
 func (c *SecurityHubFindingLogTable) Identifier() string {
 	return SecurityHubFindingLogTableIdentifier
 }
 
-func (c *SecurityHubFindingLogTable) SupportedSources() []*table.SourceMetadata[*rows.SecurityHubFindingLog] {
+func (c *SecurityHubFindingLogTable) SupportedSources(*SecurityHubFindingLogTableConfig) []*table.SourceMetadata[*rows.SecurityHubFindingLog] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/SecurityHub/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/findings\\.json\\.gz"),
 	}

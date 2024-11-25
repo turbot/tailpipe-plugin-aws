@@ -18,12 +18,14 @@ const albLogFormat = `$type $timestamp $alb $client $target $request_processing_
 const albLogFormatNoConnTrace = `$type $timestamp $alb $client $target $request_processing_time $target_processing_time $response_processing_time $alb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
 func init() {
-	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *AlbAccessLogTable]()
 }
 
-type AlbAccessLogTable struct {
-	table.TableImpl[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *artifact_source.AwsConnection]
-}
+type AlbAccessLogTable struct{}
 
 func (c *AlbAccessLogTable) initMapper() func() table.Mapper[*rows.AlbAccessLog] {
 	f := func() table.Mapper[*rows.AlbAccessLog] {
@@ -32,7 +34,7 @@ func (c *AlbAccessLogTable) initMapper() func() table.Mapper[*rows.AlbAccessLog]
 	return f
 }
 
-func (c *AlbAccessLogTable) SupportedSources() []*table.SourceMetadata[*rows.AlbAccessLog] {
+func (c *AlbAccessLogTable) SupportedSources(*AlbAccessLogTableConfig) []*table.SourceMetadata[*rows.AlbAccessLog] {
 	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source

@@ -19,23 +19,23 @@ import (
 
 const CostUsageLogTableIdentifier = "aws_cost_usage_log"
 
-// register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.CostAndUsageLog, *CostAndUsageLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *CostAndUsageLogTable]()
 }
 
 // CostAndUsageLogTable - table for CostAndUsageLogs
-type CostAndUsageLogTable struct {
-	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *artifact_source.AwsConnection]
-}
+type CostAndUsageLogTable struct{}
 
 // Identifier implements table.Table
 func (t *CostAndUsageLogTable) Identifier() string {
 	return CostUsageLogTableIdentifier
 }
 
-func (t *CostAndUsageLogTable) SupportedSources() []*table.SourceMetadata[*rows.CostAndUsageLog] {
+func (t *CostAndUsageLogTable) SupportedSources(partitionConfig *CostAndUsageLogTableConfig) []*table.SourceMetadata[*rows.CostAndUsageLog] {
 	// TODO fix FileLayout
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),

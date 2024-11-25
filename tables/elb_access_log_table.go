@@ -14,17 +14,18 @@ import (
 
 const ElbAccessLogTableIdentifier = "aws_elb_access_log"
 
-// register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.ElbAccessLog, *ElbAccessLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.ElbAccessLog, *ElbAccessLogTableConfig, *ElbAccessLogTable]()
 }
 
 const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
 const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
-type ElbAccessLogTable struct {
-	table.TableImpl[*rows.ElbAccessLog, *ElbAccessLogTableConfig, *artifact_source.AwsConnection]
-}
+type ElbAccessLogTable struct{}
 
 func (c *ElbAccessLogTable) initMapper() func() table.Mapper[*rows.ElbAccessLog] {
 	f := func() table.Mapper[*rows.ElbAccessLog] {
@@ -37,7 +38,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 	return ElbAccessLogTableIdentifier
 }
 
-func (c *ElbAccessLogTable) SupportedSources() []*table.SourceMetadata[*rows.ElbAccessLog] {
+func (c *ElbAccessLogTable) SupportedSources(*ElbAccessLogTableConfig) []*table.SourceMetadata[*rows.ElbAccessLog] {
 	return []*table.SourceMetadata[*rows.ElbAccessLog]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,

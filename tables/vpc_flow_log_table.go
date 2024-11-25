@@ -15,30 +15,30 @@ import (
 
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 
-// register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.VpcFlowLog, *VpcFlowLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.VpcFlowLog, *VpcFlowLogTableConfig, *VpcFlowLogTable]()
 }
 
 // VpcFlowLogTable - table for VPC Flow Logs
-type VpcFlowLogTable struct {
-	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.VpcFlowLog, *VpcFlowLogTableConfig, *artifact_source.AwsConnection]
-}
+type VpcFlowLogTable struct{}
 
-func (c *VpcFlowLogTable) initMapper() func() table.Mapper[*rows.VpcFlowLog] {
+func (c *VpcFlowLogTable) initMapper(partitionConfig *VpcFlowLogTableConfig) func() table.Mapper[*rows.VpcFlowLog] {
 	f := func() table.Mapper[*rows.VpcFlowLog] {
-		return mappers.NewVpcFlowLogMapper(c.Config.Fields)
+		return mappers.NewVpcFlowLogMapper(partitionConfig.Fields)
 	}
 	return f
 }
 
-func (c *VpcFlowLogTable) SupportedSources() []*table.SourceMetadata[*rows.VpcFlowLog] {
+func (c *VpcFlowLogTable) SupportedSources(partitionConfig *VpcFlowLogTableConfig) []*table.SourceMetadata[*rows.VpcFlowLog] {
 	return []*table.SourceMetadata[*rows.VpcFlowLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: c.initMapper(),
+			MapperFunc: c.initMapper(partitionConfig),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},

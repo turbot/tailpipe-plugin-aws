@@ -17,21 +17,22 @@ import (
 
 const GuardDutyFindingTableIdentifier = "aws_guardduty_finding"
 
-// register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.GuardDutyFinding, *GuardDutyFindingTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.GuardDutyFinding, *GuardDutyFindingTableConfig, *GuardDutyFindingTable]()
 }
 
 // GuardDutyFindingTable - table for GuardDuty Findings
-type GuardDutyFindingTable struct {
-	table.TableImpl[*rows.GuardDutyFinding, *GuardDutyFindingTableConfig, *artifact_source.AwsConnection]
-}
+type GuardDutyFindingTable struct{}
 
 func (c *GuardDutyFindingTable) Identifier() string {
 	return GuardDutyFindingTableIdentifier
 }
 
-func (c *GuardDutyFindingTable) SupportedSources() []*table.SourceMetadata[*rows.GuardDutyFinding] {
+func (c *GuardDutyFindingTable) SupportedSources(*GuardDutyFindingTableConfig) []*table.SourceMetadata[*rows.GuardDutyFinding] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/[0-9]+/GuardDuty/[a-z0-9-]+/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/[0-9a-fA-F-]+\\.jsonl\\.gz"),
 	}

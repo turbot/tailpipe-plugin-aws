@@ -18,18 +18,18 @@ import (
 
 const WaftTrafficLogTableIdentifier = "aws_waf_traffic_log"
 
-// register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.WafTrafficLog, *WafTrafficLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.WafTrafficLog, *WafTrafficLogTableConfig, *WafTrafficLogTable]()
 }
 
 // WafTrafficLogTable - table for Waf traffic logs
-type WafTrafficLogTable struct {
-	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.WafTrafficLog, *WafTrafficLogTableConfig, *artifact_source.AwsConnection]
-}
+type WafTrafficLogTable struct{}
 
-func (c *WafTrafficLogTable) SupportedSources() []*table.SourceMetadata[*rows.WafTrafficLog] {
+func (c *WafTrafficLogTable) SupportedSources(*WafTrafficLogTableConfig) []*table.SourceMetadata[*rows.WafTrafficLog] {
 	// the default file layout for Waf traffic logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/WAFLogs/(?P<log_group_name>[a-zA-Z0-9-_]+)/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/(?P<hour>\\d{2})/(?P<filename>.+\\.gz)"),

@@ -16,19 +16,20 @@ import (
 const LambdaLogTableIdentifier = "aws_lambda_log"
 
 func init() {
-	table.RegisterTable[*rows.LambdaLog, *LambdaLogTable]()
+	// Register the table, with type parameters:
+	// 1. row struct
+	// 2. table config struct
+	// 3. table implementation
+	table.RegisterTable[*rows.LambdaLog, *LambdaLogTableConfig, *LambdaLogTable]()
 }
 
-type LambdaLogTable struct {
-	// all tables must embed table.TableImpl
-	table.TableImpl[*rows.LambdaLog, *LambdaLogTableConfig, *artifact_source.AwsConnection]
-}
+type LambdaLogTable struct{}
 
 func (c *LambdaLogTable) Identifier() string {
 	return LambdaLogTableIdentifier
 }
 
-func (c *LambdaLogTable) SupportedSources() []*table.SourceMetadata[*rows.LambdaLog] {
+func (c *LambdaLogTable) SupportedSources(*LambdaLogTableConfig) []*table.SourceMetadata[*rows.LambdaLog] {
 	return []*table.SourceMetadata[*rows.LambdaLog]{
 		{
 			// any artifact source
