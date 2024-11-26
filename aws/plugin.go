@@ -5,6 +5,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	// reference the table package to ensure that the tables are registered by the init functions
+	_ "github.com/turbot/tailpipe-plugin-aws/sources"
 	_ "github.com/turbot/tailpipe-plugin-aws/tables"
 )
 
