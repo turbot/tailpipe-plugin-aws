@@ -1,12 +1,12 @@
 package tables
 
 import (
+	"github.com/turbot/tailpipe-plugin-aws/extractors"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
@@ -39,8 +39,10 @@ func (t *CloudTrailLogTable) SupportedSources(*CloudTrailLogTableConfig) []*tabl
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewCloudTrailLogMapper,
-			Options:    []row_source.RowSourceOption{artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig)},
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
+				artifact_source.WithArtifactExtractor(extractors.NewCloudTrailLogExtractor()),
+			},
 		},
 	}
 }

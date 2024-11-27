@@ -26,7 +26,7 @@ func (g *GuardDutyMapper) Identifier() string {
 }
 
 // Map casts the data item as a GuardDutyBatch and returns the GuardDutyFinding records
-func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]*rows.GuardDutyFinding, error) {
+func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding, error) {
 	var jsonBytes []byte
 	// The expected input type is a JSON byte[] deserializable to GuardDutyBatch
 	switch v := a.(type) {
@@ -157,5 +157,5 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) ([]*rows.GuardDutyFindin
 			}
 		}
 	}
-	return []*rows.GuardDutyFinding{row}, nil
+	return row, nil
 }

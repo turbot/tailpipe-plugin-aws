@@ -21,7 +21,7 @@ func (c *WafMapper) Identifier() string {
 	return "waf_mapper"
 }
 
-func (c *WafMapper) Map(_ context.Context, a any) ([]*rows.WafTrafficLog, error) {
+func (c *WafMapper) Map(_ context.Context, a any) (*rows.WafTrafficLog, error) {
 	var jsonBytes []byte
 
 	switch v := a.(type) {
@@ -40,5 +40,5 @@ func (c *WafMapper) Map(_ context.Context, a any) ([]*rows.WafTrafficLog, error)
 		return nil, fmt.Errorf("error decoding JSON: %w; partial log: %+v", err, log)
 	}
 
-	return []*rows.WafTrafficLog{&log}, nil
+	return &log, nil
 }
