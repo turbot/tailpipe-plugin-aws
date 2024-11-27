@@ -29,7 +29,7 @@ func (c *VpcFlowLogMapper) Identifier() string {
 }
 
 // Map casts the data item as an string and returns the VpcFlowLog records
-func (c *VpcFlowLogMapper) Map(_ context.Context, a any) ([]*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogMapper) Map(_ context.Context, a any) (*rows.VpcFlowLog, error) {
 	rowString, ok := a.(string)
 	if !ok {
 		return nil, fmt.Errorf("expected string, got %T", a)
@@ -184,6 +184,6 @@ func (c *VpcFlowLogMapper) Map(_ context.Context, a any) ([]*rows.VpcFlowLog, er
 		}
 	}
 
-	return []*rows.VpcFlowLog{flowLog}, nil
+	return flowLog, nil
 
 }

@@ -22,8 +22,8 @@ func (m *LambdaLogMapper) Identifier() string {
 	return "lambda_log_mapper"
 }
 
-func (m *LambdaLogMapper) Map(ctx context.Context, a any) ([]*rows.LambdaLog, error) {
-	var row rows.LambdaLog
+func (m *LambdaLogMapper) Map(ctx context.Context, a any) (*rows.LambdaLog, error) {
+	row := &rows.LambdaLog{}
 
 	rawRow, ok := a.(string)
 	if !ok {
@@ -77,5 +77,5 @@ func (m *LambdaLogMapper) Map(ctx context.Context, a any) ([]*rows.LambdaLog, er
 		row.Message = &stripped
 	}
 
-	return []*rows.LambdaLog{&row}, nil
+	return row, nil
 }

@@ -26,7 +26,8 @@ func (c *CostAndUsageLogMapper) Identifier() string {
 	return "cost_and_usage_mapper"
 }
 
-func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) ([]*rows.CostAndUsageLog, error) {
+func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) (*rows.CostAndUsageLog, error) {
+	// TODO FIX ME
 	slog.Debug(">> Inside Map")
 	csvData, ok := a.(string)
 	if !ok {
