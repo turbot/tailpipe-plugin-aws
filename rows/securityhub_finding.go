@@ -6,7 +6,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 )
 
-type SecurityHubFindingLog struct {
+type SecurityHubFinding struct {
 	enrichment.CommonFields
 
 	// Top level fields

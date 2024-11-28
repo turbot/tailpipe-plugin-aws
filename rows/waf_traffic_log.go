@@ -39,5 +39,5 @@ type WafTrafficLog struct {
 	RuleGroupList               []string     `json:"rule_group_list,omitempty"`
 	RateBasedRuleList           []string     `json:"rate_based_rule_list,omitempty"`
 	NonTerminatingMatchingRules []string     `json:"non_terminating_matching_rules,omitempty"`
-	HttpRequest                 *HttpRequest `json:"http_request,omitempty" parquet:"type=JSON"`
+	HttpRequest                 *HttpRequest `json:"http_request,omitempty"`
 }

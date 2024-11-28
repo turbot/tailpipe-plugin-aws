@@ -53,43 +53,12 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding,
 		Id:            finding.Id,
 		Partition:     finding.Partition,
 		Region:        finding.Region,
-		ResourceType:  finding.Resource.ResourceType,
 		SchemaVersion: finding.SchemaVersion,
-		Archived:      finding.Service.Archived,
-		Count:         finding.Service.Count,
-		DetectorId:    finding.Service.DetectorId,
-		ResourceRole:  finding.Service.ResourceRole,
-		ServiceName:   finding.Service.ServiceName,
 		Severity:      finding.Severity,
 		Title:         finding.Title,
 		Type:          finding.Type,
 	}
-	if finding.Service.Action != nil {
-		if finding.Service.Action.ActionType != nil {
-			row.ActionType = finding.Service.Action.ActionType
-		}
-		if finding.Service.Action.AwsApiCallAction != nil {
-			if finding.Service.Action.AwsApiCallAction.Api != nil {
-				row.Api = finding.Service.Action.AwsApiCallAction.Api
-			}
-			if finding.Service.Action.AwsApiCallAction.CallerType != nil {
-				row.CallerType = finding.Service.Action.AwsApiCallAction.CallerType
-			}
-			if finding.Service.Action.AwsApiCallAction.ErrorCode != nil {
-				row.ErrorCode = finding.Service.Action.AwsApiCallAction.ErrorCode
-			}
-			if finding.Service.Action.AwsApiCallAction.RemoteIpDetails != nil {
-				if finding.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4 != nil {
-					row.IpAddressV4 = finding.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4
-				}
-				if finding.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6 != nil {
-					row.IpAddressV6 = finding.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6
-				}
-			}
-		}
-	}
 
-	// Parse `CreatedAt` if it's provided
 	if finding.CreatedAt != nil {
 		row.CreatedAt, err = time.Parse(time.RFC3339, *finding.CreatedAt)
 		if err != nil {
@@ -106,56 +75,44 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding,
 		row.UpdatedAt = &updatedAt
 	}
 
-	// Parse `EventFirstSeen` and `EventLastSeen`
-	if finding.Service.EventFirstSeen != nil {
-		row.EventFirstSeen = finding.Service.EventFirstSeen
-	}
-	if finding.Service.EventLastSeen != nil {
-		row.EventLastSeen = finding.Service.EventLastSeen
-	}
-
-	// Extract other nested fields if available
-	if finding.Resource.AccessKeyDetails != nil {
-		row.AccessKeyId = finding.Resource.AccessKeyDetails.AccessKeyId
-		row.PrincipalId = finding.Resource.AccessKeyDetails.PrincipalId
-		row.UserName = finding.Resource.AccessKeyDetails.UserName
-		row.UserType = finding.Resource.AccessKeyDetails.UserType
-	}
-
-	if finding.Resource.InstanceDetails != nil {
-		row.AvailabilityZone = finding.Resource.InstanceDetails.AvailabilityZone
-		row.InstanceArn = finding.Resource.InstanceDetails.IamInstanceProfile.Arn
-		row.ImageDescription = finding.Resource.InstanceDetails.ImageDescription
-		row.ImageId = finding.Resource.InstanceDetails.ImageId
-		row.InstanceId = finding.Resource.InstanceDetails.InstanceId
-		row.InstanceState = finding.Resource.InstanceDetails.InstanceState
-		row.InstanceType = finding.Resource.InstanceDetails.InstanceType
-		row.OutpostArn = finding.Resource.InstanceDetails.OutpostArn
-
-		if finding.Resource.InstanceDetails.LaunchTime != nil {
-			var launchTime time.Time
-			launchTime, err = time.Parse(time.RFC3339, *finding.Resource.InstanceDetails.LaunchTime)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing LaunchTime: %w", err)
-			}
-			row.LaunchTime = &launchTime
-		}
-		// Network details
-		if len(finding.Resource.InstanceDetails.NetworkInterfaces) > 0 {
-			ni := finding.Resource.InstanceDetails.NetworkInterfaces[0]
-			row.NetworkInterfaceId = *ni.NetworkInterfaceId
-			row.PrivateDnsName = *ni.PrivateDnsName
-			row.PrivateIpAddress = *ni.PrivateIpAddress
-			row.PublicDnsName = *ni.PublicDnsName
-			row.PublicIp = *ni.PublicIp
-			row.VpcId = *ni.VpcId
-			row.SubnetId = *ni.SubnetId
-
-			if len(ni.SecurityGroups) > 0 {
-				row.GroupId = *ni.SecurityGroups[0].GroupId
-				row.GroupName = *ni.SecurityGroups[0].GroupName
-			}
+	// service
+	if finding.Service != nil {
+		row.Service = &rows.GuardDutyFindingService{
+			Action:               finding.Service.Action,
+			Archived:             finding.Service.Archived,
+			Count:                finding.Service.Count,
+			Detection:            finding.Service.Detection,
+			DetectorId:           finding.Service.DetectorId,
+			EbsVolumeScanDetails: finding.Service.EbsVolumeScanDetails,
+			EventFirstSeen:       finding.Service.EventFirstSeen,
+			EventLastSeen:        finding.Service.EventLastSeen,
+			Evidence:             finding.Service.Evidence,
+			FeatureName:          finding.Service.FeatureName,
+			MalwareScanDetails:   finding.Service.MalwareScanDetails,
+			ResourceRole:         finding.Service.ResourceRole,
+			RuntimeDetails:       finding.Service.RuntimeDetails,
+			ServiceName:          finding.Service.ServiceName,
+			UserFeedback:         finding.Service.UserFeedback,
 		}
 	}
+
+	// resource
+	if finding.Resource != nil {
+		row.Resource = &rows.GuardDutyFindingResource{
+			ResourceType:         finding.Resource.ResourceType,
+			AccessKeyDetails:     finding.Resource.AccessKeyDetails,
+			ContainerDetails:     finding.Resource.ContainerDetails,
+			EbsVolumeDetails:     finding.Resource.EbsVolumeDetails,
+			EcsClusterDetails:    finding.Resource.EcsClusterDetails,
+			EksClusterDetails:    finding.Resource.EksClusterDetails,
+			InstanceDetails:      finding.Resource.InstanceDetails,
+			KubernetesDetails:    finding.Resource.KubernetesDetails,
+			LambdaDetails:        finding.Resource.LambdaDetails,
+			RdsDbInstanceDetails: finding.Resource.RdsDbInstanceDetails,
+			RdsDbUserDetails:     finding.Resource.RdsDbUserDetails,
+			S3BucketDetails:      finding.Resource.S3BucketDetails,
+		}
+	}
+
 	return row, nil
 }
