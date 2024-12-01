@@ -33,29 +33,27 @@ type GuardDutyFindingService struct {
 	Count                *int32                      `json:"count,omitempty"`
 	Detection            *types.Detection            `json:"detection,omitempty" parquet:"type=JSON"` // contains maps
 	DetectorId           *string                     `json:"detector_id,omitempty"`
-	EbsVolumeScanDetails *types.EbsVolumeScanDetails `json:"ebs_volume_scan_details,omitempty"`
+	EbsVolumeScanDetails *types.EbsVolumeScanDetails `json:"ebs_volume_scan_details,omitempty" parquet:"type=JSON"` // contains []struct
 	EventFirstSeen       *string                     `json:"event_first_seen,omitempty"`
 	EventLastSeen        *string                     `json:"event_last_seen,omitempty"`
-	Evidence             *types.Evidence             `json:"evidence,omitempty"`
+	Evidence             *types.Evidence             `json:"evidence,omitempty" parquet:"type=JSON"` // contains []struct
 	FeatureName          *string                     `json:"feature_name,omitempty"`
-	MalwareScanDetails   *types.MalwareScanDetails   `json:"malware_scan_details,omitempty"`
+	MalwareScanDetails   *types.MalwareScanDetails   `json:"malware_scan_details,omitempty" parquet:"type=JSON"` // contains []struct
 	ResourceRole         *string                     `json:"resource_role,omitempty"`
-	RuntimeDetails       *types.RuntimeDetails       `json:"runtime_details,omitempty"`
+	RuntimeDetails       *types.RuntimeDetails       `json:"runtime_details,omitempty" parquet:"type=JSON"` // contains []struct
 	ServiceName          *string                     `json:"service_name,omitempty"`
 	UserFeedback         *string                     `json:"user_feedback,omitempty"`
 }
 
 type GuardDutyFindingResource struct {
-	ResourceType         *string                     `json:"resource_type,omitempty"`
-	AccessKeyDetails     *types.AccessKeyDetails     `json:"access_key_details,omitempty"`
-	ContainerDetails     *types.Container            `json:"container_details,omitempty"`
-	EbsVolumeDetails     *types.EbsVolumeDetails     `json:"ebs_volume_details,omitempty"`
-	EcsClusterDetails    *types.EcsClusterDetails    `json:"ecs_cluster_details,omitempty"`
-	EksClusterDetails    *types.EksClusterDetails    `json:"eks_cluster_details,omitempty"`
-	InstanceDetails      *types.InstanceDetails      `json:"instance_details,omitempty"`
-	KubernetesDetails    *types.KubernetesDetails    `json:"kubernetes_details,omitempty"`
-	LambdaDetails        *types.LambdaDetails        `json:"lambda_details,omitempty"`
-	RdsDbInstanceDetails *types.RdsDbInstanceDetails `json:"rds_db_instance_details,omitempty"`
-	RdsDbUserDetails     *types.RdsDbUserDetails     `json:"rds_db_user_details,omitempty"`
-	S3BucketDetails      []types.S3BucketDetail      `json:"s3_bucket_details,omitempty"`
+	ResourceType     *string                 `json:"resource_type,omitempty"`
+	AccessKeyDetails *AccessKeyDetails       `json:"access_key_details,omitempty"`
+	ResourceDetails  *map[string]interface{} `json:"resource_details,omitempty" parquet:"type=JSON"`
+}
+
+type AccessKeyDetails struct {
+	AccessKeyId *string `json:"access_key_id,omitempty"`
+	PrincipalId *string `json:"principal_id,omitempty"`
+	UserName    *string `json:"user_name,omitempty"`
+	UserType    *string `json:"user_type,omitempty"`
 }
