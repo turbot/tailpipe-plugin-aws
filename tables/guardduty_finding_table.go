@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
@@ -59,18 +60,34 @@ func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnri
 	row.TpDate = row.CreatedAt.Truncate(24 * time.Hour)
 	row.TpIndex = *row.AccountId
 
-	if row.IpAddressV4 != nil {
-		row.TpIps = append(row.TpIps, *row.IpAddressV4)
-	}
-	if row.IpAddressV6 != nil {
-		row.TpIps = append(row.TpIps, *row.IpAddressV6)
-	}
-	if row.Ipv6Addresses != nil {
-		row.TpIps = append(row.TpIps, row.Ipv6Addresses...)
+	row.TpAkas = append(row.TpAkas, *row.Arn)
+
+	if row.Service != nil && row.Service.Action != nil && row.Service.Action.AwsApiCallAction != nil {
+		// ip addresses
+		if row.Service.Action.AwsApiCallAction.RemoteIpDetails != nil {
+			if row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4 != nil {
+				row.TpIps = append(row.TpIps, *row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4)
+				row.TpSourceIP = row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4
+			}
+			if row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6 != nil {
+				row.TpIps = append(row.TpIps, *row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6)
+				row.TpSourceIP = row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6
+			}
+		}
 	}
 
-	if row.UserName != nil {
-		row.TpUsernames = append(row.TpUsernames, *row.UserName)
+	if row.Resource != nil && row.Resource.AccessKeyDetails != nil {
+		// usernames
+		if row.Resource.AccessKeyDetails.AccessKeyId != nil {
+			row.TpUsernames = append(row.TpUsernames, *row.Resource.AccessKeyDetails.AccessKeyId)
+		}
+		if row.Resource.AccessKeyDetails.UserName != nil {
+			row.TpUsernames = append(row.TpUsernames, *row.Resource.AccessKeyDetails.UserName)
+		}
+		if row.Resource.AccessKeyDetails.PrincipalId != nil {
+			row.TpUsernames = append(row.TpUsernames, *row.Resource.AccessKeyDetails.PrincipalId)
+		}
+
 	}
 
 	return row, nil

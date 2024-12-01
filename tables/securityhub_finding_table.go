@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
@@ -15,28 +16,28 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const SecurityHubFindingLogTableIdentifier = "aws_securityhub_finding_log"
+const SecurityHubFindingTableIdentifier = "aws_securityhub_finding"
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.SecurityHubFindingLog, *SecurityHubFindingLogTableConfig, *SecurityHubFindingLogTable]()
+	table.RegisterTable[*rows.SecurityHubFinding, *SecurityHubFindingTableConfig, *SecurityHubFindingTable]()
 }
 
-type SecurityHubFindingLogTable struct{}
+type SecurityHubFindingTable struct{}
 
-func (c *SecurityHubFindingLogTable) Identifier() string {
-	return SecurityHubFindingLogTableIdentifier
+func (c *SecurityHubFindingTable) Identifier() string {
+	return SecurityHubFindingTableIdentifier
 }
 
-func (c *SecurityHubFindingLogTable) SupportedSources(*SecurityHubFindingLogTableConfig) []*table.SourceMetadata[*rows.SecurityHubFindingLog] {
+func (c *SecurityHubFindingTable) SupportedSources(*SecurityHubFindingTableConfig) []*table.SourceMetadata[*rows.SecurityHubFinding] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/SecurityHub/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/findings\\.json\\.gz"),
 	}
 
-	return []*table.SourceMetadata[*rows.SecurityHubFindingLog]{
+	return []*table.SourceMetadata[*rows.SecurityHubFinding]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewSecurityHubFindingsMapper,
+			MapperFunc: mappers.NewSecurityHubFindingMapper,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 			},
@@ -44,7 +45,7 @@ func (c *SecurityHubFindingLogTable) SupportedSources(*SecurityHubFindingLogTabl
 	}
 }
 
-func (c *SecurityHubFindingLogTable) EnrichRow(row *rows.SecurityHubFindingLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.SecurityHubFindingLog, error) {
+func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, sourceEnrichmentFields *enrichment.CommonFields) (*rows.SecurityHubFinding, error) {
 	if sourceEnrichmentFields != nil {
 		row.CommonFields = *sourceEnrichmentFields
 	}
