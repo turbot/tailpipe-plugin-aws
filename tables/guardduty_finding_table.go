@@ -62,20 +62,6 @@ func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnri
 
 	row.TpAkas = append(row.TpAkas, *row.Arn)
 
-	if row.Service != nil && row.Service.Action != nil && row.Service.Action.AwsApiCallAction != nil {
-		// ip addresses
-		if row.Service.Action.AwsApiCallAction.RemoteIpDetails != nil {
-			if row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4 != nil {
-				row.TpIps = append(row.TpIps, *row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4)
-				row.TpSourceIP = row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4
-			}
-			if row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6 != nil {
-				row.TpIps = append(row.TpIps, *row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6)
-				row.TpSourceIP = row.Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV6
-			}
-		}
-	}
-
 	if row.Resource != nil && row.Resource.AccessKeyDetails != nil {
 		// usernames
 		if row.Resource.AccessKeyDetails.AccessKeyId != nil {

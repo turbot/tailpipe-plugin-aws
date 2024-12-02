@@ -83,7 +83,6 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding,
 	// service
 	if finding.Service != nil {
 		row.Service = &rows.GuardDutyFindingService{
-			Action:               finding.Service.Action,
 			Archived:             finding.Service.Archived,
 			Count:                finding.Service.Count,
 			Detection:            finding.Service.Detection,
@@ -95,9 +94,129 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding,
 			FeatureName:          finding.Service.FeatureName,
 			MalwareScanDetails:   finding.Service.MalwareScanDetails,
 			ResourceRole:         finding.Service.ResourceRole,
-			RuntimeDetails:       finding.Service.RuntimeDetails,
 			ServiceName:          finding.Service.ServiceName,
 			UserFeedback:         finding.Service.UserFeedback,
+		}
+
+		// service.action
+		if finding.Service.Action != nil {
+			row.Service.Action = &rows.GuardDutyFindingAction{
+				ActionType: finding.Service.Action.ActionType,
+			}
+
+			var details map[string]interface{}
+			switch {
+			case finding.Service.Action.AwsApiCallAction != nil:
+				details, err = convertToMap(finding.Service.Action.AwsApiCallAction)
+			case finding.Service.Action.DnsRequestAction != nil:
+				details, err = convertToMap(finding.Service.Action.DnsRequestAction)
+			case finding.Service.Action.NetworkConnectionAction != nil:
+				details, err = convertToMap(finding.Service.Action.NetworkConnectionAction)
+			case finding.Service.Action.PortProbeAction != nil:
+				details, err = convertToMap(finding.Service.Action.PortProbeAction)
+			case finding.Service.Action.KubernetesApiCallAction != nil:
+				details, err = convertToMap(finding.Service.Action.KubernetesApiCallAction)
+			case finding.Service.Action.KubernetesPermissionCheckedDetails != nil:
+				details, err = convertToMap(finding.Service.Action.KubernetesPermissionCheckedDetails)
+			case finding.Service.Action.KubernetesRoleDetails != nil:
+				details, err = convertToMap(finding.Service.Action.KubernetesRoleDetails)
+			case finding.Service.Action.KubernetesRoleBindingDetails != nil:
+				details, err = convertToMap(finding.Service.Action.KubernetesRoleBindingDetails)
+			case finding.Service.Action.RdsLoginAttemptAction != nil:
+				details, err = convertToMap(finding.Service.Action.RdsLoginAttemptAction)
+			}
+
+			row.Service.Action.ActionDetails = details
+		}
+
+		// service.runtimeDetails
+		if finding.Service.RuntimeDetails != nil {
+			var runtimeDetails rows.GuardDutyFindingRuntimeDetails
+
+			// service.runtimeDetails.context
+			if finding.Service.RuntimeDetails.Context != nil {
+				runtimeDetails.Context = &rows.GuardDutyFindingRuntimeDetailsContext{
+					AddressFamily:      finding.Service.RuntimeDetails.Context.AddressFamily,
+					CommandLineExample: finding.Service.RuntimeDetails.Context.CommandLineExample,
+					FileSystemType:     finding.Service.RuntimeDetails.Context.FileSystemType,
+					Flags:              finding.Service.RuntimeDetails.Context.Flags,
+					IanaProtocolNumber: finding.Service.RuntimeDetails.Context.IanaProtocolNumber,
+					LdPreloadValue:     finding.Service.RuntimeDetails.Context.LdPreloadValue,
+					LibraryPath:        finding.Service.RuntimeDetails.Context.LibraryPath,
+					MemoryRegions:      finding.Service.RuntimeDetails.Context.MemoryRegions,
+					ModifiedAt:         finding.Service.RuntimeDetails.Context.ModifiedAt,
+					ModuleFilePath:     finding.Service.RuntimeDetails.Context.ModuleFilePath,
+					ModuleName:         finding.Service.RuntimeDetails.Context.ModuleName,
+					ModuleSha256:       finding.Service.RuntimeDetails.Context.ModuleSha256,
+					MountSource:        finding.Service.RuntimeDetails.Context.MountSource,
+					MountTarget:        finding.Service.RuntimeDetails.Context.MountTarget,
+					ReleaseAgentPath:   finding.Service.RuntimeDetails.Context.ReleaseAgentPath,
+					RuncBinaryPath:     finding.Service.RuntimeDetails.Context.RuncBinaryPath,
+					ScriptPath:         finding.Service.RuntimeDetails.Context.ScriptPath,
+					ServiceName:        finding.Service.RuntimeDetails.Context.ServiceName,
+					ShellHistoryPath:   finding.Service.RuntimeDetails.Context.ShellHistoryFilePath,
+					SocketPath:         finding.Service.RuntimeDetails.Context.SocketPath,
+					ThreatFilePath:     finding.Service.RuntimeDetails.Context.ThreatFilePath,
+					ToolCategory:       finding.Service.RuntimeDetails.Context.ToolCategory,
+					ToolName:           finding.Service.RuntimeDetails.Context.ToolName,
+				}
+
+				// service.runtimeDetails.context.modifyingProcess
+				if finding.Service.RuntimeDetails.Context.ModifyingProcess != nil {
+					runtimeDetails.Context.ModifyingProcess = &rows.GuardDutyFindingsProcessDetails{
+						Euid:             finding.Service.RuntimeDetails.Context.ModifyingProcess.Euid,
+						ExecutablePath:   finding.Service.RuntimeDetails.Context.ModifyingProcess.ExecutablePath,
+						ExecutableSha256: finding.Service.RuntimeDetails.Context.ModifyingProcess.ExecutableSha256,
+						Name:             finding.Service.RuntimeDetails.Context.ModifyingProcess.Name,
+						NamespacePid:     finding.Service.RuntimeDetails.Context.ModifyingProcess.NamespacePid,
+						ParentUuid:       finding.Service.RuntimeDetails.Context.ModifyingProcess.ParentUuid,
+						Pid:              finding.Service.RuntimeDetails.Context.ModifyingProcess.Pid,
+						Pwd:              finding.Service.RuntimeDetails.Context.ModifyingProcess.Pwd,
+						StartTime:        finding.Service.RuntimeDetails.Context.ModifyingProcess.StartTime,
+						User:             finding.Service.RuntimeDetails.Context.ModifyingProcess.User,
+						UserId:           finding.Service.RuntimeDetails.Context.ModifyingProcess.UserId,
+						Uuid:             finding.Service.RuntimeDetails.Context.ModifyingProcess.Uuid,
+					}
+				}
+
+				// service.runtimeDetails.context.targetProcess
+				if finding.Service.RuntimeDetails.Context.TargetProcess != nil {
+					runtimeDetails.Context.TargetProcess = &rows.GuardDutyFindingsProcessDetails{
+						Euid:             finding.Service.RuntimeDetails.Context.TargetProcess.Euid,
+						ExecutablePath:   finding.Service.RuntimeDetails.Context.TargetProcess.ExecutablePath,
+						ExecutableSha256: finding.Service.RuntimeDetails.Context.TargetProcess.ExecutableSha256,
+						Name:             finding.Service.RuntimeDetails.Context.TargetProcess.Name,
+						NamespacePid:     finding.Service.RuntimeDetails.Context.TargetProcess.NamespacePid,
+						ParentUuid:       finding.Service.RuntimeDetails.Context.TargetProcess.ParentUuid,
+						Pid:              finding.Service.RuntimeDetails.Context.TargetProcess.Pid,
+						Pwd:              finding.Service.RuntimeDetails.Context.TargetProcess.Pwd,
+						StartTime:        finding.Service.RuntimeDetails.Context.TargetProcess.StartTime,
+						User:             finding.Service.RuntimeDetails.Context.TargetProcess.User,
+						UserId:           finding.Service.RuntimeDetails.Context.TargetProcess.UserId,
+						Uuid:             finding.Service.RuntimeDetails.Context.TargetProcess.Uuid,
+					}
+				}
+			}
+
+			// service.runtimeDetails.process
+			if finding.Service.RuntimeDetails.Process != nil {
+				runtimeDetails.Process = &rows.GuardDutyFindingsProcessDetails{
+					Euid:             finding.Service.RuntimeDetails.Process.Euid,
+					ExecutablePath:   finding.Service.RuntimeDetails.Process.ExecutablePath,
+					ExecutableSha256: finding.Service.RuntimeDetails.Process.ExecutableSha256,
+					Name:             finding.Service.RuntimeDetails.Process.Name,
+					NamespacePid:     finding.Service.RuntimeDetails.Process.NamespacePid,
+					ParentUuid:       finding.Service.RuntimeDetails.Process.ParentUuid,
+					Pid:              finding.Service.RuntimeDetails.Process.Pid,
+					Pwd:              finding.Service.RuntimeDetails.Process.Pwd,
+					StartTime:        finding.Service.RuntimeDetails.Process.StartTime,
+					User:             finding.Service.RuntimeDetails.Process.User,
+					UserId:           finding.Service.RuntimeDetails.Process.UserId,
+					Uuid:             finding.Service.RuntimeDetails.Process.Uuid,
+				}
+
+				row.Service.RuntimeDetails = &runtimeDetails
+			}
 		}
 	}
 
