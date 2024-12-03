@@ -26,19 +26,12 @@ func init() {
 // VpcFlowLogTable - table for VPC Flow Logs
 type VpcFlowLogTable struct{}
 
-func (c *VpcFlowLogTable) initMapper(partitionConfig *VpcFlowLogTableConfig) func() table.Mapper[*rows.VpcFlowLog] {
-	f := func() table.Mapper[*rows.VpcFlowLog] {
-		return mappers.NewVpcFlowLogMapper(partitionConfig.Fields)
-	}
-	return f
-}
-
-func (c *VpcFlowLogTable) SupportedSources(partitionConfig *VpcFlowLogTableConfig) []*table.SourceMetadata[*rows.VpcFlowLog] {
+func (c *VpcFlowLogTable) GetSourceMetadata(partitionConfig *VpcFlowLogTableConfig) []*table.SourceMetadata[*rows.VpcFlowLog] {
 	return []*table.SourceMetadata[*rows.VpcFlowLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: c.initMapper(partitionConfig),
+			Mapper:     mappers.NewVpcFlowLogMapper(partitionConfig.Fields),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},

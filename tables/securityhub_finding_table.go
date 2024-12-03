@@ -29,7 +29,7 @@ func (c *SecurityHubFindingTable) Identifier() string {
 	return SecurityHubFindingTableIdentifier
 }
 
-func (c *SecurityHubFindingTable) SupportedSources(*SecurityHubFindingTableConfig) []*table.SourceMetadata[*rows.SecurityHubFinding] {
+func (c *SecurityHubFindingTable) GetSourceMetadata(_ *SecurityHubFindingTableConfig) []*table.SourceMetadata[*rows.SecurityHubFinding] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/SecurityHub/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/findings\\.json\\.gz"),
 	}
@@ -37,7 +37,7 @@ func (c *SecurityHubFindingTable) SupportedSources(*SecurityHubFindingTableConfi
 	return []*table.SourceMetadata[*rows.SecurityHubFinding]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewSecurityHubFindingMapper,
+			Mapper:  &mappers.SecurityHubFindingMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 			},

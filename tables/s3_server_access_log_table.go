@@ -30,22 +30,15 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 	return S3ServerAccessLogTableIdentifier
 }
 
-func (c *S3ServerAccessLogTable) SupportedSources(*S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
+func (c *S3ServerAccessLogTable) GetSourceMetadata(_ *S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
 	return []*table.SourceMetadata[*rows.S3ServerAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: c.initMapper(),
+			Mapper:     table.NewRowPatternMapper[*rows.S3ServerAccessLog](s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced),
 			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
 		},
 	}
-}
-
-func (c *S3ServerAccessLogTable) initMapper() func() table.Mapper[*rows.S3ServerAccessLog] {
-	f := func() table.Mapper[*rows.S3ServerAccessLog] {
-		return table.NewDelimitedLineMapper(rows.NewS3ServerAccessLog, s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced)
-	}
-	return f
 }
 
 func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.S3ServerAccessLog, error) {

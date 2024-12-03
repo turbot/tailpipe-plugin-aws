@@ -74,10 +74,6 @@ type AlbAccessLog struct {
 	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
 }
 
-func NewAlbAccessLog() *AlbAccessLog {
-	return &AlbAccessLog{}
-}
-
 // InitialiseFromMap initializes the struct from a map of string values
 func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error

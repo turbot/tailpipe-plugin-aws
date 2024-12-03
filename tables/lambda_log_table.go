@@ -29,12 +29,12 @@ func (c *LambdaLogTable) Identifier() string {
 	return LambdaLogTableIdentifier
 }
 
-func (c *LambdaLogTable) SupportedSources(*LambdaLogTableConfig) []*table.SourceMetadata[*rows.LambdaLog] {
+func (c *LambdaLogTable) GetSourceMetadata(_ *LambdaLogTableConfig) []*table.SourceMetadata[*rows.LambdaLog] {
 	return []*table.SourceMetadata[*rows.LambdaLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewLambdaLogMapper,
+			Mapper:     &mappers.LambdaLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},

@@ -27,22 +27,15 @@ const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_
 
 type ElbAccessLogTable struct{}
 
-func (c *ElbAccessLogTable) initMapper() func() table.Mapper[*rows.ElbAccessLog] {
-	f := func() table.Mapper[*rows.ElbAccessLog] {
-		return table.NewDelimitedLineMapper(rows.NewElbAccessLog, elbLogFormat, elbLogFormatNoConnTrace)
-	}
-	return f
-}
-
 func (c *ElbAccessLogTable) Identifier() string {
 	return ElbAccessLogTableIdentifier
 }
 
-func (c *ElbAccessLogTable) SupportedSources(*ElbAccessLogTableConfig) []*table.SourceMetadata[*rows.ElbAccessLog] {
+func (c *ElbAccessLogTable) GetSourceMetadata(_ *ElbAccessLogTableConfig) []*table.SourceMetadata[*rows.ElbAccessLog] {
 	return []*table.SourceMetadata[*rows.ElbAccessLog]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: c.initMapper(),
+			Mapper:     table.NewRowPatternMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},

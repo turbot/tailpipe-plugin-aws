@@ -8,14 +8,9 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type LambdaLogMapper struct {
-}
-
-func NewLambdaLogMapper() table.Mapper[*rows.LambdaLog] {
-	return &LambdaLogMapper{}
 }
 
 func (m *LambdaLogMapper) Identifier() string {
