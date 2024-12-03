@@ -36,7 +36,7 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*r
 	return []*table.SourceMetadata[*rows.SecurityHubFinding]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     &mappers.SecurityHubFindingMapper{},
+			Mapper:  &mappers.SecurityHubFindingMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 			},
