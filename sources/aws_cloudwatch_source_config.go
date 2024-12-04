@@ -24,6 +24,8 @@ type AwsCloudWatchSourceConfig struct {
 	EndTimeString   string `hcl:"end_time"`
 	StartTime       time.Time
 	EndTime         time.Time
+
+	Region *string `hcl:"region"`
 }
 
 func (c *AwsCloudWatchSourceConfig) Validate() error {
