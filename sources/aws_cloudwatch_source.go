@@ -225,7 +225,7 @@ func (s *AwsCloudWatchSource) DownloadArtifact(ctx context.Context, info *types.
 	}
 
 	// notify observers of the discovered artifact
-	downloadInfo := types.NewArtifactInfo(localFilePath)
+	downloadInfo := &types.ArtifactInfo{Name: localFilePath, OriginalName: info.Name, EnrichmentFields: info.EnrichmentFields}
 
 	// update collection state data for this log stream
 	collectionState.Upsert(info.Name, maxTime)
@@ -248,7 +248,7 @@ func (s *AwsCloudWatchSource) getTimeRange(logStream string, collectionState *Aw
 }
 
 func (s *AwsCloudWatchSource) getClient(ctx context.Context) (*cloudwatchlogs.Client, error) {
-	cfg, err := s.Connection.GetClientConfiguration(ctx, nil)
+	cfg, err := s.Connection.GetClientConfiguration(ctx, s.Config.Region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client configuration, %w", err)
 	}
