@@ -39,7 +39,7 @@ func (c *CloudTrailLogExtractor) Extract(_ context.Context, a any) ([]any, error
 		return nil, fmt.Errorf("error decoding json: %w", err)
 	}
 
-	slog.Debug("CloudwatchMapper", "record count", len(log.Records))
+	slog.Debug("CloudTrailLogExtractor", "record count", len(log.Records))
 	var res = make([]any, len(log.Records))
 	for i, record := range log.Records {
 		res[i] = &record
