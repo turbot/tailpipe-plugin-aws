@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	cloudwatchtypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 
@@ -151,11 +152,14 @@ func (s *AwsCloudWatchSource) DownloadArtifact(ctx context.Context, info *types.
 		return nil
 	}
 
+	var pageSize int32 = 5000
 	input := &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  &s.Config.LogGroupName,
 		LogStreamName: &info.Name,
 		StartTime:     &startTime,
 		EndTime:       &endTime,
+		Limit:         &pageSize,
+		StartFromHead: aws.Bool(true),
 	}
 
 	// copy the object data to a temp file
