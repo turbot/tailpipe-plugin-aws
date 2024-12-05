@@ -84,7 +84,7 @@ func (s *AwsCloudWatchSource) DiscoverArtifacts(ctx context.Context) error {
 
 	input := &cloudwatchlogs.DescribeLogStreamsInput{
 		LogGroupName: &s.Config.LogGroupName,
-		// // set prefix (this may be nil)
+		// set prefix (this may be nil)
 		LogStreamNamePrefix: s.Config.LogStreamPrefix,
 	}
 
@@ -110,12 +110,11 @@ func (s *AwsCloudWatchSource) DiscoverArtifacts(ctx context.Context) error {
 			}
 			activeCount++
 
-			// populate enrichment fields the the source is aware of
-			// - in this case the source type and name
-			// TODO #enrich check these https://github.com/turbot/tailpipe-plugin-sdk/issues/7
+			sourceLocation := fmt.Sprintf("%s:%s", s.Config.LogGroupName, streamName)
 			sourceEnrichmentFields := &enrichment.CommonFields{
-				TpSourceType: "cloudwatch",
-				TpSourceName: &streamName,
+				TpSourceType:     "cloudwatch",
+				TpSourceName:     &streamName,
+				TpSourceLocation: &sourceLocation,
 			}
 
 			// TODO #error handle rate limiting errors
