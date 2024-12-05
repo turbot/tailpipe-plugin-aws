@@ -113,7 +113,7 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 
 	paginator := s3.NewListObjectsV2Paginator(s.client, &s3.ListObjectsV2Input{
 		Bucket:     &s.Config.Bucket,
-		Prefix:     &s.Config.Prefix,
+		Prefix:     s.Config.Prefix,
 		StartAfter: startAfterKey,
 	})
 
