@@ -34,7 +34,11 @@ func (s *AwsCloudwatchCollectionState) Upsert(name string, time int64) {
 	if time == 0 {
 		return
 	}
-	s.Timestamps[name] = time
+
+	currentTime := s.Timestamps[name]
+	if time > currentTime {
+		s.Timestamps[name] = time
+	}
 }
 
 func (s *AwsCloudwatchCollectionState) IsEmpty() bool {

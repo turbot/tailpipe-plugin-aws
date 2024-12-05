@@ -50,9 +50,6 @@ func (t *CloudTrailLogTable) SupportedSources(*CloudTrailLogTableConfig) []*tabl
 		{
 			SourceName: sources.AwsCloudwatchSourceIdentifier,
 			MapperFunc: mappers.NewCloudTrailMapper,
-			Options: []row_source.RowSourceOption{
-				artifact_source.WithRowPerLine(),
-			},
 		},
 	}
 }
