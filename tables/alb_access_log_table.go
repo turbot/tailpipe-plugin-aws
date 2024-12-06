@@ -44,10 +44,8 @@ func (c *AlbAccessLogTable) Identifier() string {
 	return AlbAccessLogTableIdentifier
 }
 
-func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.AlbAccessLog, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, _ *AlbAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.AlbAccessLog, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Standard record enrichment
 	row.TpID = xid.New().String()

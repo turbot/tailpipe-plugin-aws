@@ -45,10 +45,8 @@ func (c *SecurityHubFindingTable) GetSourceMetadata(_ *SecurityHubFindingTableCo
 	}
 }
 
-func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, sourceEnrichmentFields *enrichment.CommonFields) (*rows.SecurityHubFinding, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, _ *SecurityHubFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFindingLog, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()

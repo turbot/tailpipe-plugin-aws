@@ -50,10 +50,8 @@ func (c *WafTrafficLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, _ *WafTrafficLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

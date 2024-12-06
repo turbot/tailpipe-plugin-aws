@@ -129,13 +129,15 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 			if s.Extensions.IsValid(path) {
 				// populate enrichment fields the source is aware of
 				// - in this case the source location
-				sourceEnrichmentFields := &enrichment.CommonFields{
-					TpSourceType:     AwsS3BucketSourceIdentifier,
-					TpSourceName:     &s.Config.Bucket,
-					TpSourceLocation: &path,
+				sourceEnrichmentFields := &enrichment.SourceEnrichment{
+					CommonFields: enrichment.CommonFields{
+						TpSourceType:     AwsS3BucketSourceIdentifier,
+						TpSourceName:     &s.Config.Bucket,
+						TpSourceLocation: &path,
+					},
 				}
 
-				info := types.NewArtifactInfo(path, types.WithEnrichmentFields(sourceEnrichmentFields))
+				info := types.NewArtifactInfo(path, types.WithSourceEnrichment(sourceEnrichmentFields))
 
 				// extract properties based on the filename
 				var extractedProperties map[string]string
@@ -196,7 +198,7 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 	}
 
 	// notify observers of the discovered artifact
-	downloadInfo := &types.ArtifactInfo{Name: localFilePath, OriginalName: info.Name, EnrichmentFields: info.EnrichmentFields}
+	downloadInfo := &types.ArtifactInfo{Name: localFilePath, OriginalName: info.Name, SourceEnrichment: info.SourceEnrichment}
 
 	// update the collection state
 	collectionState.Upsert(info)

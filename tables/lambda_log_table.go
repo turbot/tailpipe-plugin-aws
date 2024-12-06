@@ -42,10 +42,8 @@ func (c *LambdaLogTable) GetSourceMetadata(_ *LambdaLogTableConfig) []*table.Sou
 	}
 }
 
-func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.LambdaLog, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, _ *LambdaLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.LambdaLog, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

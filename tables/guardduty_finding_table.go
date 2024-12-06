@@ -50,10 +50,8 @@ func (c *GuardDutyFindingTable) GetSourceMetadata(_ *GuardDutyFindingTableConfig
 	}
 }
 
-func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnrichmentFields *enrichment.CommonFields) (*rows.GuardDutyFinding, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, _ *GuardDutyFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.GuardDutyFinding, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 	row.TpID = xid.New().String()
 	row.TpTimestamp = row.CreatedAt
 	row.TpIngestTimestamp = time.Now()

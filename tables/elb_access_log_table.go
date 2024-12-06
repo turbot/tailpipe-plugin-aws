@@ -41,13 +41,10 @@ func (c *ElbAccessLogTable) GetSourceMetadata(_ *ElbAccessLogTableConfig) []*tab
 			},
 		},
 	}
-
 }
 
-func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.ElbAccessLog, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, _ *ElbAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.ElbAccessLog, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

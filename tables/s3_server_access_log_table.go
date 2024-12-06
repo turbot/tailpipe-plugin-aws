@@ -41,13 +41,11 @@ func (c *S3ServerAccessLogTable) GetSourceMetadata(_ *S3ServerAccessLogTableConf
 	}
 }
 
-func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.S3ServerAccessLog, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, _ *S3ServerAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// add any source enrichment fields
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

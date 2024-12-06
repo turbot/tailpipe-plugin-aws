@@ -54,11 +54,9 @@ func (t *CostAndUsageLogTable) GetSourceMetadata(partitionConfig *CostAndUsageLo
 }
 
 // EnrichRow implements table.Table
-func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CostAndUsageLog, error) {
+func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, _ *CostAndUsageLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CostAndUsageLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

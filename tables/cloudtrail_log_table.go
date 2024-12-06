@@ -60,11 +60,9 @@ func (t *CloudTrailLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CloudTrailLog, error) {
+func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, _ *CloudTrailLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

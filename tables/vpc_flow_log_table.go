@@ -45,11 +45,9 @@ func (c *VpcFlowLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, _ *VpcFlowLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.VpcFlowLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()
