@@ -38,24 +38,24 @@ type CloudTrailLog struct {
 	SharedEventID                *string                 `json:"sharedEventID,omitempty" parquet:"name=shared_event_id"`
 	SourceIPAddress              *string                 `json:"sourceIPAddress,omitempty" parquet:"name=source_ip_address"`
 	UserAgent                    *string                 `json:"userAgent,omitempty" parquet:"name=user_agent"`
-	UserIdentity                 UserIdentity            `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
+	UserIdentity                 UserIdentity            `json:"userIdentity" parquet:"name=user_identity"`
 	VpcEndpointId                string                  `json:"vpcEndpointId,omitempty" parquet:"name=vpc_endpoint_id"`
 	EventCategory                string                  `json:"eventCategory,omitempty" parquet:"name=event_category"`
 	SessionCredentialFromConsole *string                 `json:"sessionCredentialFromConsole,omitempty" parquet:"name=session_credential_from_console"`
 	EdgeDeviceDetails            *map[string]interface{} `json:"edgeDeviceDetails,omitempty" parquet:"name=edge_device_details, type=JSON"`
-	TLSDetails                   *TLSDetails             `json:"tlsDetails,omitempty" parquet:"name=tls_details, type=JSON"`
+	TLSDetails                   *TLSDetails             `json:"tlsDetails,omitempty" parquet:"name=tls_details"`
 }
 
 type UserIdentity struct {
-	Type             string          `json:"type"`
-	PrincipalId      *string         `json:"principalId,omitempty"`
-	ARN              *string         `json:"arn,omitempty"`
-	AccountId        *string         `json:"accountId,omitempty"`
-	AccessKeyId      *string         `json:"accessKeyId,omitempty"`
-	UserName         *string         `json:"userName,omitempty"`
-	SessionContext   *SessionContext `json:"sessionContext,omitempty"`
-	InvokedBy        *string         `json:"invokedBy,omitempty"`
-	IdentityProvider *string         `json:"identityProvider,omitempty"`
+	Type             string          `json:"type" parquet:"name=type"`
+	PrincipalId      *string         `json:"principalId,omitempty" parquet:"name=principal_id"`
+	ARN              *string         `json:"arn,omitempty" parquet:"name=arn"`
+	AccountId        *string         `json:"accountId,omitempty" parquet:"name=account_id"`
+	AccessKeyId      *string         `json:"accessKeyId,omitempty" parquet:"name=access_key_id"`
+	UserName         *string         `json:"userName,omitempty" parquet:"name=user_name"`
+	SessionContext   *SessionContext `json:"sessionContext,omitempty" parquet:"name=session_context"`
+	InvokedBy        *string         `json:"invokedBy,omitempty" parquet:"name=invoked_by"`
+	IdentityProvider *string         `json:"identityProvider,omitempty" parquet:"name=identity_provider"`
 }
 
 type Resource struct {
@@ -65,32 +65,32 @@ type Resource struct {
 }
 
 type SessionContext struct {
-	Attributes          *SessionAttributes   `json:"attributes,omitempty"`
-	SessionIssuer       *SessionIssuer       `json:"sessionIssuer,omitempty"`
-	WebIdFederationData *WebIdFederationData `json:"webIdFederationData,omitempty"`
-	EC2RoleDelivery     *string              `json:"ec2RoleDelivery,omitempty"`
+	Attributes          *SessionAttributes   `json:"attributes,omitempty" parquet:"name=attributes"`
+	SessionIssuer       *SessionIssuer       `json:"sessionIssuer,omitempty" parquet:"name=session_issuer"`
+	WebIdFederationData *WebIdFederationData `json:"webIdFederationData,omitempty" parquet:"name=web_id_federation_data"`
+	EC2RoleDelivery     *string              `json:"ec2RoleDelivery,omitempty" parquet:"name=ec2_role_delivery"`
 }
 
 type SessionAttributes struct {
-	MfaAuthenticated *string           `json:"mfaAuthenticated,omitempty"`
-	CreationDate     *types.UnixMillis `json:"creationDate,omitempty"`
+	MfaAuthenticated *string           `json:"mfaAuthenticated,omitempty" parquet:"name=mfa_authenticated"`
+	CreationDate     *types.UnixMillis `json:"creationDate,omitempty" parquet:"name=creation_date"`
 }
 
 type SessionIssuer struct {
-	Type        *string `json:"type,omitempty"`
-	PrincipalId *string `json:"principalId,omitempty"`
-	ARN         *string `json:"arn,omitempty"`
-	AccountId   *string `json:"accountId,omitempty"`
-	UserName    *string `json:"userName,omitempty"`
+	Type        *string `json:"type,omitempty" parquet:"name=type"`
+	PrincipalId *string `json:"principalId,omitempty" parquet:"name=principal_id"`
+	ARN         *string `json:"arn,omitempty" parquet:"name=arn"`
+	AccountId   *string `json:"accountId,omitempty" parquet:"name=account_id"`
+	UserName    *string `json:"userName,omitempty" parquet:"name=user_name"`
 }
 
 type WebIdFederationData struct {
-	FederatedProvider *string           `json:"federatedProvider,omitempty"`
-	Attributes        *types.JSONString `json:"attributes,omitempty"`
+	FederatedProvider *string           `json:"federatedProvider,omitempty" parquet:"name=federated_provider"`
+	Attributes        *types.JSONString `json:"attributes,omitempty" parquet:"name=attributes, type=JSON"`
 }
 
 type TLSDetails struct {
-	TLSVersion               *string `json:"tlsVersion,omitempty"`
-	CipherSuite              *string `json:"cipherSuite,omitempty"`
-	ClientProvidedHostHeader *string `json:"clientProvidedHostHeader,omitempty"`
+	TLSVersion               *string `json:"tlsVersion,omitempty" parquet:"name=tls_version"`
+	CipherSuite              *string `json:"cipherSuite,omitempty" parquet:"name=cipher_suite"`
+	ClientProvidedHostHeader *string `json:"clientProvidedHostHeader,omitempty" parquet:"name=client_provided_host_header"`
 }
