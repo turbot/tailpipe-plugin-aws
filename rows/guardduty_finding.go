@@ -28,21 +28,27 @@ type GuardDutyFinding struct {
 }
 
 type GuardDutyFindingService struct {
-	Action               *GuardDutyFindingAction         `json:"action,omitempty"`
-	Archived             *bool                           `json:"archived,omitempty"`
-	Count                *int32                          `json:"count,omitempty"`
-	Detection            *types.Detection                `json:"detection,omitempty" parquet:"type=JSON"` // contains maps
-	DetectorId           *string                         `json:"detector_id,omitempty"`
-	EbsVolumeScanDetails *types.EbsVolumeScanDetails     `json:"ebs_volume_scan_details,omitempty" parquet:"type=JSON"` // contains []struct
-	EventFirstSeen       *string                         `json:"event_first_seen,omitempty"`
-	EventLastSeen        *string                         `json:"event_last_seen,omitempty"`
-	Evidence             *types.Evidence                 `json:"evidence,omitempty" parquet:"type=JSON"` // contains []struct
-	FeatureName          *string                         `json:"feature_name,omitempty"`
-	MalwareScanDetails   *types.MalwareScanDetails       `json:"malware_scan_details,omitempty" parquet:"type=JSON"` // contains []struct
-	ResourceRole         *string                         `json:"resource_role,omitempty"`
-	RuntimeDetails       *GuardDutyFindingRuntimeDetails `json:"runtime_details,omitempty"`
-	ServiceName          *string                         `json:"service_name,omitempty"`
-	UserFeedback         *string                         `json:"user_feedback,omitempty"`
+	Action               *GuardDutyFindingAction              `json:"action,omitempty"`
+	AdditionalInfo       *GuardDutyFindingServiceAdditionInfo `json:"additional_info,omitempty"`
+	Archived             *bool                                `json:"archived,omitempty"`
+	Count                *int32                               `json:"count,omitempty"`
+	Detection            *types.Detection                     `json:"detection,omitempty" parquet:"type=JSON"` // contains maps
+	DetectorId           *string                              `json:"detector_id,omitempty"`
+	EbsVolumeScanDetails *types.EbsVolumeScanDetails          `json:"ebs_volume_scan_details,omitempty" parquet:"type=JSON"` // contains []struct
+	EventFirstSeen       *string                              `json:"event_first_seen,omitempty"`
+	EventLastSeen        *string                              `json:"event_last_seen,omitempty"`
+	Evidence             *types.Evidence                      `json:"evidence,omitempty" parquet:"type=JSON"` // contains []struct
+	FeatureName          *string                              `json:"feature_name,omitempty"`
+	MalwareScanDetails   *types.MalwareScanDetails            `json:"malware_scan_details,omitempty" parquet:"type=JSON"` // contains []struct
+	ResourceRole         *string                              `json:"resource_role,omitempty"`
+	RuntimeDetails       *GuardDutyFindingRuntimeDetails      `json:"runtime_details,omitempty"`
+	ServiceName          *string                              `json:"service_name,omitempty"`
+	UserFeedback         *string                              `json:"user_feedback,omitempty"`
+}
+
+type GuardDutyFindingServiceAdditionInfo struct {
+	Type  *string `json:"type"`
+	Value *string `json:"value"`
 }
 
 type GuardDutyFindingRuntimeDetails struct {

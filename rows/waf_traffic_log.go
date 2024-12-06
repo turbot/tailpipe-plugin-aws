@@ -16,7 +16,7 @@ type Header struct {
 type HttpRequest struct {
 	ClientIp    *string   `json:"client_ip,omitempty"`
 	Country     *string   `json:"country,omitempty"`
-	Headers     *[]Header `json:"headers,omitempty"`
+	Headers     *[]Header `json:"headers,omitempty" parquet:"type=JSON"`
 	Uri         *string   `json:"uri,omitempty"`
 	Args        *string   `json:"args,omitempty"`
 	HttpVersion *string   `json:"http_version,omitempty"`

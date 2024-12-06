@@ -129,6 +129,14 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding,
 			row.Service.Action.ActionDetails = details
 		}
 
+		// service.additionInfo
+		if finding.Service.AdditionalInfo != nil {
+			row.Service.AdditionalInfo = &rows.GuardDutyFindingServiceAdditionInfo{
+				Type:  finding.Service.AdditionalInfo.Type,
+				Value: finding.Service.AdditionalInfo.Value,
+			}
+		}
+
 		// service.runtimeDetails
 		if finding.Service.RuntimeDetails != nil {
 			var runtimeDetails rows.GuardDutyFindingRuntimeDetails
