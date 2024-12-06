@@ -45,7 +45,7 @@ func (c *SecurityHubFindingTable) GetSourceMetadata(_ *SecurityHubFindingTableCo
 	}
 }
 
-func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, _ *SecurityHubFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFinding, error) {
+func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, _ *SecurityHubFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFindingLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	row.TpID = xid.New().String()
