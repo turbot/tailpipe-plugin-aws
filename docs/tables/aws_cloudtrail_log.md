@@ -1,7 +1,20 @@
+---
+title: "Tailpipe Table: aws_cloudtrail_log - Query AWS CloudTrail Logs"
+description: "Allows users to query AWS CloudTrail logs."
+---
 
-# AWS Security Threat Detection Queries
+# Table: aws_cloudtrail_log - Query AWS CloudTrail logs
 
-## Detect AWS Console unsuccessful login attempts
+*TODO*: Add description
+
+## Table Usage Guide
+
+The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
+
+
+## Examples
+
+### Detect AWS Console unsuccessful login attempts
 Flags actors who failed to login to the console.
 
 ```sql
@@ -30,7 +43,7 @@ order by
   event_time desc;
 ```
 
-## Detect Access from Non-Whitelisted Locations
+### Detect Access from Non-Whitelisted Locations
 Flags actors accessing from unapproved locations, which may indicate unauthorized access or policy violations.
 
 ```sql
@@ -46,7 +59,7 @@ group by
   user_identity.arn, source_ip_address, aws_region;
 ```
 
-## Detect high volume of S3 bucket access in short time
+### Detect high volume of S3 bucket access in short time
 Flags accounts with a high number of S3 access events within a short period, indicating potential brute force or data exfiltration attempts.
 
 ```sql
@@ -67,7 +80,7 @@ order by
   access_count desc;
 ```
 
-## Detect attempts to disable CloudTrail logging
+### Detect attempts to disable CloudTrail logging
 Detects if any actor attempted to stop CloudTrail logging, which may indicate an attempt to cover tracks.
 
 ```sql
@@ -84,7 +97,7 @@ order by
   event_time desc;
 ```
 
-## Detect IAM policy modifications
+### Detect IAM policy modifications
 Flags actors modifying IAM policies, which may indicate privilege escalation attempts.
 
 ```sql
@@ -102,7 +115,7 @@ order by
   event_time desc;
 ```
 
-## Detect unusual source IP addresses for users
+### Detect unusual source IP addresses for users
 Flags users accessing from unfamiliar IP addresses, which may indicate account compromise.
 
 ```sql
@@ -123,7 +136,7 @@ order by
   access_count desc;
 ```
 
-## Detect root account activity
+### Detect root account activity
 Detects usage of the root account, which is generally a high-risk action.
 
 ```sql
@@ -141,7 +154,7 @@ order by
   event_time desc;
 ```
 
-## Detect EC2 instance start or stop events
+### Detect EC2 instance start or stop events
 Flags EC2 instance start or stop actions, which could indicate unauthorized resource usage.
 
 ```sql
@@ -159,7 +172,7 @@ order by
   event_time desc;
 ```
 
-## Detect IAM user deletions
+### Detect IAM user deletions
 Flags deletion of IAM users, which could indicate malicious attempts to remove evidence.
 
 ```sql
@@ -177,7 +190,7 @@ order by
   event_time desc;
 ```
 
-## Detect excessive role assumption
+### Detect excessive role assumption
 Flags actors assuming roles more frequently than usual, indicating potential privilege misuse.
 
 ```sql

@@ -1,6 +1,19 @@
-# AWS Cost and Usage Log
+---
+title: "Tailpipe Table: aws_cost_usage_log - Query AWS Cost and Usage Report Data"
+description: "Allows users to query AWS Cost and Usage report data."
+---
 
-## 1. Total Monthly Cost by Account
+# Table: aws_cost_usage_log - Query AWS Cost and Usage Report Data using SQL
+
+*TODO*: Add description
+
+## Table Usage Guide
+
+The `aws_cost_usage_log` table allows you to query data from the AWS Cost and Usage Report. This table provides detailed information about your AWS costs and usage, including cost breakdowns by account, service, usage type, and more.
+
+## Examples
+
+### Total Monthly Cost by Account
 Calculates the total monthly cost across linked AWS accounts to identify which accounts are incurring the most cost.
 
 ```sql
@@ -18,7 +31,7 @@ order by
   monthly_total_cost desc;
 ```
 
-## 2. Top Costly AWS Services
+### Top Costly AWS Services
 Displays the top AWS services by total cost, helping to identify where the majority of spending occurs.
 
 ```sql
@@ -37,7 +50,7 @@ order by
 limit 10;
 ```
 
-## 3. Daily Cost Trend for the Current Month
+### Daily Cost Trend for the Current Month
 Tracks the daily expenditure trend to identify unusual cost spikes.
 
 ```sql
@@ -54,7 +67,7 @@ order by
   tp_date;
 ```
 
-## 4. Cost Breakdown by Usage Type
+### Cost Breakdown by Usage Type
 Breaks down costs by usage type, providing insights into specific usage patterns that may drive costs.
 
 ```sql
@@ -72,7 +85,7 @@ order by
   total_usage_cost desc;
 ```
 
-## 5. High-Cost Operations
+### High-Cost Operations
 Lists operations that have incurred the highest costs, which can indicate potential cost optimization areas.
 
 ```sql
@@ -91,7 +104,7 @@ order by
 limit 10;
 ```
 
-## 6. Average Daily Cost for the Current Month
+### Average Daily Cost for the Current Month
 Calculates the average daily cost for the current month, providing a baseline for typical daily expenditure.
 
 ```sql
@@ -103,7 +116,7 @@ where
   tp_date >= cast(date_trunc('month', current_date) as varchar);
 ```
 
-## 7. Top Accounts by Usage Quantity
+### Top Accounts by Usage Quantity
 Identifies the accounts with the highest usage quantity, helping to associate high usage with specific accounts.
 
 ```sql
@@ -122,7 +135,7 @@ order by
 limit 10;
 ```
 
-## 8. High Tax Amount by Product
+### High Tax Amount by Product
 Displays products with the highest tax amount, useful for identifying tax-heavy services.
 
 ```sql
@@ -141,7 +154,7 @@ order by
   total_tax_amount desc;
 ```
 
-## 9. Total Credits by Account
+### Total Credits by Account
 Shows the total credits applied to each account, helping to understand any discounts or rebates.
 
 ```sql
@@ -159,7 +172,7 @@ order by
   total_credits desc;
 ```
 
-## 10. Cost Allocation by Product Code (Top 10)
+### Cost Allocation by Product Code (Top 10)
 Provides a cost breakdown by product code, aiding in identifying high-cost products.
 
 ```sql
@@ -178,7 +191,7 @@ order by
 limit 10;
 ```
 
-## 11. Highest Cost by Resource Item Description
+### Highest Cost by Resource Item Description
 Identifies the resources or items with the highest cost based on item description to locate costly services or operations.
 
 ```sql
@@ -196,7 +209,7 @@ order by
 limit 10;
 ```
 
-## 12. Cost Trends by Payer Account
+### Cost Trends by Payer Account
 Shows the monthly cost trend for each payer account, useful for tracking cost changes across accounts.
 
 ```sql
@@ -213,7 +226,7 @@ order by
   payer_account_id, month;
 ```
 
-## 13. Monthly Tax Amount by Linked Account
+### Monthly Tax Amount by Linked Account
 Displays the monthly tax amount by linked account, helping to understand tax-related expenses.
 
 ```sql
@@ -231,7 +244,7 @@ order by
   monthly_tax_amount desc;
 ```
 
-## 14. Top Billing Periods by Cost
+### Top Billing Periods by Cost
 Ranks billing periods by total cost to highlight the periods with the highest spending.
 
 ```sql
@@ -248,7 +261,7 @@ order by
 limit 10;
 ```
 
-## 15. Cost by Currency Code
+### Cost by Currency Code
 Groups costs by currency code, which is useful in multi-currency scenarios to monitor costs in different currencies.
 
 ```sql
@@ -265,7 +278,7 @@ order by
   total_currency_cost desc;
 ```
 
-## 16. Top 10 Product Codes by Usage Quantity
+### Top 10 Product Codes by Usage Quantity
 Identifies product codes with the highest usage quantities, offering insights into frequently used services.
 
 ```sql
@@ -283,7 +296,7 @@ order by
 limit 10;
 ```
 
-## 17. Cost by Seller of Record
+### Cost by Seller of Record
 Breaks down costs by seller to understand charges from specific sellers of AWS products.
 
 ```sql
@@ -300,7 +313,7 @@ order by
   total_seller_cost desc;
 ```
 
-## 18. High Blended Rate Products
+### High Blended Rate Products
 Lists products with a high blended rate, helping to identify products with significant effective rates.
 
 ```sql
@@ -319,7 +332,7 @@ order by
 limit 10;
 ```
 
-## 19. Invoices with Highest Cost Before Tax
+### Invoices with Highest Cost Before Tax
 Displays invoices with the highest cost before tax, useful for analyzing specific large charges.
 
 ```sql
@@ -337,7 +350,7 @@ order by
 limit 10;
 ```
 
-## 20. Monthly Cost Change Percentage by Product
+### Monthly Cost Change Percentage by Product
 Calculates the month-over-month cost change percentage for each product, providing insights into spending increases or decreases.
 
 ```sql
