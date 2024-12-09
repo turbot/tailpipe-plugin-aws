@@ -1,3 +1,0 @@
-# TODO
-
-- Add table docs!
