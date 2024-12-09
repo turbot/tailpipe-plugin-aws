@@ -4,16 +4,12 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/hashicorp/hcl/v2"
-
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 )
 
 // AwsS3BucketSourceConfig is the configuration for an [AwsS3BucketSource]
 type AwsS3BucketSourceConfig struct {
 	artifact_source_config.ArtifactSourceConfigBase
-	// required to allow partial decoding
-	Remain hcl.Body `hcl:",remain" json:"-"`
 
 	Bucket               string   `hcl:"bucket"`
 	Prefix               *string  `hcl:"prefix"`
