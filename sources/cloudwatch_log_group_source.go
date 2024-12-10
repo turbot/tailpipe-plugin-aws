@@ -97,8 +97,9 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 			continue
 		}
 
-		// TODO: #config make this configurable?
-		var pageSize int32 = 5000
+		// To ensure smoother execution, we have set the value to 7000, even though the maximum allowable limit is 10000.
+		// https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_GetLogEvents.html#API_GetLogEvents_RequestSyntax
+		var pageSize int32 = 7000
 		var nextToken *string
 
 		input := &cloudwatchlogs.GetLogEventsInput{
