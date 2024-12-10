@@ -36,7 +36,7 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*r
 	return []*table.SourceMetadata[*rows.SecurityHubFinding]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:  &mappers.SecurityHubFindingMapper{},
+			Mapper:     &mappers.SecurityHubFindingMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 			},
@@ -44,7 +44,7 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*r
 	}
 }
 
-func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFinding, error) {
+func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, _ *SecurityHubFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFinding, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	row.TpID = xid.New().String()
