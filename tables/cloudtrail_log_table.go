@@ -49,7 +49,7 @@ func (t *CloudTrailLogTable) GetSourceMetadata(_ *CloudTrailLogTableConfig) []*t
 		},
 		{
 			SourceName: sources.AwsCloudwatchSourceIdentifier,
-			MapperFunc: mappers.NewCloudTrailMapper,
+			Mapper:     &mappers.CloudTrailMapper{},
 		},
 	}
 }

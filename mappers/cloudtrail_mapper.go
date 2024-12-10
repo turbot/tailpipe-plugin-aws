@@ -6,14 +6,9 @@ import (
 	"fmt"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type CloudTrailMapper struct {
-}
-
-func NewCloudTrailMapper() table.Mapper[*rows.CloudTrailLog] {
-	return &CloudTrailMapper{}
 }
 
 func (m *CloudTrailMapper) Identifier() string {

@@ -84,10 +84,12 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 
 	// collect events from each log stream
 	for _, ls := range logStreamCollection {
-		sourceEnrichmentFields := &enrichment.CommonFields{
-			TpSourceType:     AwsCloudwatchSourceIdentifier,
-			TpSourceName:     &s.Config.LogGroupName,
-			TpSourceLocation: ls.LogStream.LogStreamName,
+		sourceEnrichmentFields := &enrichment.SourceEnrichment{
+			CommonFields: enrichment.CommonFields{
+				TpSourceType:     AwsCloudwatchSourceIdentifier,
+				TpSourceName:     &s.Config.LogGroupName,
+				TpSourceLocation: ls.LogStream.LogStreamName,
+			},
 		}
 
 		if ls.StartTime >= ls.EndTime {
@@ -121,8 +123,8 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 					continue
 				}
 				row := &types.RowData{
-					Data:     event.Message,
-					Metadata: sourceEnrichmentFields,
+					Data:             event.Message,
+					SourceEnrichment: sourceEnrichmentFields,
 				}
 
 				// update collection state
