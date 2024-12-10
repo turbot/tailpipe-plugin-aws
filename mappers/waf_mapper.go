@@ -6,15 +6,9 @@ import (
 	"fmt"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type WafMapper struct {
-}
-
-// NewWafMapper creates a new WafMapper
-func NewWafMapper() table.Mapper[*rows.WafTrafficLog] {
-	return &WafMapper{}
 }
 
 func (c *WafMapper) Identifier() string {

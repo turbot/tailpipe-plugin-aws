@@ -35,7 +35,7 @@ func (t *CostAndUsageLogTable) Identifier() string {
 	return CostUsageLogTableIdentifier
 }
 
-func (t *CostAndUsageLogTable) SupportedSources(partitionConfig *CostAndUsageLogTableConfig) []*table.SourceMetadata[*rows.CostAndUsageLog] {
+func (t *CostAndUsageLogTable) GetSourceMetadata(partitionConfig *CostAndUsageLogTableConfig) []*table.SourceMetadata[*rows.CostAndUsageLog] {
 	// TODO fix FileLayout
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
@@ -45,7 +45,7 @@ func (t *CostAndUsageLogTable) SupportedSources(partitionConfig *CostAndUsageLog
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewCostAndUsageMapper,
+			Mapper:     &mappers.CostAndUsageLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 				artifact_source.WithRowPerLine(), artifact_source.WithSkipHeaderRow()},
@@ -54,11 +54,9 @@ func (t *CostAndUsageLogTable) SupportedSources(partitionConfig *CostAndUsageLog
 }
 
 // EnrichRow implements table.Table
-func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.CostAndUsageLog, error) {
+func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, _ *CostAndUsageLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CostAndUsageLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

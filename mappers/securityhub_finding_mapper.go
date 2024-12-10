@@ -6,16 +6,9 @@ import (
 	"fmt"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type SecurityHubFindingMapper struct {
-}
-
-func NewSecurityHubFindingMapper() table.Mapper[*rows.SecurityHubFinding] {
-	res := &SecurityHubFindingMapper{}
-
-	return res
 }
 
 func (m *SecurityHubFindingMapper) Identifier() string {

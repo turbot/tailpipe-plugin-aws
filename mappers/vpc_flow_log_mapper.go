@@ -17,11 +17,10 @@ type VpcFlowLogMapper struct {
 }
 
 func NewVpcFlowLogMapper(schema []string) *VpcFlowLogMapper {
-	res := &VpcFlowLogMapper{
+	return &VpcFlowLogMapper{
 		schema: schema,
 	}
 
-	return res
 }
 
 func (c *VpcFlowLogMapper) Identifier() string {

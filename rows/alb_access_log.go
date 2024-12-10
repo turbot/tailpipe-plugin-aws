@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/xid"
-
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 )
 
@@ -72,10 +70,6 @@ type AlbAccessLog struct {
 	Classification         *string   `json:"classification,omitempty"`
 	ClassificationReason   *string   `json:"classification_reason,omitempty"`
 	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
-}
-
-func NewAlbAccessLog() *AlbAccessLog {
-	return &AlbAccessLog{}
 }
 
 // InitialiseFromMap initializes the struct from a map of string values
@@ -199,44 +193,5 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.ConnTraceID = &value
 		}
 	}
-	return nil
-}
-
-// EnrichRow handles all enrichment operations for the ALB access log entry
-func (l *AlbAccessLog) EnrichRow(sourceEnrichmentFields *enrichment.CommonFields) error {
-	// Add source enrichment fields if provided
-	if sourceEnrichmentFields != nil {
-		l.CommonFields = *sourceEnrichmentFields
-	}
-
-	// Standard record enrichment
-	l.TpID = xid.New().String()
-	l.TpTimestamp = l.Timestamp
-	l.TpIngestTimestamp = time.Now()
-	// truncate timestamp to date
-	l.TpDate = l.Timestamp.Truncate(24 * time.Hour)
-	// Use ALB name as the index
-	l.TpIndex = l.Alb
-
-	// IP-related enrichment
-	if l.ClientIP != "" {
-		l.TpSourceIP = &l.ClientIP
-		l.TpIps = append(l.TpIps, l.ClientIP)
-	}
-	if l.TargetIP != nil {
-		l.TpDestinationIP = l.TargetIP
-		l.TpIps = append(l.TpIps, *l.TargetIP)
-	}
-
-	// Domain enrichment
-	if l.DomainName != "" {
-		l.TpDomains = append(l.TpDomains, l.DomainName)
-	}
-
-	// AWS resource linking
-	if l.TargetGroupArn != "" {
-		l.TpAkas = append(l.TpAkas, l.TargetGroupArn)
-	}
-
 	return nil
 }

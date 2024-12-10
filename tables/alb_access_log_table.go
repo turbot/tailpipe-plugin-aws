@@ -27,19 +27,12 @@ func init() {
 
 type AlbAccessLogTable struct{}
 
-func (c *AlbAccessLogTable) initMapper() func() table.Mapper[*rows.AlbAccessLog] {
-	f := func() table.Mapper[*rows.AlbAccessLog] {
-		return table.NewDelimitedLineMapper(rows.NewAlbAccessLog, albLogFormat, albLogFormatNoConnTrace)
-	}
-	return f
-}
-
-func (c *AlbAccessLogTable) SupportedSources(*AlbAccessLogTableConfig) []*table.SourceMetadata[*rows.AlbAccessLog] {
+func (c *AlbAccessLogTable) GetSourceMetadata(_ *AlbAccessLogTableConfig) []*table.SourceMetadata[*rows.AlbAccessLog] {
 	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: c.initMapper(),
+			Mapper:     table.NewRowPatternMapper[*rows.AlbAccessLog](albLogFormat, albLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -51,10 +44,8 @@ func (c *AlbAccessLogTable) Identifier() string {
 	return AlbAccessLogTableIdentifier
 }
 
-func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.AlbAccessLog, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, _ *AlbAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.AlbAccessLog, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Standard record enrichment
 	row.TpID = xid.New().String()

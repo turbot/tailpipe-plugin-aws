@@ -9,18 +9,11 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/guardduty/types"
-
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 // GuardDutyMapper is a mapper that receives GuardDutyBatch objects and extracts GuardDutyFinding records from them
 type GuardDutyMapper struct {
-}
-
-// NewGuardDutyMapper creates a new GuardDutyMapper
-func NewGuardDutyMapper() table.Mapper[*rows.GuardDutyFinding] {
-	return &GuardDutyMapper{}
 }
 
 func (g *GuardDutyMapper) Identifier() string {

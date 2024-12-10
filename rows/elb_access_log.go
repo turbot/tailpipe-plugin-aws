@@ -46,10 +46,6 @@ type ElbAccessLog struct {
 	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
 }
 
-func NewElbAccessLog() *ElbAccessLog {
-	return &ElbAccessLog{}
-}
-
 // InitialiseFromMap - initialise the struct from a map
 func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error

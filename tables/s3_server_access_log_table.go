@@ -30,31 +30,22 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 	return S3ServerAccessLogTableIdentifier
 }
 
-func (c *S3ServerAccessLogTable) SupportedSources(*S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
+func (c *S3ServerAccessLogTable) GetSourceMetadata(_ *S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
 	return []*table.SourceMetadata[*rows.S3ServerAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: c.initMapper(),
+			Mapper:     table.NewRowPatternMapper[*rows.S3ServerAccessLog](s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced),
 			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
 		},
 	}
 }
 
-func (c *S3ServerAccessLogTable) initMapper() func() table.Mapper[*rows.S3ServerAccessLog] {
-	f := func() table.Mapper[*rows.S3ServerAccessLog] {
-		return table.NewDelimitedLineMapper(rows.NewS3ServerAccessLog, s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced)
-	}
-	return f
-}
-
-func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.S3ServerAccessLog, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, _ *S3ServerAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// add any source enrichment fields
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

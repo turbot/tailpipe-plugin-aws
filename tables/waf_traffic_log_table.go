@@ -29,7 +29,7 @@ func init() {
 // WafTrafficLogTable - table for Waf traffic logs
 type WafTrafficLogTable struct{}
 
-func (c *WafTrafficLogTable) SupportedSources(*WafTrafficLogTableConfig) []*table.SourceMetadata[*rows.WafTrafficLog] {
+func (c *WafTrafficLogTable) GetSourceMetadata(_ *WafTrafficLogTableConfig) []*table.SourceMetadata[*rows.WafTrafficLog] {
 	// the default file layout for Waf traffic logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/WAFLogs/(?P<log_group_name>[a-zA-Z0-9-_]+)/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/(?P<hour>\\d{2})/(?P<filename>.+\\.gz)"),
@@ -39,7 +39,7 @@ func (c *WafTrafficLogTable) SupportedSources(*WafTrafficLogTableConfig) []*tabl
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewWafMapper,
+			Mapper:     &mappers.WafMapper{},
 			Options:    []row_source.RowSourceOption{artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine()},
 		},
 	}
@@ -50,10 +50,8 @@ func (c *WafTrafficLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, _ *WafTrafficLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

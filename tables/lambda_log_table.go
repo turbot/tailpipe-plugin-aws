@@ -29,12 +29,12 @@ func (c *LambdaLogTable) Identifier() string {
 	return LambdaLogTableIdentifier
 }
 
-func (c *LambdaLogTable) SupportedSources(*LambdaLogTableConfig) []*table.SourceMetadata[*rows.LambdaLog] {
+func (c *LambdaLogTable) GetSourceMetadata(_ *LambdaLogTableConfig) []*table.SourceMetadata[*rows.LambdaLog] {
 	return []*table.SourceMetadata[*rows.LambdaLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			MapperFunc: mappers.NewLambdaLogMapper,
+			Mapper:     &mappers.LambdaLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -42,10 +42,8 @@ func (c *LambdaLogTable) SupportedSources(*LambdaLogTableConfig) []*table.Source
 	}
 }
 
-func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields *enrichment.CommonFields) (*rows.LambdaLog, error) {
-	if sourceEnrichmentFields != nil {
-		row.CommonFields = *sourceEnrichmentFields
-	}
+func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, _ *LambdaLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.LambdaLog, error) {
+	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
 	row.TpID = xid.New().String()

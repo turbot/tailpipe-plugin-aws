@@ -9,16 +9,10 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 // CostAndUsageLogMapper
 type CostAndUsageLogMapper struct {
-}
-
-// NewCostAndUsageMapper creates a new CostAndUsageLogMapper
-func NewCostAndUsageMapper() table.Mapper[*rows.CostAndUsageLog] {
-	return &CostAndUsageLogMapper{}
 }
 
 func (c *CostAndUsageLogMapper) Identifier() string {
