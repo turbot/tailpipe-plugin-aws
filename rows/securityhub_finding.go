@@ -23,7 +23,24 @@ type SecurityHubFinding struct {
 
 // DetailFindingsData maps the `detail` field containing findings
 type DetailFindingsData struct {
-	Findings []*Finding `json:"findings,omitempty" parquet:"name=findings, type=JSON"`
+	Findings           []*Finding              `json:"findings,omitempty" parquet:"name=findings, type=JSON"`
+	AwsRegion          *string                 `json:"awsRegion"`
+	EventCategory      *string                 `json:"eventCategory"`
+	EventID            *string                 `json:"eventID"`
+	EventName          *string                 `json:"eventName"`
+	EventSource        *string                 `json:"eventSource"`
+	EventTime          time.Time               `json:"eventTime"`
+	EventType          *string                 `json:"eventType"`
+	EventVersion       *string                 `json:"eventVersion"`
+	ManagementEvent    bool                    `json:"managementEvent"`
+	ReadOnly           bool                    `json:"readOnly"`
+	RecipientAccountID *string                 `json:"recipientAccountId"`
+	RequestID          *string                 `json:"requestID"`
+	RequestParameters  *map[string]interface{} `json:"requestParameters"`
+	ResponseElements   *map[string]interface{} `json:"responseElements"`
+	SourceIPAddress    *string                 `json:"sourceIPAddress"`
+	UserAgent          *string                 `json:"userAgent"`
+	UserIdentity       SecurityHubUserIdentity `json:"userIdentity"`
 }
 
 // Finding maps the individual findings in the detail
@@ -124,4 +141,31 @@ type AwsLambdaFunction struct {
 
 type TracingConfig struct {
 	Mode *string `json:"Mode,omitempty"`
+}
+
+type SecurityHubUserIdentity struct {
+	AccessKeyID    *string                   `json:"accessKeyId"`
+	AccountID      *string                   `json:"accountId"`
+	Arn            *string                   `json:"arn"`
+	PrincipalID    *string                   `json:"principalId"`
+	SessionContext SecurityHubSessionContext `json:"sessionContext"`
+	Type           *string                   `json:"type"`
+}
+
+type SecurityHubSessionContext struct {
+	Attributes    Attributes               `json:"attributes"`
+	SessionIssuer SecurityHubSessionIssuer `json:"sessionIssuer"`
+}
+
+type Attributes struct {
+	CreationDate     time.Time `json:"creationDate"`
+	MfaAuthenticated *string   `json:"mfaAuthenticated"`
+}
+
+type SecurityHubSessionIssuer struct {
+	AccountID   string `json:"accountId"`
+	Arn         string `json:"arn"`
+	PrincipalID string `json:"principalId"`
+	Type        string `json:"type"`
+	UserName    string `json:"userName"`
 }
