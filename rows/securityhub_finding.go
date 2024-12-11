@@ -24,22 +24,22 @@ type SecurityHubFinding struct {
 // DetailFindingsData maps the `detail` field containing findings
 type DetailFindingsData struct {
 	Findings           []*Finding              `json:"findings,omitempty" parquet:"name=findings, type=JSON"`
-	AwsRegion          *string                 `json:"awsRegion"`
-	EventCategory      *string                 `json:"eventCategory"`
-	EventID            *string                 `json:"eventID"`
-	EventName          *string                 `json:"eventName"`
-	EventSource        *string                 `json:"eventSource"`
-	EventTime          time.Time               `json:"eventTime"`
-	EventType          *string                 `json:"eventType"`
-	EventVersion       *string                 `json:"eventVersion"`
-	ManagementEvent    bool                    `json:"managementEvent"`
-	ReadOnly           bool                    `json:"readOnly"`
-	RecipientAccountID *string                 `json:"recipientAccountId"`
-	RequestID          *string                 `json:"requestID"`
+	AwsRegion          *string                 `json:"awsRegion" parquet:"name=aws_region"`
+	EventCategory      *string                 `json:"eventCategory" parquet:"name=event_category"`
+	EventID            *string                 `json:"eventID" parquet:"name=event_id"`
+	EventName          *string                 `json:"eventName" parquet:"name=event_name"`
+	EventSource        *string                 `json:"eventSource" parquet:"name=event_source"`
+	EventTime          time.Time               `json:"eventTime" parquet:"name=event_time"`
+	EventType          *string                 `json:"eventType" parquet:"name=event_type"`
+	EventVersion       *string                 `json:"eventVersion" parquet:"name=event_version"`
+	ManagementEvent    bool                    `json:"managementEvent" parquet:"name=management_event"`
+	ReadOnly           bool                    `json:"readOnly" parquet:"name=read_only"`
+	RecipientAccountID *string                 `json:"recipientAccountId" parquet:"name=recipient_account_id"`
+	RequestID          *string                 `json:"requestID" parquet:"name=request_id"`
 	RequestParameters  *map[string]interface{} `json:"requestParameters" parquet:"name=request_parameters, type=JSON"`
 	ResponseElements   *map[string]interface{} `json:"responseElements" parquet:"name=response_elements, type=JSON"`
-	SourceIPAddress    *string                 `json:"sourceIPAddress"`
-	UserAgent          *string                 `json:"userAgent"`
+	SourceIPAddress    *string                 `json:"sourceIPAddress" parquet:"name=source_ip_address"`
+	UserAgent          *string                 `json:"userAgent" parquet:"name=user_agent"`
 	UserIdentity       SecurityHubUserIdentity `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
 }
 
