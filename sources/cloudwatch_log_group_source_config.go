@@ -3,15 +3,10 @@ package sources
 import (
 	"fmt"
 	"time"
-
-	"github.com/hashicorp/hcl/v2"
 )
 
 // AwsCloudWatchSourceConfig is the configuration for an [AwsCloudWatchSource]
 type AwsCloudWatchSourceConfig struct {
-	// required to allow partial decoding
-	Remain hcl.Body `hcl:",remain" json:"-"`
-
 	LogGroupName    string  `hcl:"log_group_name"`
 	LogStreamPrefix *string `hcl:"log_stream_prefix"`
 	StartTimeString string  `hcl:"start_time"`

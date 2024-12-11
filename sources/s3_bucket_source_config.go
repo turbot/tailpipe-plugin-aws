@@ -2,6 +2,7 @@ package sources
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2"
 	"regexp"
 
 	"github.com/hashicorp/hcl/v2"
@@ -11,6 +12,8 @@ import (
 
 // AwsS3BucketSourceConfig is the configuration for an [AwsS3BucketSource]
 type AwsS3BucketSourceConfig struct {
+	// required to allow partial decoding
+	Remain hcl.Body `hcl:",remain" json:"-"`
 	artifact_source_config.ArtifactSourceConfigBase
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`

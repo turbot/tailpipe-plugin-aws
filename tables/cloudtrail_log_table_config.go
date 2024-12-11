@@ -1,5 +1,7 @@
 package tables
 
+import "fmt"
+
 type CloudTrailLogTableConfig struct{}
 
 func (c *CloudTrailLogTableConfig) Identifier() string {
@@ -7,5 +9,5 @@ func (c *CloudTrailLogTableConfig) Identifier() string {
 }
 
 func (c *CloudTrailLogTableConfig) Validate() error {
-	return nil
+	return fmt.Errorf("not implemented")
 }

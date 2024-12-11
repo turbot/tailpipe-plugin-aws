@@ -66,7 +66,7 @@ func (s *AwsS3BucketSource) Init(ctx context.Context, configData config_data.Con
 
 	slog.Info("Initialized AwsS3BucketSource", "bucket", s.Config.Bucket, "prefix", s.Config.Prefix, "extensions", s.Extensions)
 
-	return err
+	return nil
 }
 
 func (s *AwsS3BucketSource) Identifier() string {
