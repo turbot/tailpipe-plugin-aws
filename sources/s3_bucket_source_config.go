@@ -2,6 +2,7 @@ package sources
 
 import (
 	"fmt"
+	"github.com/hashicorp/hcl/v2"
 	"regexp"
 
 	"github.com/hashicorp/hcl/v2"
