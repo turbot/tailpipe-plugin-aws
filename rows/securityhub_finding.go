@@ -10,15 +10,15 @@ type SecurityHubFinding struct {
 	enrichment.CommonFields
 
 	// Top level fields
-	Version        *string             `json:"version,omitempty"`
-	ID             *string             `json:"id,omitempty"`
-	DetailType     *string             `json:"detail_type,omitempty"`
-	Source         *string             `json:"source,omitempty"`
-	Account        *string             `json:"account,omitempty"`
-	Time           *time.Time          `json:"time,omitempty"`
-	Region         *string             `json:"region,omitempty"`
-	Resources      []*string           `json:"resources,omitempty"`
-	DetailFindings *DetailFindingsData `json:"detail,omitempty"` // Updated to map the detailed findings
+	Version    *string             `json:"version,omitempty"`
+	ID         *string             `json:"id,omitempty"`
+	DetailType *string             `json:"detail_type,omitempty"`
+	Source     *string             `json:"source,omitempty"`
+	Account    *string             `json:"account,omitempty"`
+	Time       *time.Time          `json:"time,omitempty"`
+	Region     *string             `json:"region,omitempty"`
+	Resources  []*string           `json:"resources,omitempty"`
+	Detail     *DetailFindingsData `json:"detail,omitempty"`
 }
 
 // DetailFindingsData maps the `detail` field containing findings
@@ -36,11 +36,11 @@ type DetailFindingsData struct {
 	ReadOnly           bool                    `json:"readOnly"`
 	RecipientAccountID *string                 `json:"recipientAccountId"`
 	RequestID          *string                 `json:"requestID"`
-	RequestParameters  *map[string]interface{} `json:"requestParameters"`
-	ResponseElements   *map[string]interface{} `json:"responseElements"`
+	RequestParameters  *map[string]interface{} `json:"requestParameters" parquet:"name=request_parameters, type=JSON"`
+	ResponseElements   *map[string]interface{} `json:"responseElements" parquet:"name=response_elements, type=JSON"`
 	SourceIPAddress    *string                 `json:"sourceIPAddress"`
 	UserAgent          *string                 `json:"userAgent"`
-	UserIdentity       SecurityHubUserIdentity `json:"userIdentity"`
+	UserIdentity       SecurityHubUserIdentity `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
 }
 
 // Finding maps the individual findings in the detail
