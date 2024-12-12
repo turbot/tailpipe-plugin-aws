@@ -17,7 +17,7 @@ type AwsS3BucketSourceConfig struct {
 
 	Bucket               string   `hcl:"bucket"`
 	Prefix               *string  `hcl:"prefix"`
-	Extensions           []string `hcl:"extensions"`
+	Extensions           []string `hcl:"extensions,optional"`
 	Region               *string  `hcl:"region"`
 	StartAfterKey        *string  `hcl:"start_after_key"`
 	LexicographicalOrder bool     `hcl:"lexicographical_order,optional"`
