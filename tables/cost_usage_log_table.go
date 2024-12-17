@@ -24,7 +24,7 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.CostAndUsageLog, *CostAndUsageLogTableConfig, *CostAndUsageLogTable]()
+	table.RegisterTable[*rows.CostAndUsageLog, *CostAndUsageLogTable]()
 }
 
 // CostAndUsageLogTable - table for CostAndUsageLogs
@@ -35,7 +35,7 @@ func (t *CostAndUsageLogTable) Identifier() string {
 	return CostUsageLogTableIdentifier
 }
 
-func (t *CostAndUsageLogTable) GetSourceMetadata(partitionConfig *CostAndUsageLogTableConfig) []*table.SourceMetadata[*rows.CostAndUsageLog] {
+func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CostAndUsageLog] {
 	// TODO fix FileLayout
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
@@ -54,7 +54,7 @@ func (t *CostAndUsageLogTable) GetSourceMetadata(partitionConfig *CostAndUsageLo
 }
 
 // EnrichRow implements table.Table
-func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, _ *CostAndUsageLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CostAndUsageLog, error) {
+func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CostAndUsageLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

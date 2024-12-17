@@ -22,12 +22,12 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *AlbAccessLogTable]()
+	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTable]()
 }
 
 type AlbAccessLogTable struct{}
 
-func (c *AlbAccessLogTable) GetSourceMetadata(_ *AlbAccessLogTableConfig) []*table.SourceMetadata[*rows.AlbAccessLog] {
+func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.AlbAccessLog] {
 	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source
@@ -44,7 +44,7 @@ func (c *AlbAccessLogTable) Identifier() string {
 	return AlbAccessLogTableIdentifier
 }
 
-func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, _ *AlbAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.AlbAccessLog, error) {
+func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.AlbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Standard record enrichment

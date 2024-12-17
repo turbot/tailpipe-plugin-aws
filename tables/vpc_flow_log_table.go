@@ -16,22 +16,30 @@ import (
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 
 func init() {
-	// Register the table, with type parameters:
 	// 1. row struct
-	// 2. table config struct
+	// 2. input format struct
 	// 3. table implementation
-	table.RegisterTable[*rows.VpcFlowLog, *VpcFlowLogTableConfig, *VpcFlowLogTable]()
+	table.RegisterTableFormat[*rows.VpcFlowLog, *VpcFlowLogTableFormat, *VpcFlowLogTable]()
 }
 
 // VpcFlowLogTable - table for VPC Flow Logs
-type VpcFlowLogTable struct{}
+type VpcFlowLogTable struct {
+	table.TableWithFormatImpl[*VpcFlowLogTableFormat]
+}
 
-func (c *VpcFlowLogTable) GetSourceMetadata(partitionConfig *VpcFlowLogTableConfig) []*table.SourceMetadata[*rows.VpcFlowLog] {
+func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.VpcFlowLog] {
+	// TODO K look at this
+	fields := DefaultFlowLogFields
+	if c.Format != nil {
+		fields = c.Format.Fields
+	}
+
 	return []*table.SourceMetadata[*rows.VpcFlowLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     mappers.NewVpcFlowLogMapper(partitionConfig.Fields),
+			// TODO #FORMAT use format config
+			Mapper: mappers.NewVpcFlowLogMapper(fields),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -45,7 +53,7 @@ func (c *VpcFlowLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, _ *VpcFlowLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.VpcFlowLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

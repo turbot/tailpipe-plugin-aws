@@ -17,12 +17,12 @@ var DefaultFlowLogFields = []string{
 	"log-status",
 }
 
-type VpcFlowLogTableConfig struct {
+type VpcFlowLogTableFormat struct {
 	// the fields to extract from the flow log
 	Fields []string `hcl:"fields,optional"`
 }
 
-func (c VpcFlowLogTableConfig) Validate() error {
+func (c VpcFlowLogTableFormat) Validate() error {
 	// set default fields if none are specified
 	if len(c.Fields) == 0 {
 		c.Fields = DefaultFlowLogFields
@@ -31,6 +31,6 @@ func (c VpcFlowLogTableConfig) Validate() error {
 	return nil
 }
 
-func (VpcFlowLogTableConfig) Identifier() string {
+func (VpcFlowLogTableFormat) Identifier() string {
 	return VpcFlowLogTableIdentifier
 }

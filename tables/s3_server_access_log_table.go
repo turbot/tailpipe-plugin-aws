@@ -21,7 +21,7 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *S3ServerAccessLogTable]()
+	table.RegisterTable[*rows.S3ServerAccessLog, *S3ServerAccessLogTable]()
 }
 
 type S3ServerAccessLogTable struct{}
@@ -30,7 +30,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 	return S3ServerAccessLogTableIdentifier
 }
 
-func (c *S3ServerAccessLogTable) GetSourceMetadata(_ *S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
+func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.S3ServerAccessLog] {
 	return []*table.SourceMetadata[*rows.S3ServerAccessLog]{
 		{
 			// any artifact source
@@ -41,7 +41,7 @@ func (c *S3ServerAccessLogTable) GetSourceMetadata(_ *S3ServerAccessLogTableConf
 	}
 }
 
-func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, _ *S3ServerAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// add any source enrichment fields

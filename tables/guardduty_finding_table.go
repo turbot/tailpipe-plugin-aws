@@ -23,7 +23,7 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.GuardDutyFinding, *GuardDutyFindingTableConfig, *GuardDutyFindingTable]()
+	table.RegisterTable[*rows.GuardDutyFinding, *GuardDutyFindingTable]()
 }
 
 // GuardDutyFindingTable - table for GuardDuty Findings
@@ -33,7 +33,7 @@ func (c *GuardDutyFindingTable) Identifier() string {
 	return GuardDutyFindingTableIdentifier
 }
 
-func (c *GuardDutyFindingTable) GetSourceMetadata(_ *GuardDutyFindingTableConfig) []*table.SourceMetadata[*rows.GuardDutyFinding] {
+func (c *GuardDutyFindingTable) GetSourceMetadata() []*table.SourceMetadata[*rows.GuardDutyFinding] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/[0-9]+/GuardDuty/[a-z0-9-]+/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/[0-9a-fA-F-]+\\.jsonl\\.gz"),
 	}
@@ -50,7 +50,7 @@ func (c *GuardDutyFindingTable) GetSourceMetadata(_ *GuardDutyFindingTableConfig
 	}
 }
 
-func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, _ *GuardDutyFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.GuardDutyFinding, error) {
+func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.GuardDutyFinding, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 	row.TpID = xid.New().String()
 	row.TpTimestamp = row.CreatedAt

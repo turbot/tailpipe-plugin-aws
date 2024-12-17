@@ -20,7 +20,7 @@ const SecurityHubFindingTableIdentifier = "aws_securityhub_finding"
 
 // register the table from the package init function
 func init() {
-	table.RegisterTable[*rows.SecurityHubFinding, *SecurityHubFindingTableConfig, *SecurityHubFindingTable]()
+	table.RegisterTable[*rows.SecurityHubFinding, *SecurityHubFindingTable]()
 }
 
 type SecurityHubFindingTable struct{}
@@ -29,7 +29,7 @@ func (c *SecurityHubFindingTable) Identifier() string {
 	return SecurityHubFindingTableIdentifier
 }
 
-func (c *SecurityHubFindingTable) GetSourceMetadata(_ *SecurityHubFindingTableConfig) []*table.SourceMetadata[*rows.SecurityHubFinding] {
+func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*rows.SecurityHubFinding] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/SecurityHub/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/findings\\.json\\.gz"),
 	}
@@ -45,7 +45,7 @@ func (c *SecurityHubFindingTable) GetSourceMetadata(_ *SecurityHubFindingTableCo
 	}
 }
 
-func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, _ *SecurityHubFindingTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFinding, error) {
+func (c *SecurityHubFindingTable) EnrichRow(row *rows.SecurityHubFinding, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.SecurityHubFinding, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	row.TpID = xid.New().String()
