@@ -53,7 +53,7 @@ func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows
 }
 
 // EnrichRow implements table.Table
-func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.CostAndUsageLog, error) {
+func (t *CostAndUsageLogTable) EnrichRow(row *rows.CostAndUsageLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CostAndUsageLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

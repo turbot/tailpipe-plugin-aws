@@ -44,7 +44,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.El
 	}
 }
 
-func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.ElbAccessLog, error) {
+func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.ElbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization

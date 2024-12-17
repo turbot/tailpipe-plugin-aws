@@ -49,7 +49,7 @@ func (c *GuardDutyFindingTable) GetSourceMetadata() []*table.SourceMetadata[*row
 	}
 }
 
-func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnrichmentFields schema.SourceEnrichment) (*rows.GuardDutyFinding, error) {
+func (c *GuardDutyFindingTable) EnrichRow(row *rows.GuardDutyFinding, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.GuardDutyFinding, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 	row.TpID = xid.New().String()
 	row.TpTimestamp = row.CreatedAt

@@ -59,7 +59,7 @@ func (t *CloudTrailLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.CloudTrailLog, error) {
+func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

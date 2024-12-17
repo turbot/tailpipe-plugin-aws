@@ -45,7 +45,7 @@ func (c *AlbAccessLogTable) Identifier() string {
 	return AlbAccessLogTableIdentifier
 }
 
-func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.AlbAccessLog, error) {
+func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.AlbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Standard record enrichment

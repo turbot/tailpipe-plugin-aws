@@ -52,7 +52,7 @@ func (c *VpcFlowLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.VpcFlowLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

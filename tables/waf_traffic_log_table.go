@@ -50,7 +50,7 @@ func (c *WafTrafficLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
+func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
