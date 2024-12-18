@@ -15,7 +15,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/config_data"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
-	"github.com/turbot/tailpipe-plugin-sdk/rate_limiter"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
@@ -31,8 +30,7 @@ func init() {
 type AwsCloudWatchSource struct {
 	row_source.RowSourceImpl[*AwsCloudWatchSourceConfig, *config.AwsConnection]
 
-	client  *cloudwatchlogs.Client
-	limiter *rate_limiter.APILimiter
+	client *cloudwatchlogs.Client
 }
 
 func (s *AwsCloudWatchSource) Init(ctx context.Context, configData config_data.ConfigData, connectionData config_data.ConfigData, opts ...row_source.RowSourceOption) error {
@@ -52,13 +50,6 @@ func (s *AwsCloudWatchSource) Init(ctx context.Context, configData config_data.C
 		return err
 	}
 	s.client = client
-
-	// TODO NEEDED? https://github.com/turbot/tailpipe-plugin-sdk/issues/6
-	s.limiter = rate_limiter.NewAPILimiter(&rate_limiter.Definition{
-		Name:       "cloudwatch_limiter",
-		FillRate:   5,
-		BucketSize: 5,
-	})
 
 	return nil
 }
