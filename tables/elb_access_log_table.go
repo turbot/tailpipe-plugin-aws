@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
@@ -35,7 +36,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.El
 	return []*table.SourceMetadata[*rows.ElbAccessLog]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     table.NewRowPatternMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
+			Mapper:     mappers.NewGonxMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},

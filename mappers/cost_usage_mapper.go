@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-// CostAndUsageLogMapper
 type CostAndUsageLogMapper struct {
 }
 
@@ -19,7 +19,7 @@ func (c *CostAndUsageLogMapper) Identifier() string {
 	return "cost_and_usage_mapper"
 }
 
-func (c *CostAndUsageLogMapper) Map(_ context.Context, a any) (*rows.CostAndUsageLog, error) {
+func (c *CostAndUsageLogMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.CostAndUsageLog]) (*rows.CostAndUsageLog, error) {
 	csvRow, ok := a.(string)
 	if !ok {
 		return nil, fmt.Errorf("input data is not of type string")

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type LambdaLogMapper struct {
@@ -17,7 +18,7 @@ func (m *LambdaLogMapper) Identifier() string {
 	return "lambda_log_mapper"
 }
 
-func (m *LambdaLogMapper) Map(ctx context.Context, a any) (*rows.LambdaLog, error) {
+func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.LambdaLog]) (*rows.LambdaLog, error) {
 	row := &rows.LambdaLog{}
 
 	rawRow, ok := a.(string)

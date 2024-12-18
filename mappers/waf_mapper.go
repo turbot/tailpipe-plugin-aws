@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type WafMapper struct {
@@ -15,7 +16,7 @@ func (c *WafMapper) Identifier() string {
 	return "waf_mapper"
 }
 
-func (c *WafMapper) Map(_ context.Context, a any) (*rows.WafTrafficLog, error) {
+func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.WafTrafficLog]) (*rows.WafTrafficLog, error) {
 	var jsonBytes []byte
 
 	switch v := a.(type) {

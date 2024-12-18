@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
@@ -32,7 +33,7 @@ func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.Al
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     table.NewRowPatternMapper[*rows.AlbAccessLog](albLogFormat, albLogFormatNoConnTrace),
+			Mapper:     mappers.NewGonxMapper[*rows.AlbAccessLog](albLogFormat, albLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
