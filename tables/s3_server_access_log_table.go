@@ -42,7 +42,7 @@ func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ro
 	}
 }
 
-func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// add any source enrichment fields

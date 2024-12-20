@@ -42,7 +42,7 @@ func (c *LambdaLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.Lambd
 	}
 }
 
-func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.LambdaLog, error) {
+func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.LambdaLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
