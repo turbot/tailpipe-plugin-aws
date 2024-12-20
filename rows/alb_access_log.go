@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 // AlbAccessLog represents a single Application Load Balancer (ALB) access log entry.
@@ -35,7 +35,7 @@ import (
 // - tp_date: derived from timestamp in yyyy-mm-dd format
 
 type AlbAccessLog struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	// Standard ALB fields
 	Type                   string    `json:"type"`

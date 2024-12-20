@@ -11,13 +11,12 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/config_data"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
@@ -129,8 +128,8 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 			if s.Extensions.IsValid(path) {
 				// populate enrichment fields the source is aware of
 				// - in this case the source location
-				sourceEnrichmentFields := &enrichment.SourceEnrichment{
-					CommonFields: enrichment.CommonFields{
+				sourceEnrichmentFields := &schema.SourceEnrichment{
+					CommonFields: schema.CommonFields{
 						TpSourceType:     AwsS3BucketSourceIdentifier,
 						TpSourceName:     &s.Config.Bucket,
 						TpSourceLocation: &path,

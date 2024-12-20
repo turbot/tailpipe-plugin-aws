@@ -4,12 +4,11 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/guardduty/types"
-
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type GuardDutyFinding struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	AccountId     *string                   `json:"account_id"`
 	Arn           *string                   `json:"arn"`

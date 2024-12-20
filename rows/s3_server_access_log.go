@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type S3ServerAccessLog struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	BucketOwner        string    `json:"bucket_owner"`
 	Bucket             string    `json:"bucket"`

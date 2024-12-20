@@ -3,7 +3,7 @@ package rows
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
@@ -13,7 +13,7 @@ type CloudTrailLogBatch struct {
 
 type CloudTrailLog struct {
 	// embed required enrichment fields
-	enrichment.CommonFields
+	schema.CommonFields
 
 	// json tags for marshalling to/from the source & parquet tags handle the parquet column names for the table
 	AdditionalEventData          *map[string]interface{} `json:"additionalEventData,omitempty" parquet:"name=additional_event_data, type=JSON"`

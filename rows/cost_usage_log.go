@@ -3,11 +3,11 @@ package rows
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type CostAndUsageLog struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	InvoiceID              *string    `json:"invoice_id,omitempty"`
 	PayerAccountId         *string    `json:"payer_account_id,omitempty"`

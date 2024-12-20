@@ -8,8 +8,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -42,7 +42,7 @@ func (c *LambdaLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.Lambd
 	}
 }
 
-func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.LambdaLog, error) {
+func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.LambdaLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization

@@ -3,11 +3,11 @@ package rows
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type LambdaLog struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 	RequestID *string    `json:"request_id,omitempty"`

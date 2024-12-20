@@ -7,9 +7,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
-
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
@@ -212,7 +211,7 @@ func TestAwsElbAccessLog_InitialiseFromMap(t *testing.T) {
 				return
 			}
 			// Tactical - ignore tp fields
-			l.CommonFields = enrichment.CommonFields{}
+			l.CommonFields = schema.CommonFields{}
 			equal := cmp.Equal(l, tt.want, cmpopts.IgnoreUnexported(ElbAccessLog{}))
 			if !equal {
 				t.Errorf("InitialiseFromMap() = %v, want %v", l, tt.want)
