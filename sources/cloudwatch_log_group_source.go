@@ -12,7 +12,6 @@ import (
 	cwtypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/tailpipe-plugin-aws/config"
-	"github.com/turbot/tailpipe-plugin-sdk/config_data"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
@@ -32,7 +31,7 @@ type AwsCloudWatchSource struct {
 	client *cloudwatchlogs.Client
 }
 
-func (s *AwsCloudWatchSource) Init(ctx context.Context, configData config_data.ConfigData, connectionData config_data.ConfigData, opts ...row_source.RowSourceOption) error {
+func (s *AwsCloudWatchSource) Init(ctx context.Context, configData types.ConfigData, connectionData types.ConfigData, opts ...row_source.RowSourceOption) error {
 
 	// set the collection state ctor
 	s.NewCollectionStateFunc = NewAwsCloudwatchCollectionState
