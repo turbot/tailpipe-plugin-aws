@@ -28,8 +28,8 @@ type VpcFlowLogTable struct {
 }
 
 func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.VpcFlowLog] {
-	// TODO K look at this
 	fields := DefaultFlowLogFields
+	// if Format was provided in config, it will have been populated by the factory
 	if c.Format != nil {
 		fields = c.Format.Fields
 	}
@@ -38,8 +38,7 @@ func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.VpcF
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			// TODO #FORMAT use format config
-			Mapper: mappers.NewVpcFlowLogMapper(fields),
+			Mapper:     mappers.NewVpcFlowLogMapper(fields),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
