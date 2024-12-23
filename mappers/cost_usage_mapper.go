@@ -33,11 +33,9 @@ func (c *CostAndUsageLogMapper) Map(_ context.Context, a any, _ ...table.MapOpti
 		return nil, err
 	}
 
-	var log *rows.CostAndUsageLog
-
 	// TODO - find a better way of doing this parsing
 	// this works for now, since the csv columns are fixed and ordered
-	log = &rows.CostAndUsageLog{
+	log := &rows.CostAndUsageLog{
 		InvoiceID:              &row[0],
 		PayerAccountId:         &row[1],
 		LinkedAccountId:        &row[2],
