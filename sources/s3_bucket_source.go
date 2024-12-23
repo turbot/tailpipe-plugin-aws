@@ -145,7 +145,11 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 					//	TODO #error #paging what??? download anyway???
 					continue
 				}
-				info.SetPathProperties(extractedProperties)
+				err := info.SetPathProperties(extractedProperties)
+				if err != nil {
+					//	TODO #error what??? download
+					continue
+				}
 
 				if !collectionState.ShouldCollect(info) {
 					continue
