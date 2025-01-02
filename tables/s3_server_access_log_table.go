@@ -7,8 +7,9 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -21,7 +22,7 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.S3ServerAccessLog, *S3ServerAccessLogTableConfig, *S3ServerAccessLogTable]()
+	table.RegisterTable[*rows.S3ServerAccessLog, *S3ServerAccessLogTable]()
 }
 
 type S3ServerAccessLogTable struct{}
@@ -30,18 +31,18 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 	return S3ServerAccessLogTableIdentifier
 }
 
-func (c *S3ServerAccessLogTable) GetSourceMetadata(_ *S3ServerAccessLogTableConfig) []*table.SourceMetadata[*rows.S3ServerAccessLog] {
+func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.S3ServerAccessLog] {
 	return []*table.SourceMetadata[*rows.S3ServerAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     table.NewRowPatternMapper[*rows.S3ServerAccessLog](s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced),
+			Mapper:     mappers.NewGonxMapper[*rows.S3ServerAccessLog](s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced),
 			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
 		},
 	}
 }
 
-func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, _ *S3ServerAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
+func (c *S3ServerAccessLogTable) EnrichRow(row *rows.S3ServerAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.S3ServerAccessLog, error) {
 	// TODO: #validate ensure we have a timestamp field
 
 	// add any source enrichment fields

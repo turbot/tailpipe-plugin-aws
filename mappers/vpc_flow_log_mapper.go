@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 // VpcFlowLogMapper is a mapper that receives string objects and extracts VpcFlowLog record
@@ -28,7 +29,7 @@ func (c *VpcFlowLogMapper) Identifier() string {
 }
 
 // Map casts the data item as an string and returns the VpcFlowLog records
-func (c *VpcFlowLogMapper) Map(_ context.Context, a any) (*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.VpcFlowLog]) (*rows.VpcFlowLog, error) {
 	rowString, ok := a.(string)
 	if !ok {
 		return nil, fmt.Errorf("expected string, got %T", a)

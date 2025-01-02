@@ -1,13 +1,14 @@
 package rows
 
 import (
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"time"
+
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type VpcFlowLog struct {
 	// embed required enrichment fields
-	enrichment.CommonFields
+	schema.CommonFields
 
 	Timestamp               *time.Time `json:"timestamp,omitempty"`
 	Version                 *int32     `json:"version,omitempty"`

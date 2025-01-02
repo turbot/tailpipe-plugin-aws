@@ -3,7 +3,7 @@ package rows
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 // Define a nested struct for httpRequest headers
@@ -26,7 +26,7 @@ type HttpRequest struct {
 
 // WafTrafficLog struct with fields aligned to the provided JSON
 type WafTrafficLog struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	Timestamp                   *time.Time   `json:"timestamp,omitempty"`
 	FormatVersion               *int32       `json:"format_version,omitempty"`

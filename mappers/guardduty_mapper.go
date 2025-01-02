@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/guardduty/types"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 // GuardDutyMapper is a mapper that receives GuardDutyBatch objects and extracts GuardDutyFinding records from them
@@ -21,7 +22,7 @@ func (g *GuardDutyMapper) Identifier() string {
 }
 
 // Map casts the data item as a GuardDutyBatch and returns the GuardDutyFinding records
-func (g *GuardDutyMapper) Map(_ context.Context, a any) (*rows.GuardDutyFinding, error) {
+func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.GuardDutyFinding]) (*rows.GuardDutyFinding, error) {
 	var jsonBytes []byte
 	// The expected input type is a JSON byte[] deserializable to GuardDutyBatch
 	switch v := a.(type) {

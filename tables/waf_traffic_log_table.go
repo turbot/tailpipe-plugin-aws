@@ -11,8 +11,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -23,13 +23,13 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.WafTrafficLog, *WafTrafficLogTableConfig, *WafTrafficLogTable]()
+	table.RegisterTable[*rows.WafTrafficLog, *WafTrafficLogTable]()
 }
 
 // WafTrafficLogTable - table for Waf traffic logs
 type WafTrafficLogTable struct{}
 
-func (c *WafTrafficLogTable) GetSourceMetadata(_ *WafTrafficLogTableConfig) []*table.SourceMetadata[*rows.WafTrafficLog] {
+func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.WafTrafficLog] {
 	// the default file layout for Waf traffic logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/WAFLogs/(?P<log_group_name>[a-zA-Z0-9-_]+)/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/(?P<hour>\\d{2})/(?P<filename>.+\\.gz)"),
@@ -50,7 +50,7 @@ func (c *WafTrafficLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, _ *WafTrafficLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
+func (c *WafTrafficLogTable) EnrichRow(row *rows.WafTrafficLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.WafTrafficLog, error) { // initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization

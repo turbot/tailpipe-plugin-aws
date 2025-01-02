@@ -3,11 +3,11 @@ package rows
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type SecurityHubFinding struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	// Top level fields
 	Version    *string             `json:"version,omitempty"`

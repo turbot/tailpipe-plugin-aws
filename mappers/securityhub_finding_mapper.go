@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type SecurityHubFindingMapper struct {
@@ -15,7 +16,7 @@ func (m *SecurityHubFindingMapper) Identifier() string {
 	return "security_hub_finding_mapper"
 }
 
-func (m *SecurityHubFindingMapper) Map(_ context.Context, a any) (*rows.SecurityHubFinding, error) {
+func (m *SecurityHubFindingMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.SecurityHubFinding]) (*rows.SecurityHubFinding, error) {
 	var b rows.SecurityHubFinding
 
 	switch data := a.(type) {

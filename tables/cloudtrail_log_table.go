@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/extractors"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
@@ -14,8 +13,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -26,13 +25,13 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.CloudTrailLog, *CloudTrailLogTableConfig, *CloudTrailLogTable]()
+	table.RegisterTable[*rows.CloudTrailLog, *CloudTrailLogTable]()
 }
 
 // CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct{}
 
-func (t *CloudTrailLogTable) GetSourceMetadata(_ *CloudTrailLogTableConfig) []*table.SourceMetadata[*rows.CloudTrailLog] {
+func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CloudTrailLog] {
 	// the default file layout for CloudTrail logs in S3
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
@@ -60,7 +59,7 @@ func (t *CloudTrailLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, _ *CloudTrailLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.CloudTrailLog, error) {
+func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

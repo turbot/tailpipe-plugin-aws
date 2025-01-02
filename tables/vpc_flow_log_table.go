@@ -8,30 +8,37 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 
 func init() {
-	// Register the table, with type parameters:
 	// 1. row struct
-	// 2. table config struct
+	// 2. input format struct
 	// 3. table implementation
-	table.RegisterTable[*rows.VpcFlowLog, *VpcFlowLogTableConfig, *VpcFlowLogTable]()
+	table.RegisterTableFormat[*rows.VpcFlowLog, *VpcFlowLogTableFormat, *VpcFlowLogTable]()
 }
 
 // VpcFlowLogTable - table for VPC Flow Logs
-type VpcFlowLogTable struct{}
+type VpcFlowLogTable struct {
+	table.TableWithFormatImpl[*VpcFlowLogTableFormat]
+}
 
-func (c *VpcFlowLogTable) GetSourceMetadata(partitionConfig *VpcFlowLogTableConfig) []*table.SourceMetadata[*rows.VpcFlowLog] {
+func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.VpcFlowLog] {
+	fields := DefaultFlowLogFields
+	// if Format was provided in config, it will have been populated by the factory
+	if c.Format != nil {
+		fields = c.Format.Fields
+	}
+
 	return []*table.SourceMetadata[*rows.VpcFlowLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     mappers.NewVpcFlowLogMapper(partitionConfig.Fields),
+			Mapper:     mappers.NewVpcFlowLogMapper(fields),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -45,7 +52,7 @@ func (c *VpcFlowLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, _ *VpcFlowLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.VpcFlowLog, error) {
+func (c *VpcFlowLogTable) EnrichRow(row *rows.VpcFlowLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.VpcFlowLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 

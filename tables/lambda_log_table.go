@@ -8,8 +8,8 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -20,7 +20,7 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.LambdaLog, *LambdaLogTableConfig, *LambdaLogTable]()
+	table.RegisterTable[*rows.LambdaLog, *LambdaLogTable]()
 }
 
 type LambdaLogTable struct{}
@@ -29,7 +29,7 @@ func (c *LambdaLogTable) Identifier() string {
 	return LambdaLogTableIdentifier
 }
 
-func (c *LambdaLogTable) GetSourceMetadata(_ *LambdaLogTableConfig) []*table.SourceMetadata[*rows.LambdaLog] {
+func (c *LambdaLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.LambdaLog] {
 	return []*table.SourceMetadata[*rows.LambdaLog]{
 		{
 			// any artifact source
@@ -42,7 +42,7 @@ func (c *LambdaLogTable) GetSourceMetadata(_ *LambdaLogTableConfig) []*table.Sou
 	}
 }
 
-func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, _ *LambdaLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.LambdaLog, error) {
+func (c *LambdaLogTable) EnrichRow(row *rows.LambdaLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.LambdaLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization

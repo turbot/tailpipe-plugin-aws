@@ -7,8 +7,9 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -22,17 +23,17 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTableConfig, *AlbAccessLogTable]()
+	table.RegisterTable[*rows.AlbAccessLog, *AlbAccessLogTable]()
 }
 
 type AlbAccessLogTable struct{}
 
-func (c *AlbAccessLogTable) GetSourceMetadata(_ *AlbAccessLogTableConfig) []*table.SourceMetadata[*rows.AlbAccessLog] {
+func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.AlbAccessLog] {
 	return []*table.SourceMetadata[*rows.AlbAccessLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     table.NewRowPatternMapper[*rows.AlbAccessLog](albLogFormat, albLogFormatNoConnTrace),
+			Mapper:     mappers.NewGonxMapper[*rows.AlbAccessLog](albLogFormat, albLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -44,7 +45,7 @@ func (c *AlbAccessLogTable) Identifier() string {
 	return AlbAccessLogTableIdentifier
 }
 
-func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, _ *AlbAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.AlbAccessLog, error) {
+func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.AlbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Standard record enrichment

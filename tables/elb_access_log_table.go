@@ -7,8 +7,9 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -19,7 +20,7 @@ func init() {
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*rows.ElbAccessLog, *ElbAccessLogTableConfig, *ElbAccessLogTable]()
+	table.RegisterTable[*rows.ElbAccessLog, *ElbAccessLogTable]()
 }
 
 const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
@@ -31,11 +32,11 @@ func (c *ElbAccessLogTable) Identifier() string {
 	return ElbAccessLogTableIdentifier
 }
 
-func (c *ElbAccessLogTable) GetSourceMetadata(_ *ElbAccessLogTableConfig) []*table.SourceMetadata[*rows.ElbAccessLog] {
+func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.ElbAccessLog] {
 	return []*table.SourceMetadata[*rows.ElbAccessLog]{
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     table.NewRowPatternMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
+			Mapper:     mappers.NewGonxMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -43,7 +44,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata(_ *ElbAccessLogTableConfig) []*tab
 	}
 }
 
-func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, _ *ElbAccessLogTableConfig, sourceEnrichmentFields enrichment.SourceEnrichment) (*rows.ElbAccessLog, error) {
+func (c *ElbAccessLogTable) EnrichRow(row *rows.ElbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.ElbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization

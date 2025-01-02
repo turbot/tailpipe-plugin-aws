@@ -14,7 +14,10 @@ type AwsS3CollectionState struct {
 }
 
 func NewAwsS3CollectionState() collection_state.CollectionState[*AwsS3BucketSourceConfig] {
-	return &AwsS3CollectionState{}
+	cs := &AwsS3CollectionState{}
+	cs.StartObjects = make(map[string]*collection_state.ArtifactMetadata)
+	cs.EndObjects = make(map[string]*collection_state.ArtifactMetadata)
+	return cs
 }
 
 func (s *AwsS3CollectionState) Init(config *AwsS3BucketSourceConfig) error {

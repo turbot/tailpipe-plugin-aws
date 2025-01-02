@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/enrichment"
+	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
 type ElbAccessLog struct {
-	enrichment.CommonFields
+	schema.CommonFields
 
 	Type                   string    `json:"type"`
 	Timestamp              time.Time `json:"timestamp"`
