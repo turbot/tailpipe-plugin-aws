@@ -15,9 +15,13 @@ Install the plugin with [Tailpipe](https://tailpipe.io):
 tailpipe plugin install aws
 ```
 
-Collect logs from an S3 bucket:
+Configure your log source:
 
 ```terraform
+connection "aws" "dev" {
+  profile = "dev"
+}
+
 partition "aws_cloudtrail_log" "dev" {
   source "aws_s3_bucket" {
     bucket = "aws-cloudtrail-logs-bucket"
@@ -25,15 +29,7 @@ partition "aws_cloudtrail_log" "dev" {
 }
 ```
 
-Or from the CloudTrail API:
-
-```terraform
-partition "aws_cloudtrail_log" "dev" {
-  source "aws_cloudtrail_api" {
-    region = "us-east-2"
-  }
-}
-```
+Collect logs:
 
 ```shell
 tailpipe collect aws_cloudtrail_log.dev
@@ -41,15 +37,10 @@ tailpipe collect aws_cloudtrail_log.dev
 
 Run a query:
 
+TODO: Use a group by as well
+
 ```sql
-select
-  event_time,
-  event_source || ':' || event_name as operation,
-  user_identity
-from
-  aws_cloudtrail_log
-where
-  not read_only;
+select event_time, event_source, event_name as operation, user_identity from aws_cloudtrail_log where not read_only;
 ```
 
 ## Advanced configuration
