@@ -1,15 +1,117 @@
-# tailpipe-plugin-aws
+# AWS Plugin for Tailpipe
 
-Tailpipe plugin to collect and query AWS logs (e.g. CloudTrail).
+Collect and query AWS logs using SQL to track activity, monitor trends, and detect anomalies across CloudTrail logs, S3 server access logs, ELB access logs, and more.
 
-## Developers
+- **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
+- Documentation: [Table definitions & examples](https://hub.tailpipe.io/plugins/turbot/aws/tables)
+- Community: [Join #tailpipe on Slack →](https://turbot.com/community/join)
+- Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
-Build a developer version of the plugin:
+## Quick start
+
+Install the plugin with [Tailpipe](https://tailpipe.io):
+
+```shell
+tailpipe plugin install aws
+```
+
+Collect logs from an S3 bucket:
+
+```terraform
+partition "aws_cloudtrail_log" "dev" {
+  source "aws_s3_bucket" {
+    bucket = "aws-cloudtrail-logs-bucket"
+  }
+}
+```
+
+Or from the CloudTrail API:
+
+```terraform
+partition "aws_cloudtrail_log" "dev" {
+  source "aws_cloudtrail_api" {
+    region = "us-east-2"
+  }
+}
+```
+
+```shell
+tailpipe collect aws_cloudtrail_log.dev
+```
+
+Run a query:
+
+```sql
+select
+  event_time,
+  event_source || ':' || event_name as operation,
+  user_identity
+from
+  aws_cloudtrail_log
+where
+  not read_only;
+```
+
+## Advanced configuration
+
+The AWS plugin has the power to:
+* Collect logs from various sources, including AWS CloudWatch log groups, S3 buckets, and more
+* Query multiple accounts
+* Query multiple regions
+* Use many different methods for credentials (roles, SSO, etc.)
+
+- **[Detailed configuration guide →](https://hub.tailpipe.io/plugins/turbot/aws#get-started)**
+
+## Developing
+
+Prerequisites:
+
+- [Tailpipe](https://tailpipe.io/downloads)
+- [Golang](https://golang.org/doc/install)
+
+Clone:
+
+```sh
+git clone https://github.com/turbot/tailpipe-plugin-aws.git
+cd tailpipe-plugin-aws
+```
+
+Build, which automatically installs the new version to your `~/.tailpipe/plugins` directory:
+
 ```
 make
 ```
 
-Check it was created and installed:
+TODO - What collect commands and configuration to use?
+
+Configure the plugin:
+
 ```
-ls -al ~/.tailpipe/plugins
+vi ~/.tailpipe/config/aws.spc
 ```
+
+Try it!
+
+```
+tailpipe query
+TODO - Add equivalent of .inspect
+```
+
+Further reading:
+
+- [TODO](https://tailpipe.io/docs/reference/develop/todo)
+
+## Open Source & Contributing
+
+This repository is published under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (source code) and [CC BY-NC-ND](https://creativecommons.org/licenses/by-nc-nd/2.0/) (docs) licenses. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). We look forward to collaborating with you!
+
+[Tailpipe](https://tailpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
+
+## Get Involved
+
+**[Join #tailpipe on Slack →](https://turbot.com/community/join)**
+
+Want to help but don't know where to start? Pick up one of the `help wanted` issues:
+
+- [Tailpipe](https://github.com/turbot/tailpipe/labels/help%20wanted)
+- [AWS Plugin](https://github.com/turbot/tailpipe-plugin-aws/labels/help%20wanted)
