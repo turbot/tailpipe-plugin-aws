@@ -17,6 +17,10 @@ tailpipe plugin install aws
 
 Configure your log source:
 
+```shell
+vi ~/.tailpipe/config/aws.spc
+```
+
 ```terraform
 connection "aws" "dev" {
   profile = "dev"
@@ -37,10 +41,8 @@ tailpipe collect aws_cloudtrail_log.dev
 
 Run a query:
 
-TODO: Use a group by as well
-
 ```sql
-select event_time, event_source, event_name as operation, user_identity from aws_cloudtrail_log where not read_only;
+select event_source, event_name, recipient_account_id, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name, recipient_account_id order by event_count desc;
 ```
 
 ## Advanced configuration
@@ -73,7 +75,7 @@ Build, which automatically installs the new version to your `~/.tailpipe/plugins
 make
 ```
 
-TODO - What collect commands and configuration to use?
+TODO: How to configure it?
 
 Configure the plugin:
 
@@ -85,7 +87,7 @@ Try it!
 
 ```
 tailpipe query
-TODO - Add equivalent of .inspect
+> .inspect
 ```
 
 Further reading:
