@@ -49,6 +49,7 @@ func (s *AwsS3BucketSource) Init(ctx context.Context, params *row_source.RowSour
 	}
 
 	s.Extensions = types.NewExtensionLookup(s.Config.Extensions)
+	s.TmpDir = path.Join(artifact_source.BaseTmpDir, fmt.Sprintf("s3-%s", s.Config.Bucket))
 
 	if s.Config.Region == nil {
 		slog.Info("No region set, using default", "region", defaultBucketRegion)
@@ -99,6 +100,10 @@ func (s *AwsS3BucketSource) ValidateConfig() error {
 func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 	// cast the collection state to the correct type
 	collectionState := s.CollectionState.(*AwsS3CollectionState)
+	// verify this is initialized (i.e. the regex has been created)
+	if collectionState == nil || !collectionState.Initialized() {
+		return fmt.Errorf("collection state not initialized")
+	}
 
 	startAfterKey := s.Config.StartAfterKey
 	if collectionState.UseStartAfterKey {
@@ -155,6 +160,8 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 }
 
 func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.ArtifactInfo) error {
+	collectionState := s.CollectionState.(*AwsS3CollectionState)
+
 	// Get the object from S3
 	getObjectOutput, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.Config.Bucket,
