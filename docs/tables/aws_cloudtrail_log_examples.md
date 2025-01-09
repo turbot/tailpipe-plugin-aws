@@ -2,6 +2,8 @@
 
 ### Count events per day
 
+Return a count of events per day to see trends across time.
+
 ```sql
 select
   strftime(event_time, '%Y-%m-%d') AS event_date,
@@ -15,6 +17,8 @@ order by
 ```
 
 ### Count events by event name
+
+Return a count of events by event name see the most operations.
 
 ```sql
 select
