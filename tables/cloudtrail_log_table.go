@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/extractors"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
@@ -32,14 +33,21 @@ func init() {
 type CloudTrailLogTable struct{}
 
 func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CloudTrailLog] {
-	// the default file layout for CloudTrail logs in S3
-	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+		FileLayout: utils.ToStringPointer("AWSLogs/%{DATA:org_id}/%{NUMBER:account_id}/CloudTrail/%{DATA:region_path}/%{YEAR:year_path}/%{MONTHNUM:month_path}/%{MONTHDAY:day_path}/%{NUMBER:prefix}_CloudTrail_%{DATA:region}_%{YEAR:year}%{MONTHNUM:month}%{MONTHDAY:day}T%{HOUR:hour}%{MINUTE:minute}Z_%{DATA:suffix}.json.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.CloudTrailLog]{
 		{
-			// any artifact source
+			// S3 artifact source
+			SourceName: sources.AwsS3BucketSourceIdentifier,
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
+				artifact_source.WithArtifactExtractor(extractors.NewCloudTrailLogExtractor()),
+			},
+		},
+		{
+			// any other artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),

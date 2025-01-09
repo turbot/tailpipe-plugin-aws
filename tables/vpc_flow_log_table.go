@@ -4,9 +4,12 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-aws/sources"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
@@ -34,7 +37,20 @@ func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.VpcF
 		fields = c.Format.Fields
 	}
 
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA:filename}.gz"),
+	}
+
 	return []*table.SourceMetadata[*rows.VpcFlowLog]{
+		{
+			// S3 artifact source
+			SourceName: sources.AwsS3BucketSourceIdentifier,
+			Mapper:     mappers.NewVpcFlowLogMapper(fields),
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
+				artifact_source.WithRowPerLine(),
+			},
+		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,

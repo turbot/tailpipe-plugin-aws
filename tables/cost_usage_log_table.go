@@ -4,12 +4,11 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
-	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
@@ -35,18 +34,12 @@ func (t *CostAndUsageLogTable) Identifier() string {
 }
 
 func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CostAndUsageLog] {
-	// TODO fix FileLayout
-	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("/Users/vedmisra/billing-info/(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})"),
-	}
-
 	return []*table.SourceMetadata[*rows.CostAndUsageLog]{
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &mappers.CostAndUsageLogMapper{},
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
 				artifact_source.WithRowPerLine(), artifact_source.WithSkipHeaderRow()},
 		},
 	}

@@ -4,8 +4,12 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-aws/sources"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
@@ -32,7 +36,20 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 }
 
 func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.S3ServerAccessLog] {
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+		FileLayout: utils.ToStringPointer("AWSLogs/%{DATA:bucket_name}/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}.gz"),
+	}
+
 	return []*table.SourceMetadata[*rows.S3ServerAccessLog]{
+		{
+			// S3 artifact source
+			SourceName: sources.AwsS3BucketSourceIdentifier,
+			Mapper:     mappers.NewGonxMapper[*rows.S3ServerAccessLog](s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced),
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
+				artifact_source.WithRowPerLine(),
+			},
+		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,

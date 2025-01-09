@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-aws/sources"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -31,16 +33,25 @@ type WafTrafficLogTable struct{}
 
 func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.WafTrafficLog] {
 	// the default file layout for Waf traffic logs in S3
-	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/WAFLogs/(?P<log_group_name>[a-zA-Z0-9-_]+)/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/(?P<hour>\\d{2})/(?P<filename>.+\\.gz)"),
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+		FileLayout: utils.ToStringPointer("AWSLogs/%{DATA:org_id}/%{NUMBER:account_id}/WAFLogs/%{DATA:log_group_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{DATA:filename}.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.WafTrafficLog]{
 		{
+			// S3 artifact source
+			SourceName: sources.AwsS3BucketSourceIdentifier,
+			Mapper:     &mappers.WafMapper{},
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
+				artifact_source.WithRowPerLine(),
+			},
+		},
+		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &mappers.WafMapper{},
-			Options:    []row_source.RowSourceOption{artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig), artifact_source.WithRowPerLine()},
+			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
 		},
 	}
 }
