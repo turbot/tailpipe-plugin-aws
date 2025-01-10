@@ -2,7 +2,6 @@ package sources
 
 import (
 	"github.com/turbot/tailpipe-plugin-sdk/collection_state"
-	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
 // AwsS3CollectionState contains the collection state data for an AWS S3 Bucket artifact source
@@ -15,12 +14,12 @@ type AwsS3CollectionState struct {
 
 func NewAwsS3CollectionState() collection_state.CollectionState[*AwsS3BucketSourceConfig] {
 	cs := &AwsS3CollectionState{}
-	cs.StartObjects = make(map[string]*collection_state.ArtifactMetadata)
-	cs.EndObjects = make(map[string]*collection_state.ArtifactMetadata)
+	//cs.StartObjects = make(map[string]*collection_state.SourceItemMetadata)
+	//cs.EndObjects = make(map[string]*collection_state.SourceItemMetadata)
 	return cs
 }
 
-func (s *AwsS3CollectionState) Init(config *AwsS3BucketSourceConfig) error {
+func (s *AwsS3CollectionState) Init(config *AwsS3BucketSourceConfig, path string) error {
 	s.UseStartAfterKey = config.LexicographicalOrder
 	// call base init
 	return s.ArtifactCollectionState.Init(config)

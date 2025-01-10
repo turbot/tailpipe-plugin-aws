@@ -99,10 +99,6 @@ func (s *AwsS3BucketSource) ValidateConfig() error {
 func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 	// cast the collection state to the correct type
 	collectionState := s.CollectionState.(*AwsS3CollectionState)
-	// verify this is initialized (i.e. the regex has been created)
-	if collectionState == nil || !collectionState.Initialized() {
-		return fmt.Errorf("collection state not initialized")
-	}
 
 	startAfterKey := s.Config.StartAfterKey
 	if collectionState.UseStartAfterKey {
