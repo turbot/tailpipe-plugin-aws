@@ -37,19 +37,18 @@ type AwsS3BucketSource struct {
 	client     *s3.Client
 }
 
-func (s *AwsS3BucketSource) Init(ctx context.Context, configData types.ConfigData, connectionData types.ConfigData, opts ...row_source.RowSourceOption) error {
+func (s *AwsS3BucketSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	slog.Info("Initializing AwsS3BucketSource")
 
 	// set the collection state func to the S3 specific collection state
 	s.NewCollectionStateFunc = NewAwsS3CollectionState
 
 	// call base to parse config and apply options
-	if err := s.ArtifactSourceImpl.Init(ctx, configData, connectionData, opts...); err != nil {
+	if err := s.ArtifactSourceImpl.Init(ctx, params, opts...); err != nil {
 		return err
 	}
 
 	s.Extensions = types.NewExtensionLookup(s.Config.Extensions)
-	s.TmpDir = path.Join(artifact_source.BaseTmpDir, fmt.Sprintf("s3-%s", s.Config.Bucket))
 
 	if s.Config.Region == nil {
 		slog.Info("No region set, using default", "region", defaultBucketRegion)
@@ -72,7 +71,8 @@ func (s *AwsS3BucketSource) Identifier() string {
 }
 
 func (s *AwsS3BucketSource) Close() error {
-	return os.RemoveAll(s.TmpDir)
+	_ = os.RemoveAll(s.TempDir)
+	return nil
 }
 
 func (s *AwsS3BucketSource) ValidateConfig() error {
@@ -117,35 +117,27 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 			return fmt.Errorf("failed to get page of S3 objects, %w", err)
 		}
 		for _, object := range output.Contents {
-			path := *object.Key
+			objectPath := *object.Key
 
 			// check the extension
-			if s.Extensions.IsValid(path) {
+			if s.Extensions.IsValid(objectPath) {
 				// populate enrichment fields the source is aware of
 				// - in this case the source location
 				sourceEnrichmentFields := &schema.SourceEnrichment{
 					CommonFields: schema.CommonFields{
 						TpSourceType:     AwsS3BucketSourceIdentifier,
 						TpSourceName:     &s.Config.Bucket,
-						TpSourceLocation: &path,
+						TpSourceLocation: &objectPath,
 					},
 				}
 
-				info := types.NewArtifactInfo(path, types.WithSourceEnrichment(sourceEnrichmentFields))
-
-				// extract properties based on the filename
-				var extractedProperties map[string]string
-				extractedProperties, err = collectionState.ParseFilename(path)
+				info, err := types.NewArtifactInfo(objectPath, sourceEnrichmentFields, collectionState.GetGranularity())
 				if err != nil {
-					//	TODO #error #paging what??? download anyway???
-					continue
-				}
-				err := info.SetPathProperties(extractedProperties)
-				if err != nil {
-					//	TODO #error what??? download
+					//	TODO #error what??? download anyway???
 					continue
 				}
 
+				// ask the collection state if we should collect this artifact
 				if !collectionState.ShouldCollect(info) {
 					continue
 				}
@@ -163,12 +155,10 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 }
 
 func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.ArtifactInfo) error {
-	collectionState := s.CollectionState.(*AwsS3CollectionState)
-
 	// Get the object from S3
 	getObjectOutput, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.Config.Bucket,
-		Key:    &info.Name,
+		Key:    &info.LocalName,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to download artifact, %w", err)
@@ -176,7 +166,7 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 	defer getObjectOutput.Body.Close()
 
 	// copy the object data to a temp file
-	localFilePath := path.Join(s.TmpDir, info.Name)
+	localFilePath := path.Join(s.TempDir, info.LocalName)
 	// ensure the directory exists of the file to write to
 	if err := os.MkdirAll(filepath.Dir(localFilePath), 0755); err != nil {
 		return fmt.Errorf("failed to create directory for file, %w", err)
@@ -196,10 +186,8 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 	}
 
 	// notify observers of the discovered artifact
-	downloadInfo := &types.ArtifactInfo{Name: localFilePath, OriginalName: info.Name, SourceEnrichment: info.SourceEnrichment}
+	downloadInfo := &types.ArtifactInfo{LocalName: localFilePath, OriginalName: info.LocalName, SourceEnrichment: info.SourceEnrichment}
 
-	// update the collection state
-	collectionState.Upsert(info)
 	return s.OnArtifactDownloaded(ctx, downloadInfo)
 }
 

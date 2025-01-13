@@ -2,7 +2,6 @@ package sources
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -31,13 +30,13 @@ type AwsCloudWatchSource struct {
 	client *cloudwatchlogs.Client
 }
 
-func (s *AwsCloudWatchSource) Init(ctx context.Context, configData types.ConfigData, connectionData types.ConfigData, opts ...row_source.RowSourceOption) error {
+func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 
 	// set the collection state ctor
 	s.NewCollectionStateFunc = NewAwsCloudwatchCollectionState
 
 	// call base init to set config/connection
-	err := s.RowSourceImpl.Init(ctx, configData, connectionData, opts...)
+	err := s.RowSourceImpl.Init(ctx, params, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to init %s source, %w", AwsCloudwatchSourceIdentifier, err)
 	}
@@ -119,12 +118,8 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 
 				// update collection state
 				collectionState.Upsert(*ls.LogStream.LogStreamName, *event.Timestamp)
-				collectionStateJSON, err := json.Marshal(collectionState)
-				if err != nil {
-					return fmt.Errorf("error serialising collectionState data: %w", err)
-				}
 
-				if err := s.OnRow(ctx, row, collectionStateJSON); err != nil {
+				if err := s.OnRow(ctx, row); err != nil {
 					return fmt.Errorf("error processing row: %w", err)
 				}
 			}
