@@ -33,7 +33,7 @@ type CloudTrailLogTable struct{}
 
 func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CloudTrailLog] {
 	// the default file layout for CloudTrail logs in S3
-	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/\\d+/CloudTrail/[a-z-0-9]+/\\d{4}/\\d{2}/\\d{2}/(?P<index>\\d+)_CloudTrail_(?P<region>[a-z-0-9]+)_(?P<year>\\d{4})(?P<month>\\d{2})(?P<day>\\d{2})T(?P<hour>\\d{2})(?P<minute>\\d{2})Z_.+.json.gz"),
 	}
 

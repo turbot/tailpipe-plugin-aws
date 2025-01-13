@@ -12,7 +12,7 @@ import (
 type AwsS3BucketSourceConfig struct {
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
-	artifact_source_config.ArtifactSourceConfigBase
+	artifact_source_config.ArtifactSourceConfigImpl
 
 	Bucket               string   `hcl:"bucket"`
 	Prefix               *string  `hcl:"prefix"`

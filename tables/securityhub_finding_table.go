@@ -29,7 +29,7 @@ func (c *SecurityHubFindingTable) Identifier() string {
 }
 
 func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*rows.SecurityHubFinding] {
-	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/(?P<account_id>\\d+)/SecurityHub/(?P<region>[a-z0-9-]+)/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/findings\\.json\\.gz"),
 	}
 

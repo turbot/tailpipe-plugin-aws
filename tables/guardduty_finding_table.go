@@ -33,7 +33,7 @@ func (c *GuardDutyFindingTable) Identifier() string {
 }
 
 func (c *GuardDutyFindingTable) GetSourceMetadata() []*table.SourceMetadata[*rows.GuardDutyFinding] {
-	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs(?:/o-[a-z0-9]{8,12})?/[0-9]+/GuardDuty/[a-z0-9-]+/(?P<year>\\d{4})/(?P<month>\\d{2})/(?P<day>\\d{2})/[0-9a-fA-F-]+\\.jsonl\\.gz"),
 	}
 
