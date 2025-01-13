@@ -30,8 +30,8 @@ func (c *SecurityHubFindingTable) Identifier() string {
 }
 
 func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*rows.SecurityHubFinding] {
-	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{DATA:org_id}/%{NUMBER:account_id}/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/findings.json.gz"),
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
+		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/findings.json.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.SecurityHubFinding]{
@@ -46,9 +46,6 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*r
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &mappers.SecurityHubFindingMapper{},
-			Options: []row_source.RowSourceOption{
-				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
-			},
 		},
 	}
 }

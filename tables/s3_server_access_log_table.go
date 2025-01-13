@@ -36,7 +36,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 }
 
 func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.S3ServerAccessLog] {
-	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigBase{
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/%{DATA:bucket_name}/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}.gz"),
 	}
 
