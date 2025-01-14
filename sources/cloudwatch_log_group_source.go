@@ -31,6 +31,7 @@ type AwsCloudWatchSource struct {
 	client *cloudwatchlogs.Client
 }
 
+
 func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 
 	// set the collection state ctor
