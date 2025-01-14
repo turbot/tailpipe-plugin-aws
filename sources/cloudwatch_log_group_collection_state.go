@@ -7,20 +7,21 @@ import (
 // AwsCloudwatchCollectionState contains collection state data for the AwsCloudwatchSource artifact source
 // This contains the latest timestamp fetched for each log stream in a SINGLE log group
 type AwsCloudwatchCollectionState struct {
-	collection_state.CollectionStateBase
+	collection_state.CollectionStateImpl[*AwsCloudWatchSourceConfig]
 	// The timestamp of the last collected log for each log stream
 	// expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC.
 	Timestamps map[string]int64 `json:"timestamps"`
 }
 
 func NewAwsCloudwatchCollectionState() collection_state.CollectionState[*AwsCloudWatchSourceConfig] {
+	// TODO handle storing path/loading/saving state
 	return &AwsCloudwatchCollectionState{
 		Timestamps: make(map[string]int64),
 	}
 }
 
-func (s *AwsCloudwatchCollectionState) Init(*AwsCloudWatchSourceConfig) error {
-	return nil
+func (s *AwsCloudwatchCollectionState) Init(config *AwsCloudWatchSourceConfig, path string) error {
+	return s.CollectionStateImpl.Init(config, path)
 }
 
 // Upsert adds new/updates an existing log stream  with its current timestamp

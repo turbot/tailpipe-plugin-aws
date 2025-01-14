@@ -4,8 +4,11 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
+	"github.com/turbot/tailpipe-plugin-aws/sources"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
@@ -33,8 +36,22 @@ func (c *ElbAccessLogTable) Identifier() string {
 }
 
 func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.ElbAccessLog] {
+	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
+		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region_path}/%{YEAR:year_path}/%{MONTHNUM:month_path}/%{MONTHDAY:day_path}/%{DATA:elb_name}_%{TIMESTAMP_ISO8601:timestamp}_%{DATA:suffix}.log"),
+	}
+
 	return []*table.SourceMetadata[*rows.ElbAccessLog]{
 		{
+			// S3 artifact source
+			SourceName: sources.AwsS3BucketSourceIdentifier,
+			Mapper:     mappers.NewGonxMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
+				artifact_source.WithRowPerLine(),
+			},
+		},
+		{
+			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     mappers.NewGonxMapper[*rows.ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{

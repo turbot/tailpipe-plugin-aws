@@ -2,20 +2,24 @@ package sources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/elastic/go-grok"
+
+	"github.com/turbot/pipe-fittings/filter"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
-	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
 
@@ -33,28 +37,26 @@ func init() {
 type AwsS3BucketSource struct {
 	artifact_source.ArtifactSourceImpl[*AwsS3BucketSourceConfig, *config.AwsConnection]
 
-	Extensions types.ExtensionLookup
-	client     *s3.Client
+	client    *s3.Client
+	errorList []error
 }
 
-func (s *AwsS3BucketSource) Init(ctx context.Context, configData types.ConfigData, connectionData types.ConfigData, opts ...row_source.RowSourceOption) error {
+func (s *AwsS3BucketSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	slog.Info("Initializing AwsS3BucketSource")
 
 	// set the collection state func to the S3 specific collection state
-	s.NewCollectionStateFunc = NewAwsS3CollectionState
+	//s.NewCollectionStateFunc = NewAwsS3CollectionState
 
 	// call base to parse config and apply options
-	if err := s.ArtifactSourceImpl.Init(ctx, configData, connectionData, opts...); err != nil {
+	if err := s.ArtifactSourceImpl.Init(ctx, params, opts...); err != nil {
 		return err
 	}
-
-	s.Extensions = types.NewExtensionLookup(s.Config.Extensions)
-	s.TmpDir = path.Join(artifact_source.BaseTmpDir, fmt.Sprintf("s3-%s", s.Config.Bucket))
 
 	if s.Config.Region == nil {
 		slog.Info("No region set, using default", "region", defaultBucketRegion)
 		s.Config.Region = utils.ToStringPointer(defaultBucketRegion)
 	}
+
 	// initialize client
 	client, err := s.getClient(ctx)
 	if err != nil {
@@ -62,7 +64,9 @@ func (s *AwsS3BucketSource) Init(ctx context.Context, configData types.ConfigDat
 	}
 	s.client = client
 
-	slog.Info("Initialized AwsS3BucketSource", "bucket", s.Config.Bucket, "prefix", s.Config.Prefix, "extensions", s.Extensions)
+	s.errorList = []error{}
+
+	slog.Info("Initialized AwsS3BucketSource", "bucket", s.Config.Bucket, "layout", s.Config.FileLayout)
 
 	return nil
 }
@@ -72,7 +76,8 @@ func (s *AwsS3BucketSource) Identifier() string {
 }
 
 func (s *AwsS3BucketSource) Close() error {
-	return os.RemoveAll(s.TmpDir)
+	_ = os.RemoveAll(s.TempDir)
+	return nil
 }
 
 func (s *AwsS3BucketSource) ValidateConfig() error {
@@ -80,99 +85,35 @@ func (s *AwsS3BucketSource) ValidateConfig() error {
 		return fmt.Errorf("bucket is required and cannot be empty")
 	}
 
-	// Check format of extensions
-	var invalidExtensions []string
-	for _, e := range s.Config.Extensions {
-		if len(e) == 0 {
-			invalidExtensions = append(invalidExtensions, "<empty>")
-		} else if e[0] != '.' {
-			invalidExtensions = append(invalidExtensions, e)
-		}
-	}
-	if len(invalidExtensions) > 0 {
-		return fmt.Errorf("invalid extensions: %s", strings.Join(invalidExtensions, ","))
-	}
-
 	return nil
 }
 
 func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
-	// cast the collection state to the correct type
-	collectionState := s.CollectionState.(*AwsS3CollectionState)
-	// verify this is initialized (i.e. the regex has been created)
-	if collectionState == nil || !collectionState.Initialized() {
-		return fmt.Errorf("collection state not initialized")
+	layout := s.Config.GetFileLayout()
+	filterMap := make(map[string]*filter.SqlFilter)
+	g := grok.New()
+	// add any patterns defined in config
+	err := g.AddPatterns(s.Config.GetPatterns())
+	if err != nil {
+		return fmt.Errorf("error adding grok patterns: %v", err)
 	}
 
-	startAfterKey := s.Config.StartAfterKey
-	if collectionState.UseStartAfterKey {
-		startAfterKey = collectionState.StartAfterKey
+	err = s.walkS3(ctx, s.Config.Bucket, "", layout, filterMap, g)
+	if err != nil {
+		s.errorList = append(s.errorList, fmt.Errorf("error discovering artifacts in S3 bucket %s, %w", s.Config.Bucket, err))
 	}
 
-	paginator := s3.NewListObjectsV2Paginator(s.client, &s3.ListObjectsV2Input{
-		Bucket:     &s.Config.Bucket,
-		Prefix:     s.Config.Prefix,
-		StartAfter: startAfterKey,
-	})
-
-	for paginator.HasMorePages() {
-		output, err := paginator.NextPage(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to get page of S3 objects, %w", err)
-		}
-		for _, object := range output.Contents {
-			path := *object.Key
-
-			// check the extension
-			if s.Extensions.IsValid(path) {
-				// populate enrichment fields the source is aware of
-				// - in this case the source location
-				sourceEnrichmentFields := &schema.SourceEnrichment{
-					CommonFields: schema.CommonFields{
-						TpSourceType:     AwsS3BucketSourceIdentifier,
-						TpSourceName:     &s.Config.Bucket,
-						TpSourceLocation: &path,
-					},
-				}
-
-				info := types.NewArtifactInfo(path, types.WithSourceEnrichment(sourceEnrichmentFields))
-
-				// extract properties based on the filename
-				var extractedProperties map[string]string
-				extractedProperties, err = collectionState.ParseFilename(path)
-				if err != nil {
-					//	TODO #error #paging what??? download anyway???
-					continue
-				}
-				err := info.SetPathProperties(extractedProperties)
-				if err != nil {
-					//	TODO #error what??? download
-					continue
-				}
-
-				if !collectionState.ShouldCollect(info) {
-					continue
-				}
-
-				// notify observers of the discovered artifact
-				if err = s.OnArtifactDiscovered(ctx, info); err != nil {
-					// TODO #error should we continue or fail?
-					return fmt.Errorf("failed to notify observers of discovered artifact, %w", err)
-				}
-			}
-		}
+	if len(s.errorList) > 0 {
+		return errors.Join(s.errorList...)
 	}
-
 	return nil
 }
 
 func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.ArtifactInfo) error {
-	collectionState := s.CollectionState.(*AwsS3CollectionState)
-
 	// Get the object from S3
 	getObjectOutput, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.Config.Bucket,
-		Key:    &info.Name,
+		Key:    &info.OriginalName,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to download artifact, %w", err)
@@ -180,7 +121,7 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 	defer getObjectOutput.Body.Close()
 
 	// copy the object data to a temp file
-	localFilePath := path.Join(s.TmpDir, info.Name)
+	localFilePath := path.Join(s.TempDir, info.OriginalName)
 	// ensure the directory exists of the file to write to
 	if err := os.MkdirAll(filepath.Dir(localFilePath), 0755); err != nil {
 		return fmt.Errorf("failed to create directory for file, %w", err)
@@ -200,10 +141,8 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 	}
 
 	// notify observers of the discovered artifact
-	downloadInfo := &types.ArtifactInfo{Name: localFilePath, OriginalName: info.Name, SourceEnrichment: info.SourceEnrichment}
+	downloadInfo := &types.ArtifactInfo{LocalName: localFilePath, OriginalName: info.OriginalName, SourceEnrichment: info.SourceEnrichment}
 
-	// update the collection state
-	collectionState.Upsert(info)
 	return s.OnArtifactDownloaded(ctx, downloadInfo)
 }
 
@@ -221,4 +160,44 @@ func (s *AwsS3BucketSource) getClient(ctx context.Context) (*s3.Client, error) {
 	}
 
 	return s3.NewFromConfig(*cfg), nil
+}
+
+func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix string, layout *string, filterMap map[string]*filter.SqlFilter, g *grok.Grok) error {
+	paginator := s3.NewListObjectsV2Paginator(s.client, &s3.ListObjectsV2Input{
+		Bucket:    aws.String(bucket),
+		Prefix:    aws.String(prefix),
+		Delimiter: aws.String("/"),
+	})
+
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("error getting next page, %w", err)
+		}
+
+		// Directories
+		for _, dir := range page.CommonPrefixes {
+			err = s.WalkNode(ctx, *dir.Prefix, "", layout, true, g, filterMap)
+			if err != nil {
+				if errors.Is(err, fs.SkipDir) {
+					continue
+				}
+				return fmt.Errorf("error walking node, %w", err)
+			}
+			err = s.walkS3(ctx, bucket, *dir.Prefix, layout, filterMap, g)
+			if err != nil {
+				s.errorList = append(s.errorList, err)
+			}
+		}
+
+		// Files
+		for _, obj := range page.Contents {
+			err = s.WalkNode(ctx, *obj.Key, "", layout, false, g, filterMap)
+			if err != nil {
+				s.errorList = append(s.errorList, fmt.Errorf("error parsing object %s, %w", *obj.Key, err))
+			}
+		}
+	}
+
+	return nil
 }

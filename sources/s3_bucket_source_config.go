@@ -12,30 +12,18 @@ import (
 type AwsS3BucketSourceConfig struct {
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
-	artifact_source_config.ArtifactSourceConfigBase
+	artifact_source_config.ArtifactSourceConfigImpl
 
-	Bucket               string   `hcl:"bucket"`
-	Prefix               *string  `hcl:"prefix"`
-	Extensions           []string `hcl:"extensions,optional"`
-	Region               *string  `hcl:"region"`
-	StartAfterKey        *string  `hcl:"start_after_key"`
-	LexicographicalOrder bool     `hcl:"lexicographical_order,optional"`
+	Bucket               string  `hcl:"bucket"`
+	Prefix               *string `hcl:"prefix"`
+	Region               *string `hcl:"region"`
+	StartAfterKey        *string `hcl:"start_after_key"`
+	LexicographicalOrder bool    `hcl:"lexicographical_order,optional"`
 }
 
 func (c *AwsS3BucketSourceConfig) Validate() error {
 	if c.Bucket == "" {
 		return fmt.Errorf("bucket is required and cannot be empty")
-	}
-
-	if len(c.Extensions) > 0 {
-		for _, ext := range c.Extensions {
-			if ext == "" {
-				return fmt.Errorf("extensions cannot be empty")
-			}
-			if ext[0] != '.' {
-				return fmt.Errorf("extensions must start with a dot")
-			}
-		}
 	}
 
 	if c.Region != nil && !isValidAWSRegion(*c.Region) {
