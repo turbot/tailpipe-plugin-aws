@@ -90,7 +90,7 @@ func (s *AwsS3BucketSource) ValidateConfig() error {
 
 func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 	layout := s.Config.GetFileLayout()
-	filterMap := s.Config.FilterMap
+	filterMap := make(map[string]*filter.SqlFilter)
 	g := grok.New()
 	// add any patterns defined in config
 	err := g.AddPatterns(s.Config.GetPatterns())
