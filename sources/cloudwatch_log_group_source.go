@@ -112,7 +112,14 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 				}
 
 				// update collection state
-				collectionState.Upsert(*ls.LogStream.LogStreamName, *event.Timestamp)
+				// build time from unix mill
+				unixMillis := *event.Timestamp
+				timestamp := time.Unix(0, unixMillis*int64(time.Millisecond))
+
+				err := collectionState.OnCollected(*ls.LogStream.LogStreamName, timestamp)
+				if err != nil {
+					return fmt.Errorf("failed to update collection state, %w", err)
+				}
 
 				if err := s.OnRow(ctx, row); err != nil {
 					return fmt.Errorf("error processing row: %w", err)
@@ -180,8 +187,8 @@ func (s *AwsCloudWatchSource) getTimeRange(logStream string, collectionState *Aw
 
 	if collectionState != nil {
 		// set start time from collection state data if present
-		if prevTimestamp, ok := collectionState.Timestamps[logStream]; ok {
-			startTime = prevTimestamp + 1
+		if prevTimestamp, ok := collectionState.LogStreamTimestamps[logStream]; ok {
+			startTime = prevTimestamp.Add(time.Microsecond).UnixMilli()
 		}
 	}
 	return startTime, endTime

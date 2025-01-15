@@ -1,47 +1,138 @@
 package sources
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/turbot/tailpipe-plugin-sdk/collection_state"
+	"log/slog"
+	"os"
+	"sync"
+	"time"
 )
 
 // AwsCloudwatchCollectionState contains collection state data for the AwsCloudwatchSource artifact source
 // This contains the latest timestamp fetched for each log stream in a SINGLE log group
 type AwsCloudwatchCollectionState struct {
-	collection_state.CollectionStateImpl[*AwsCloudWatchSourceConfig]
 	// The timestamp of the last collected log for each log stream
 	// expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC.
-	Timestamps map[string]int64 `json:"timestamps"`
+	LogStreamTimestamps map[string]time.Time `json:"timestamps"`
+
+	// path to the serialised collection state JSON
+	jsonPath         string
+	lastModifiedTime time.Time
+	lastSaveTime     time.Time
+
+	mut *sync.RWMutex
 }
 
 func NewAwsCloudwatchCollectionState() collection_state.CollectionState[*AwsCloudWatchSourceConfig] {
-	// TODO handle storing path/loading/saving state
 	return &AwsCloudwatchCollectionState{
-		Timestamps: make(map[string]int64),
+		LogStreamTimestamps: make(map[string]time.Time),
+		mut:                 &sync.RWMutex{},
 	}
 }
 
-func (s *AwsCloudwatchCollectionState) Init(config *AwsCloudWatchSourceConfig, path string) error {
-	return s.CollectionStateImpl.Init(config, path)
+func (s *AwsCloudwatchCollectionState) Init(_ *AwsCloudWatchSourceConfig, path string) error {
+	s.jsonPath = path
+
+	// if there is a file at the path, load it
+	if _, err := os.Stat(path); err == nil {
+		// TODO #err should we just warn and delete/rename the file
+		// read the file
+		jsonBytes, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read collection state file: %w", err)
+		}
+		err = json.Unmarshal(jsonBytes, s)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal collection state file: %w", err)
+		}
+	}
+	return nil
 }
 
-// Upsert adds new/updates an existing log stream  with its current timestamp
-func (s *AwsCloudwatchCollectionState) Upsert(name string, time int64) {
-	s.Mut.Lock()
-	defer s.Mut.Unlock()
+func (s *AwsCloudwatchCollectionState) Save() error {
+	s.mut.Lock()
+	defer s.mut.Unlock()
 
-	if s.Timestamps == nil {
-		s.Timestamps = make(map[string]int64)
-	}
-	if time == 0 {
-		return
+	slog.Info("Saving collection state", "lastModifiedTime", s.lastModifiedTime, "lastSaveTime", s.lastSaveTime)
+
+	// if the last save time is after the last modified time, then we have nothing to do
+	if s.lastSaveTime.After(s.lastModifiedTime) {
+		slog.Info("collection state has not been modified since last save")
+		// nothing to do
+		return nil
 	}
 
-	currentTime := s.Timestamps[name]
-	if time > currentTime {
-		s.Timestamps[name] = time
+	slog.Info("We are actually saving the collection state")
+
+	jsonBytes, err := json.Marshal(s)
+	if err != nil {
+		return err
 	}
+	// ensure the target file path is valid
+	if s.jsonPath == "" {
+		return fmt.Errorf("collection state path is not set")
+	}
+
+	// write the JSON data to the file, overwriting any existing data
+	err = os.WriteFile(s.jsonPath, jsonBytes, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write collection state to file: %w", err)
+	}
+
+	// update the last save time
+	s.lastSaveTime = time.Now()
+
+	return nil
+}
+
+func (s *AwsCloudwatchCollectionState) ShouldCollect(id string, timestamp time.Time) bool {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+
+	// get timestamp for this log stream
+	logStreamTime := s.LogStreamTimestamps[id]
+
+	// if this timestamp is after the latest timestamp we have stored, we SHOULD collect
+	return timestamp.After(logStreamTime)
+}
+
+func (s *AwsCloudwatchCollectionState) OnCollected(id string, timestamp time.Time) error {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+
+	// store modified time to ensure we save the state
+	s.lastModifiedTime = time.Now()
+
+	logStreamTime := s.LogStreamTimestamps[id]
+	if timestamp.After(logStreamTime) {
+		s.LogStreamTimestamps[id] = timestamp
+	}
+	return nil
+}
+
+// GetEndTime returns the earliest end time of all the log streams
+// (not currently used as the Cloudwatch source retrieves the end time for the specific log stream	)
+func (s *AwsCloudwatchCollectionState) GetEndTime() time.Time {
+	// find the earliest end time of all the log streams
+	var endTime time.Time
+	for _, timestamp := range s.LogStreamTimestamps {
+		if endTime.IsZero() || timestamp.Before(endTime) {
+			endTime = timestamp
+		}
+	}
+
+	return endTime
 }
 
 func (s *AwsCloudwatchCollectionState) IsEmpty() bool {
-	return len(s.Timestamps) == 0
+	return len(s.LogStreamTimestamps) == 0
+}
+
+func (s *AwsCloudwatchCollectionState) GetGranularity() time.Duration {
+	return 0
+}
+
+func (s *AwsCloudwatchCollectionState) SetGranularity(time.Duration) {
 }
