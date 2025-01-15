@@ -41,11 +41,11 @@ func (s *AwsCloudwatchCollectionState) Init(_ *AwsCloudWatchSourceConfig, path s
 		// read the file
 		jsonBytes, err := os.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("failed to read collection state file: %w", err)
+			return fmt.Errorf("failed to read collection state file '%s': %w", path, err)
 		}
 		err = json.Unmarshal(jsonBytes, s)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal collection state file: %w", err)
+			return fmt.Errorf("failed to unmarshal collection state file '%s': %w", path, err)
 		}
 	}
 	return nil
@@ -112,6 +112,19 @@ func (s *AwsCloudwatchCollectionState) OnCollected(id string, timestamp time.Tim
 	return nil
 }
 
+// GetStartTime returns the latest start time of all the log streams
+func (s *AwsCloudwatchCollectionState) GetStartTime() time.Time {
+	// find the earliest end time of all the log streams
+	var startTime time.Time
+	for _, timestamp := range s.LogStreamTimestamps {
+		if startTime.IsZero() || timestamp.After(startTime) {
+			startTime = timestamp
+		}
+	}
+
+	return startTime
+}
+
 // GetEndTime returns the earliest end time of all the log streams
 // (not currently used as the Cloudwatch source retrieves the end time for the specific log stream	)
 func (s *AwsCloudwatchCollectionState) GetEndTime() time.Time {
@@ -124,6 +137,21 @@ func (s *AwsCloudwatchCollectionState) GetEndTime() time.Time {
 	}
 
 	return endTime
+}
+
+func (s *AwsCloudwatchCollectionState) SetEndTime(newEndTime time.Time) {
+	for id := range s.LogStreamTimestamps {
+		if s.LogStreamTimestamps[id].After(newEndTime) {
+			s.LogStreamTimestamps[id] = newEndTime
+		}
+	}
+}
+
+func (s *AwsCloudwatchCollectionState) Clear() {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+
+	s.LogStreamTimestamps = make(map[string]time.Time)
 }
 
 func (s *AwsCloudwatchCollectionState) IsEmpty() bool {
