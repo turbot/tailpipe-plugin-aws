@@ -188,7 +188,7 @@ func (s *AwsCloudWatchSource) getTimeRange(logStream string, collectionState *Aw
 	if collectionState != nil {
 		// set start time from collection state data if present
 		if prevTimestamp, ok := collectionState.LogStreamTimestamps[logStream]; ok {
-			startTime = prevTimestamp.Add(time.Microsecond).UnixMilli()
+			return prevTimestamp.Add(time.Microsecond).UnixMilli(), endTime
 		}
 	}
 	return startTime, endTime
