@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -89,8 +90,10 @@ func (s *AwsS3BucketSource) ValidateConfig() error {
 }
 
 func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
+	var prefix string
 	layout := s.Config.GetFileLayout()
 	filterMap := make(map[string]*filter.SqlFilter)
+
 	g := grok.New()
 	// add any patterns defined in config
 	err := g.AddPatterns(s.Config.GetPatterns())
@@ -98,7 +101,18 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 		return fmt.Errorf("error adding grok patterns: %v", err)
 	}
 
-	err = s.walkS3(ctx, s.Config.Bucket, "", layout, filterMap, g)
+	if s.Config.Prefix != nil {
+		prefix = *s.Config.Prefix
+		if !strings.HasSuffix(prefix, "/") {
+			prefix = prefix + "/"
+		}
+		if layout != nil {
+			t := fmt.Sprintf("%s%s", prefix, *layout)
+			layout = &t
+		}
+	}
+
+	err = s.walkS3(ctx, s.Config.Bucket, prefix, layout, filterMap, g)
 	if err != nil {
 		s.errorList = append(s.errorList, fmt.Errorf("error discovering artifacts in S3 bucket %s, %w", s.Config.Bucket, err))
 	}
