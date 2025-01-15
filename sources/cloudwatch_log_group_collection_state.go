@@ -131,8 +131,11 @@ func (s *AwsCloudwatchCollectionState) IsEmpty() bool {
 }
 
 func (s *AwsCloudwatchCollectionState) GetGranularity() time.Duration {
-	return 0
+	// this will never be called - we do not use granularity for this source
+	// however - return the 'correct' value to avoid confusion
+	return time.Nanosecond
 }
 
 func (s *AwsCloudwatchCollectionState) SetGranularity(time.Duration) {
+	// do nothing - this should not be called
 }
