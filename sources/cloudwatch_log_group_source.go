@@ -31,7 +31,6 @@ type AwsCloudWatchSource struct {
 	client *cloudwatchlogs.Client
 }
 
-
 func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 
 	// set the collection state ctor
@@ -59,12 +58,6 @@ func (s *AwsCloudWatchSource) Identifier() string {
 
 func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 	collectionState := s.CollectionState.(*AwsCloudwatchCollectionState)
-
-	// if no end time is set, use the current time
-	if s.Config.EndTime == nil {
-		endTime := time.Now()
-		s.Config.EndTime = &endTime
-	}
 
 	// obtain log streams which have active events in the time range
 	logStreamCollection, err := s.collectLogStreams(ctx, s.Config.LogGroupName, s.Config.LogStreamPrefix, collectionState)
@@ -182,8 +175,8 @@ func (s *AwsCloudWatchSource) logStreamHasEntriesInTimeRange(logStream cwtypes.L
 
 // use the collection state data (if present) and the configured time range to determine the start and end time
 func (s *AwsCloudWatchSource) getTimeRange(logStream string, collectionState *AwsCloudwatchCollectionState) (int64, int64) {
-	startTime := s.Config.StartTime.UnixMilli()
-	endTime := s.Config.EndTime.UnixMilli()
+	startTime := s.FromTime.UnixMilli()
+	endTime := time.Now().UnixMilli()
 
 	if collectionState != nil {
 		// set start time from collection state data if present
