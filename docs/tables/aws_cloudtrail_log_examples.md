@@ -1,8 +1,8 @@
 ## Count Examples
 
-### Count events per day
+### Daily event counts
 
-Return a count of events per day to see trends across time.
+Return a count of events per day to see trends over time.
 
 ```sql
 select
@@ -13,12 +13,12 @@ from
 group by
   event_date
 order by
-  event_date ASC;
+  event_date asc;
 ```
 
-### Count events by event name
+### Top 10 events
 
-Return a count of events by event name see the most operations.
+List the top 10 events and how many times they were called.
 
 ```sql
 select
@@ -31,10 +31,13 @@ group by
   event_source,
   event_name,
 order by
-  event_count desc;
+  event_count desc
+limit 10;
 ```
 
-### Count events by event name (exclude read-only events)
+### Top 10 events (exclude read-only)
+
+List the top 10 events, excluding read-only events, and how many times they were called.
 
 ```sql
 select
@@ -49,10 +52,13 @@ group by
   event_source,
   event_name,
 order by
-  event_count desc;
+  event_count desc
+limit 10;
 ```
 
-### Count events grouped by account ID
+### Event counts by account
+
+Count and group events by account ID, event source, and event name to highlight activity distribution across accounts.
 
 ```sql
 select
@@ -70,7 +76,7 @@ order by
   event_count desc;
 ```
 
-### Count errors by frequency
+### Error code counts
 
 ```sql
 select
@@ -152,7 +158,9 @@ order by
   event_time desc;
 ```
 
-### Detect root account activity
+### Root activity
+
+Find any actions taken by the root user.
 
 ```sql
 select
