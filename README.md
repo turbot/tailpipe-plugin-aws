@@ -1,6 +1,6 @@
 # AWS Plugin for Tailpipe
 
-Collect and query AWS logs using SQL to track activity, monitor trends, and detect anomalies across CloudTrail logs, S3 server access logs, ELB access logs, and more.
+Collect and query AWS logs using SQL to track activity, monitor trends, and detect anomalies across CloudTrail logs.
 
 - **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
 - Documentation: [Table definitions & examples](https://hub.tailpipe.io/plugins/turbot/aws/tables)
@@ -18,7 +18,7 @@ tailpipe plugin install aws
 Configure your log source:
 
 ```shell
-vi ~/.tailpipe/config/aws.spc
+vi ~/.tailpipe/config/aws.tpc
 ```
 
 ```terraform
@@ -80,7 +80,7 @@ TODO: How to configure it?
 Configure the plugin:
 
 ```
-vi ~/.tailpipe/config/aws.spc
+vi ~/.tailpipe/config/aws.tpc
 ```
 
 Try it!

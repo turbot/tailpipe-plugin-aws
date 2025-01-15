@@ -13,27 +13,79 @@ engines: ["tailpipe"]
 
 # AWS + Tailpipe
 
-[Tailpipe](https://tailpipe.io) is an open-source CLI tool that allows you to obtain logs and query then with SQL.
+[Tailpipe](https://tailpipe.io) is an open-source CLI tool that allows you to collect logs and query them with SQL.
 
 [AWS](https://aws.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
 
-<!-- TODO: Insert Example -->
+For example:
+
+```sql
+select
+  event_time,
+  event_source,
+  event_name,
+  user_identity.arn
+from
+  aws_cloudtrail_log;
+```
+
+```sh
++---------------------+-------------------+------------+--------------------------------------------------------------+
+| event_time          | event_source      | event_name | arn                                                          |
++---------------------+-------------------+------------+--------------------------------------------------------------+
+| 2024-09-30 23:56:11 | iam.amazonaws.com | CreateUser | arn:aws:sts::123456789012:assumed-role/admin_role/pam        |
+| 2024-09-30 23:56:11 | iam.amazonaws.com | CreateRole | arn:aws:sts::123456789012:role/warehouse                     |
+| 2024-09-30 23:56:13 | ec2.amazonaws.com | CopyImage  | arn:aws:sts::123456789012:assumed-role/assistant_role/dwight |
+| 2024-09-30 23:56:13 | sts.amazonaws.com | AssumeRole | arn:aws:sts::123456789012:assumed-role/qa_role/creed         |
+| 2024-09-30 23:57:14 | sts.amazonaws.com | AssumeRole | arn:aws:sts::123456789012:assumed-role/qa_role/creed         |
++---------------------+-------------------+------------+--------------------------------------------------------------+
+```
 
 ## Documentation
 
-- **[Table definitions & examples →](/plugins/turbot/aws/tables)**
+- **[Table definitions →](/plugins/turbot/aws/tables)**
+- **[Table queries →](/plugins/turbot/aws/queries)**
+- **[Source definitions →](/plugins/turbot/aws/sources)**
 
-## Get started
+## Get Started
 
-### Install
+Install the plugin with [Tailpipe](https://tailpipe.io):
 
-Download and install the latest AWS plugin:
-
-```bash
+```shell
 tailpipe plugin install aws
 ```
 
-### Credentials
+Configure your log source:
+
+```shell
+vi ~/.tailpipe/config/aws.tpc
+```
+
+```terraform
+connection "aws" "dev" {
+  profile = "dev"
+}
+
+partition "aws_cloudtrail_log" "dev" {
+  source "aws_s3_bucket" {
+    bucket = "aws-cloudtrail-logs-bucket"
+  }
+}
+```
+
+Collect logs:
+
+```shell
+tailpipe collect aws_cloudtrail_log.dev
+```
+
+Run a query:
+
+```sql
+select event_source, event_name, recipient_account_id, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name, recipient_account_id order by event_count desc;
+```
+
+## Credentials
 
 | Item | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | - |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -42,43 +94,29 @@ tailpipe plugin install aws
 | Radius | Each connection represents a single AWS account.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Resolution | 1. Credentials explicitly set in a Tailpipe config file (`~/.tailpipe/config/aws.tpc`).<br />2. Credentials specified in environment variables, e.g., `AWS_ACCESS_KEY_ID`.<br />3. Credentials in the credential file (`~/.aws/credentials`) for the profile specified in the `AWS_PROFILE` environment variable.<br />4. Credentials for the default profile from the credential file.<br />5. EC2 instance role credentials (if running on an EC2 instance). |
 
-### Configuration
-
-TODO: Elaborate on the configuration requirements around `partition`, `source` and `connection`.
-
-#### aws.tpc:
-```hcl
-connection "aws" "account_a" {
-  profile = "account_a"
-}
-
-partition "aws_cloudtrail_log" "account_a" {
-  source "aws_s3_bucket"  {
-    connection    = connection.aws.account_a
-    bucket        = "my-logs-bucket"
-    prefix        = "AWSLogs/632902152528/CloudTrail"
-    region        = "us-east-1"
-  }
-}
-```
-
-## Configuring AWS Credentials
+### Profiles
 
 You may specify a named profile from an AWS credential file with the `profile` argument. A connection per profile, using named profiles is probably the most common configuration:
 
-#### aws credentials file:
-```ini
-[account_a]
-aws_access_key_id = AKIA4YFAKEKEYXTDS252
-aws_secret_access_key = SH42YMW5p3EThisIsNotRealzTiEUwXN8BOIOF5J8m
-region = us-west-2
-
-[account_b]
-aws_access_key_id = AKIA4YFAKEKEYJ7HS98F
-aws_secret_access_key = Apf938vDKd8ThisIsNotRealzTiEUwXj9nKLWP9mg4
+```sh
+vi ~/.aws/credentials
 ```
 
-#### aws.tpc:
+```ini
+[account_a]
+aws_access_key_id     = AKIA4YFAKEKEYXTDS...
+aws_secret_access_key = SH42YMW5p3EThisIsNotRealzTiEUwXN8BOIOF5...
+region                = us-west-2
+
+[account_b]
+aws_access_key_id     = AKIA4YFAKEKEYJ7H...
+aws_secret_access_key = Apf938vDKd8ThisIsNotRealzTiEUwXj9nKLWP9...
+```
+
+```sh
+vi ~/.tailpipe/config/aws.tpc
+```
+
 ```hcl
 connection "aws" "account_a" {
   profile = "account_a"
@@ -86,7 +124,6 @@ connection "aws" "account_a" {
 
 connection "aws" "account_b" {
   profile = "account_b"
-  regions = ["us-west-2"]
 }
 ```
 
@@ -120,6 +157,7 @@ connection "aws" "account_a_with_sso" {
 If your aws credential file contains profiles that assume a role via the `source_profile` and `role_arn` options and MFA is not required, Tailpipe can use the profile as-is:
 
 #### aws credential file:
+
 ```ini
 # This user must have sts:AssumeRole permission for arn:aws:iam::*:role/tpc_role
 [cli_user]
@@ -140,6 +178,7 @@ region = us-east-2
 ```
 
 #### aws.tpc:
+
 ```hcl
 connection "aws" "account_a" {
   profile = "account_a_role_without_mfa"
@@ -159,6 +198,7 @@ One way to accomplish this is to use the `credential_process` to [generate the c
 Note that Tailpipe cannot prompt you for your token currently, so you must authenticate before starting Tailpipe, and re-authenticate outside of Tailpipe whenever your credentials expire.
 
 #### aws credential file:
+
 ```ini
 [cli_user]
 aws_access_key_id = AKIA4YFAKEKEYXTDS252
@@ -173,6 +213,7 @@ credential_process = sh -c 'mfa.sh arn:aws:iam::222222222222:role/my_role arn:aw
 ```
 
 #### aws.tpc:
+
 ```hcl
 connection "aws" "account_a" {
   profile        = "account_a_role_with_mfa"
@@ -299,3 +340,18 @@ export AWS_ROLE_SESSION_NAME=steampipe@myaccount
 ### Credentials from an EC2 Instance Profile
 
 If you are running Tailpipe on a AWS EC2 instance, and that instance has an [instance profile attached](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) then Tailpipe will automatically use the associated IAM role without the need for making or passing a connection.
+
+## Open Source & Contributing
+
+This repository is published under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (source code) and [CC BY-NC-ND](https://creativecommons.org/licenses/by-nc-nd/2.0/) (docs) licenses. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). We look forward to collaborating with you!
+
+[Tailpipe](https://tailpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
+
+## Get Involved
+
+**[Join #tailpipe on Slack →](https://turbot.com/community/join)**
+
+Want to help but don't know where to start? Pick up one of the `help wanted` issues:
+
+- [Tailpipe](https://github.com/turbot/tailpipe/labels/help%20wanted)
+- [AWS Plugin](https://github.com/turbot/tailpipe-plugin-aws/labels/help%20wanted)
