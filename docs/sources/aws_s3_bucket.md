@@ -52,5 +52,3 @@ partition "aws_cloudtrail_log" "cloudtrail_logs" {
 | `file_layout`           | Regex of pattern filename layout, used to extract information such as year, month, day, etc. |               |
 | `lexicographical_order` | Used to indicate log files are in lexicographical order.                             | `false`       |
 | `start_after_key`       | The key to start collecting logs from.                                               |               |
-|-------------------------|---------------------------------------------------------------------------------------|---------------|
-
