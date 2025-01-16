@@ -45,18 +45,10 @@ type AwsS3BucketSource struct {
 func (s *AwsS3BucketSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	slog.Info("Initializing AwsS3BucketSource")
 
-	// set the collection state func to the S3 specific collection state
-	//s.NewCollectionStateFunc = NewAwsS3CollectionState
-
 	// call base to parse config and apply options
 	if err := s.ArtifactSourceImpl.Init(ctx, params, opts...); err != nil {
 		return err
 	}
-
-	//if s.Config.Region == nil {
-	//	slog.Info("No region set, using default", "region", defaultBucketRegion)
-	//	s.Config.Region = utils.ToStringPointer(defaultBucketRegion)
-	//}
 
 	// initialize client
 	client, err := s.getClient(ctx)
