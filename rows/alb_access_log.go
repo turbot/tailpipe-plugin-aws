@@ -195,3 +195,38 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
+
+func (l *AlbAccessLog) GetColumnDescriptions() map[string]string {
+	return map[string]string{
+		"timestamp":                "The time when the load balancer received the request from the client, in ISO 8601 format.",
+		"type":                     "The type of log entry.",
+		"alb":                      "The Amazon Resource Name (ARN) of the load balancer.",
+		"client":                   "The IP address and port of the client that made the request.",
+		"target":                   "The IP address and port of the target that the request was forwarded to.",
+		"request_processing_time":  "The total time elapsed from the time the load balancer received the request to the time it sent the request to a target.",
+		"target_processing_time":   "The total time elapsed from the time the load balancer sent the request to a target to the time the target started to send the response headers.",
+		"response_processing_time": "The total time elapsed from the time the load balancer received the response headers from the target to the time it started to send the response to the client.",
+		"alb_status_code":          "The status code of the response from the load balancer.",
+		"target_status_code":       "The status code of the response from the target.",
+		"received_bytes":           "The number of bytes received by the load balancer from the client.",
+		"sent_bytes":               "The number of bytes sent by the load balancer to the client.",
+		"request":                  "The request string.",
+		"user_agent":               "The user agent of the client.",
+		"ssl_cipher":               "The SSL cipher.",
+		"ssl_protocol":             "The SSL protocol.",
+		"target_group_arn":         "The Amazon Resource Name (ARN) of the target group.",
+		"trace_id":                 "The trace ID.",
+		"domain_name":              "The domain name.",
+		"chosen_cert_arn":          "The Amazon Resource Name (ARN) of the chosen certificate.",
+		"matched_rule_priority":    "The priority of the rule that matched the request.",
+		"request_creation_time":    "The time when the request was created.",
+		"actions_executed":         "The actions executed.",
+		"redirect_url":             "The redirect URL.",
+		"error_reason":             "The error reason.",
+		"target_list":              "The target list.",
+		"target_status_list":       "The target status list.",
+		"classification":           "The classification.",
+		"classification_reason":    "The classification reason.",
+		"conn_trace_id":            "The connection trace ID.",
+	}
+}

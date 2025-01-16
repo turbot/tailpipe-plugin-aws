@@ -93,3 +93,7 @@ func (c *AlbAccessLogTable) EnrichRow(row *rows.AlbAccessLog, sourceEnrichmentFi
 	}
 	return row, nil
 }
+
+func (c *AlbAccessLogTable) GetDescription() string {
+	return "AWS Application Load Balancer Access Logs"
+}
