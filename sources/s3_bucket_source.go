@@ -13,11 +13,11 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/elastic/go-grok"
 
 	"github.com/turbot/pipe-fittings/filter"
-	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
@@ -45,17 +45,9 @@ type AwsS3BucketSource struct {
 func (s *AwsS3BucketSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	slog.Info("Initializing AwsS3BucketSource")
 
-	// set the collection state func to the S3 specific collection state
-	//s.NewCollectionStateFunc = NewAwsS3CollectionState
-
 	// call base to parse config and apply options
 	if err := s.ArtifactSourceImpl.Init(ctx, params, opts...); err != nil {
 		return err
-	}
-
-	if s.Config.Region == nil {
-		slog.Info("No region set, using default", "region", defaultBucketRegion)
-		s.Config.Region = utils.ToStringPointer(defaultBucketRegion)
 	}
 
 	// initialize client
@@ -162,10 +154,18 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 
 func (s *AwsS3BucketSource) getClient(ctx context.Context) (*s3.Client, error) {
 	// get the client configuration
-	cfg, err := s.Connection.GetClientConfiguration(ctx, s.Config.Region)
+	tempRegion := defaultBucketRegion
+	cfg, err := s.Connection.GetClientConfiguration(ctx, &tempRegion)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get client configuration, %w", err)
 	}
+
+	region, err := manager.GetBucketRegion(ctx, s3.NewFromConfig(*cfg), s.Config.Bucket)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get bucket region, %w", err)
+	}
+
+	cfg.Region = region
 
 	if s.Connection.S3ForcePathStyle != nil {
 		return s3.NewFromConfig(*cfg, func(o *s3.Options) {
