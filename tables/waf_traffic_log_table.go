@@ -34,7 +34,7 @@ type WafTrafficLogTable struct{}
 func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.WafTrafficLog] {
 	// the default file layout for Waf traffic logs in S3
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/WAFLogs/%{DATA:log_group_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{DATA:filename}.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:log_group_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{DATA}.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.WafTrafficLog]{

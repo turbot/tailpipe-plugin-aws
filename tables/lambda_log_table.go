@@ -34,7 +34,7 @@ func (c *LambdaLogTable) Identifier() string {
 
 func (c *LambdaLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.LambdaLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/lambda/%{DATA:function_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA:function_name}-%{TIMESTAMP_ISO8601:end_time}-%{DATA:suffix}.log"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/lambda/%{DATA:function_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log"),
 	}
 
 	return []*table.SourceMetadata[*rows.LambdaLog]{

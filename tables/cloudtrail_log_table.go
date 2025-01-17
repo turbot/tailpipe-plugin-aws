@@ -34,7 +34,7 @@ type CloudTrailLogTable struct{}
 
 func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CloudTrailLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:prefix}_CloudTrail_%{DATA:region_file}_%{YEAR:year_file}%{MONTHNUM:month_file}%{MONTHDAY:day_file}T%{HOUR:hour}%{MINUTE:minute}Z_%{DATA:suffix}.json.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.CloudTrailLog]{

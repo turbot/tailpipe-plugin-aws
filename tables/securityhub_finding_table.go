@@ -31,7 +31,7 @@ func (c *SecurityHubFindingTable) Identifier() string {
 
 func (c *SecurityHubFindingTable) GetSourceMetadata() []*table.SourceMetadata[*rows.SecurityHubFinding] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/findings.json.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.SecurityHubFinding]{

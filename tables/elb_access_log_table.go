@@ -37,7 +37,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 
 func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.ElbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA:elb_name}_%{TIMESTAMP_ISO8601:end_time}_%{DATA:suffix}.log"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log"),
 	}
 
 	return []*table.SourceMetadata[*rows.ElbAccessLog]{

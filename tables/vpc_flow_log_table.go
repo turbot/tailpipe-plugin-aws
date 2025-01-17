@@ -38,7 +38,7 @@ func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.VpcF
 	}
 
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA:filename}.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.gz"),
 	}
 
 	return []*table.SourceMetadata[*rows.VpcFlowLog]{

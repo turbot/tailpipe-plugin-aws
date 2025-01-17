@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/elastic/go-grok"
 
+	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/filter"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -83,7 +84,10 @@ func (s *AwsS3BucketSource) ValidateConfig() error {
 
 func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 	var prefix string
-	layout := s.Config.GetFileLayout()
+	layout := typehelpers.SafeString(s.Config.GetFileLayout())
+	// if there are any optional segments, we expand them into all possible alternatives
+	optionalLayouts := artifact_source.ExpandPatternIntoOptionalAlternatives(layout)
+
 	filterMap := make(map[string]*filter.SqlFilter)
 
 	g := grok.New()
@@ -98,13 +102,14 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 		if !strings.HasSuffix(prefix, "/") {
 			prefix = prefix + "/"
 		}
-		if layout != nil {
-			t := fmt.Sprintf("%s%s", prefix, *layout)
-			layout = &t
+		var newOptionalLayouts []string
+		for _, l := range optionalLayouts {
+			newOptionalLayouts = append(newOptionalLayouts, fmt.Sprintf("%s%s", prefix, l))
 		}
+		optionalLayouts = newOptionalLayouts
 	}
 
-	err = s.walkS3(ctx, s.Config.Bucket, prefix, layout, filterMap, g)
+	err = s.walkS3(ctx, s.Config.Bucket, prefix, optionalLayouts, filterMap, g)
 	if err != nil {
 		s.errorList = append(s.errorList, fmt.Errorf("error discovering artifacts in S3 bucket %s, %w", s.Config.Bucket, err))
 	}
@@ -176,7 +181,7 @@ func (s *AwsS3BucketSource) getClient(ctx context.Context) (*s3.Client, error) {
 	return s3.NewFromConfig(*cfg), nil
 }
 
-func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix string, layout *string, filterMap map[string]*filter.SqlFilter, g *grok.Grok) error {
+func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix string, layouts []string, filterMap map[string]*filter.SqlFilter, g *grok.Grok) error {
 	paginator := s3.NewListObjectsV2Paginator(s.client, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
 		Prefix:    aws.String(prefix),
@@ -191,14 +196,14 @@ func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix st
 
 		// Directories
 		for _, dir := range page.CommonPrefixes {
-			err = s.WalkNode(ctx, *dir.Prefix, "", layout, true, g, filterMap)
+			err = s.WalkNode(ctx, *dir.Prefix, "", layouts, true, g, filterMap)
 			if err != nil {
 				if errors.Is(err, fs.SkipDir) {
 					continue
 				}
 				return fmt.Errorf("error walking node, %w", err)
 			}
-			err = s.walkS3(ctx, bucket, *dir.Prefix, layout, filterMap, g)
+			err = s.walkS3(ctx, bucket, *dir.Prefix, layouts, filterMap, g)
 			if err != nil {
 				s.errorList = append(s.errorList, err)
 			}
@@ -206,7 +211,7 @@ func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix st
 
 		// Files
 		for _, obj := range page.Contents {
-			err = s.WalkNode(ctx, *obj.Key, "", layout, false, g, filterMap)
+			err = s.WalkNode(ctx, *obj.Key, "", layouts, false, g, filterMap)
 			if err != nil {
 				s.errorList = append(s.errorList, fmt.Errorf("error parsing object %s, %w", *obj.Key, err))
 			}
