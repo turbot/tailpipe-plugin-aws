@@ -16,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/elastic/go-grok"
-
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/filter"
 	"github.com/turbot/tailpipe-plugin-aws/config"
@@ -124,15 +123,18 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 	// Get the object from S3
 	getObjectOutput, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.Config.Bucket,
-		Key:    &info.OriginalName,
+		Key:    &info.Name,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to download artifact, %w", err)
 	}
 	defer getObjectOutput.Body.Close()
 
+	// Get the size of the object
+	size := typehelpers.Int64Value(getObjectOutput.ContentLength)
+
 	// copy the object data to a temp file
-	localFilePath := path.Join(s.TempDir, info.OriginalName)
+	localFilePath := path.Join(s.TempDir, info.Name)
 	// ensure the directory exists of the file to write to
 	if err := os.MkdirAll(filepath.Dir(localFilePath), 0755); err != nil {
 		return fmt.Errorf("failed to create directory for file, %w", err)
@@ -151,8 +153,8 @@ func (s *AwsS3BucketSource) DownloadArtifact(ctx context.Context, info *types.Ar
 		return fmt.Errorf("failed to write data to file, %w", err)
 	}
 
-	// notify observers of the discovered artifact
-	downloadInfo := &types.ArtifactInfo{LocalName: localFilePath, OriginalName: info.OriginalName, SourceEnrichment: info.SourceEnrichment}
+	// notify observers of the downloaded artifact
+	downloadInfo := types.NewDownloadedArtifactInfo(info, localFilePath, size)
 
 	return s.OnArtifactDownloaded(ctx, downloadInfo)
 }
