@@ -55,16 +55,13 @@ func (s *AwsCloudwatchCollectionState) Save() error {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
-	slog.Info("Saving collection state", "lastModifiedTime", s.lastModifiedTime, "lastSaveTime", s.lastSaveTime)
-
 	// if the last save time is after the last modified time, then we have nothing to do
 	if s.lastSaveTime.After(s.lastModifiedTime) {
 		slog.Info("collection state has not been modified since last save")
 		// nothing to do
 		return nil
 	}
-
-	slog.Info("We are actually saving the collection state")
+	slog.Info("Saving collection state", "lastModifiedTime", s.lastModifiedTime, "lastSaveTime", s.lastSaveTime)
 
 	jsonBytes, err := json.Marshal(s)
 	if err != nil {
