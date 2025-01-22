@@ -1,23 +1,23 @@
 # AWS Plugin for Tailpipe
 
-Collect and query AWS logs using SQL to track activity, monitor trends, and detect anomalies across CloudTrail logs.
+Collect and query AWS logs using SQL to track activity, monitor trends, and detect anomalies.
 
 - **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
-- Documentation: [Table definitions & examples](https://hub.tailpipe.io/plugins/turbot/aws/tables)
+- Documentation: [Table queries](https://hub.tailpipe.io/plugins/turbot/aws/queries)
 - Community: [Join #tailpipe on Slack →](https://turbot.com/community/join)
 - Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
-## Quick start
+## Quick Start
 
 Install the plugin with [Tailpipe](https://tailpipe.io):
 
-```shell
+```sh
 tailpipe plugin install aws
 ```
 
 Configure your log source:
 
-```shell
+```sh
 vi ~/.tailpipe/config/aws.tpc
 ```
 
@@ -28,14 +28,15 @@ connection "aws" "dev" {
 
 partition "aws_cloudtrail_log" "dev" {
   source "aws_s3_bucket" {
-    bucket = "aws-cloudtrail-logs-bucket"
+    connection = connection.aws.dev
+    bucket     = "aws-cloudtrail-logs-bucket"
   }
 }
 ```
 
 Collect logs:
 
-```shell
+```sh
 tailpipe collect aws_cloudtrail_log.dev
 ```
 
@@ -45,12 +46,25 @@ Run a query:
 select event_source, event_name, recipient_account_id, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name, recipient_account_id order by event_count desc;
 ```
 
-## Advanced configuration
+For example:
+
+```sh
++----------------------+-----------------------+----------------------+-------------+
+| event_source         | event_name            | recipient_account_id | event_count |
++----------------------+-----------------------+----------------------+-------------+
+| logs.amazonaws.com   | CreateLogStream       | 123456789012         | 793845      |
+| ecs.amazonaws.com    | RunTask               | 456789012345         | 350836      |
+| ecs.amazonaws.com    | SubmitTaskStateChange | 456789012345         | 190185      |
+| s3.amazonaws.com     | PutObject             | 789012345678         | 60842       |
+| sns.amazonaws.com    | TagResource           | 456789012345         | 25499       |
+| lambda.amazonaws.com | TagResource           | 123456789012         | 20673       |
++----------------------+-----------------------+----------------------+-------------+
+```
+
+## Advanced Configuration
 
 The AWS plugin has the power to:
 * Collect logs from various sources, including AWS CloudWatch log groups, S3 buckets, and more
-* Query multiple accounts
-* Query multiple regions
 * Use many different methods for credentials (roles, SSO, etc.)
 
 - **[Detailed configuration guide →](https://hub.tailpipe.io/plugins/turbot/aws#get-started)**
@@ -69,18 +83,10 @@ git clone https://github.com/turbot/tailpipe-plugin-aws.git
 cd tailpipe-plugin-aws
 ```
 
-Build, which automatically installs the new version to your `~/.tailpipe/plugins` directory:
+After making your local changes, build the plugin, which automatically installs the new version to your `~/.tailpipe/plugins` directory:
 
 ```
 make
-```
-
-TODO: How to configure it?
-
-Configure the plugin:
-
-```
-vi ~/.tailpipe/config/aws.tpc
 ```
 
 Try it!
@@ -89,10 +95,6 @@ Try it!
 tailpipe query
 > .inspect
 ```
-
-Further reading:
-
-- [TODO](https://tailpipe.io/docs/reference/develop/todo)
 
 ## Open Source & Contributing
 
