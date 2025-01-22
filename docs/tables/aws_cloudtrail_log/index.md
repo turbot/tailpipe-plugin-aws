@@ -9,6 +9,8 @@ The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs
 
 ## Queries
 
+For a full list of example queries, please see [aws_cloudtrail_log queries](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log).
+
 ### Root activity
 
 Find any actions taken by the root user.
@@ -70,9 +72,3 @@ having
 order by
   event_count desc;
 ```
-
-Additional queries:
-
-- [Event count by day](https://hub.tailpipe.io/plugins/turbot/aws/queries)
-- [Detect actions from unapproved IP addresses](https://hub.tailpipe.io/plugins/turbot/aws/queries)
-- [List VPC security group updates](https://hub.tailpipe.io/plugins/turbot/aws/queries)
