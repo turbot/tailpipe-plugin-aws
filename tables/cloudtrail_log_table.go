@@ -8,7 +8,6 @@ import (
 
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/tailpipe-plugin-aws/extractors"
-	"github.com/turbot/tailpipe-plugin-aws/mappers"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-aws/sources"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -52,10 +51,6 @@ func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.C
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithArtifactExtractor(extractors.NewCloudTrailLogExtractor()),
 			},
-		},
-		{
-			SourceName: sources.AwsCloudwatchSourceIdentifier,
-			Mapper:     &mappers.CloudTrailMapper{},
 		},
 	}
 }
