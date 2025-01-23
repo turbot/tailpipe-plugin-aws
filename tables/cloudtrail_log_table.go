@@ -98,3 +98,7 @@ func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichment
 
 	return row, nil
 }
+
+func (c *CloudTrailLogTable) GetDescription() string {
+	return "AWS CloudTrail logs capture API activity and user actions within your AWS account."
+}
