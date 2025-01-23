@@ -4,7 +4,6 @@ Collect and query AWS logs using SQL to track activity, monitor trends, detect a
 
 ## Documentation
 
-- **[AWS plugin →](https://hub.tailpipe.io/plugins/turbot/aws)**
 - **[Table definitions →](https://hub.tailpipe.io/plugins/turbot/aws/tables)**
 - **[Table queries →](https://hub.tailpipe.io/plugins/turbot/aws/queries)**
 - **[Source definitions →](https://hub.tailpipe.io/plugins/turbot/aws/sources)**
