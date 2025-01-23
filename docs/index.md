@@ -50,41 +50,61 @@ order by
 
 ## Documentation
 
-- **[Table definitions →](/plugins/turbot/aws/tables)**
-- **[Table queries →](/plugins/turbot/aws/queries)**
-- **[Source definitions →](/plugins/turbot/aws/sources)**
+- **[AWS plugin →](https://hub.tailpipe.io/plugins/turbot/aws)**
+- **[Table definitions →](https://hub.tailpipe.io/plugins/turbot/aws/tables)**
+- **[Table queries →](https://hub.tailpipe.io/plugins/turbot/aws/queries)**
+- **[Source definitions →](https://hub.tailpipe.io/plugins/turbot/aws/sources)**
 
-## Get Started
+## Getting Started
 
-Install the plugin with [Tailpipe](https://tailpipe.io):
+### Installation
 
-```shell
+Download and install Tailpipe (https://tailpipe.io/downloads). Or use Brew:
+
+```sh
+brew tap turbot/tap
+brew install tailpipe
+```
+
+Install the plugin:
+
+```sh
 tailpipe plugin install aws
 ```
 
+### Configuration
+
 Configure your log source:
 
-```shell
+```sh
 vi ~/.tailpipe/config/aws.tpc
 ```
 
-```terraform
-connection "aws" "dev" {
-  profile = "dev"
+```hcl
+connection "aws" "aws_profile" {
+  profile = "my-profile"
 }
 
-partition "aws_cloudtrail_log" "dev" {
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket" {
-    connection = connection.aws.dev
+    connection = connection.aws.aws_profile
     bucket     = "aws-cloudtrail-logs-bucket"
   }
 }
 ```
 
+### Usage
+
 Collect logs:
 
-```shell
-tailpipe collect aws_cloudtrail_log.dev
+```sh
+tailpipe collect aws_cloudtrail_log
+```
+
+List partitions and view row counts:
+
+```sh
+tailpipe partition list
 ```
 
 Run a query:
@@ -93,7 +113,43 @@ Run a query:
 select event_source, event_name, recipient_account_id, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name, recipient_account_id order by event_count desc;
 ```
 
-## Connections
+For example:
+
+```sh
++----------------------+-----------------------+----------------------+-------------+
+| event_source         | event_name            | recipient_account_id | event_count |
++----------------------+-----------------------+----------------------+-------------+
+| logs.amazonaws.com   | CreateLogStream       | 123456789012         | 793845      |
+| ecs.amazonaws.com    | RunTask               | 456789012345         | 350836      |
+| ecs.amazonaws.com    | SubmitTaskStateChange | 456789012345         | 190185      |
+| s3.amazonaws.com     | PutObject             | 789012345678         | 60842       |
+| sns.amazonaws.com    | TagResource           | 456789012345         | 25499       |
+| lambda.amazonaws.com | TagResource           | 123456789012         | 20673       |
++----------------------+-----------------------+----------------------+-------------+
+```
+
+### Collection Dates
+
+When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
+
+You can override the collection window by specifying `--from`:
+
+```sh
+tailpipe collect aws_cloudtrail_log --from 2025-01-01
+```
+
+You can also use relative times. For instance, to collect logs from the last 60 days:
+
+```sh
+tailpipe collect aws_cloudtrail_log --from T-60d
+```
+
+Please note that if you specify a date in `--from`, Tailpipe will delete any collected data for that partition starting from that date to help avoid gaps in the data.
+
+For more examples of how to use `--from` and other arguments, please see [tailpipe collect](https://tailpipe.io/docs/reference/cli/collect) reference documentation.
+
+
+### Connections
 
 By default, the following environment variables will be used for authentication:
 

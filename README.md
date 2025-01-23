@@ -1,19 +1,32 @@
 # AWS Plugin for Tailpipe
 
-Collect and query AWS logs using SQL to track activity, monitor trends, and detect anomalies.
+Collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
 
-- **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
-- Documentation: [Table queries](https://hub.tailpipe.io/plugins/turbot/aws/queries)
-- Community: [Join #tailpipe on Slack →](https://turbot.com/community/join)
-- Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
+## Documentation
 
-## Quick Start
+- **[AWS plugin →](https://hub.tailpipe.io/plugins/turbot/aws)**
+- **[Table definitions →](https://hub.tailpipe.io/plugins/turbot/aws/tables)**
+- **[Table queries →](https://hub.tailpipe.io/plugins/turbot/aws/queries)**
+- **[Source definitions →](https://hub.tailpipe.io/plugins/turbot/aws/sources)**
 
-Install the plugin with [Tailpipe](https://tailpipe.io):
+## Getting Started
+
+### Installation
+
+Download and install Tailpipe (https://tailpipe.io/downloads). Or use Brew:
+
+```sh
+brew tap turbot/tap
+brew install tailpipe
+```
+
+Install the plugin:
 
 ```sh
 tailpipe plugin install aws
 ```
+
+### Configuration
 
 Configure your log source:
 
@@ -21,23 +34,31 @@ Configure your log source:
 vi ~/.tailpipe/config/aws.tpc
 ```
 
-```terraform
-connection "aws" "dev" {
-  profile = "dev"
+```hcl
+connection "aws" "aws_profile" {
+  profile = "my-profile"
 }
 
-partition "aws_cloudtrail_log" "dev" {
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket" {
-    connection = connection.aws.dev
+    connection = connection.aws.aws_profile
     bucket     = "aws-cloudtrail-logs-bucket"
   }
 }
 ```
 
+### Usage
+
 Collect logs:
 
 ```sh
-tailpipe collect aws_cloudtrail_log.dev
+tailpipe collect aws_cloudtrail_log
+```
+
+List partitions and view row counts:
+
+```sh
+tailpipe partition list
 ```
 
 Run a query:
@@ -61,13 +82,58 @@ For example:
 +----------------------+-----------------------+----------------------+-------------+
 ```
 
-## Advanced Configuration
+### Collection Dates
 
-The AWS plugin has the power to:
-* Collect logs from various sources, including AWS CloudWatch log groups, S3 buckets, and more
-* Use many different methods for credentials (roles, SSO, etc.)
+When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
 
-- **[Detailed configuration guide →](https://hub.tailpipe.io/plugins/turbot/aws#get-started)**
+You can override the collection window by specifying `--from`:
+
+```sh
+tailpipe collect aws_cloudtrail_log --from 2025-01-01
+```
+
+You can also use relative times. For instance, to collect logs from the last 60 days:
+
+```sh
+tailpipe collect aws_cloudtrail_log --from T-60d
+```
+
+Please note that if you specify a date in `--from`, Tailpipe will delete any collected data for that partition starting from that date to help avoid gaps in the data.
+
+For more examples of how to use `--from` and other arguments, please see [tailpipe collect](https://tailpipe.io/docs/reference/cli/collect) reference documentation.
+
+### Connections
+
+By default, the following environment variables will be used for authentication:
+
+- `AWS_PROFILE`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+You can also create `connection` resources in configuration files:
+
+```sh
+vi ~/.tailpipe/config/aws.tpc
+```
+
+```hcl
+connection "aws" "aws_profile" {
+  profile = "my-profile"
+}
+
+connection "aws" "aws_access_key_pair" {
+  access_key = "AKIA..."
+  secret_key = "dP+C+J..."
+}
+
+connection "aws" "aws_session_token" {
+  access_key    = "AKIA..."
+  secret_key    = "dP+C+J..."
+  session_token = "AQoDX..."
+}
+```
+
+For more information on connections in Tailpipe, please see [Managing AWS Connections](https://tailpipe.io/docs/reference/config-files/connection/aws).
 
 ## Developing
 

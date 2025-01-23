@@ -9,24 +9,28 @@ An AWS S3 bucket is a cloud storage resource used to store objects like data fil
 
 Using this source, you can collect, filter, and analyze logs stored in S3 buckets, enabling system monitoring, security investigations, and compliance reporting.
 
-Each table defines a default `file_path` for the `aws_s3_bucket` source, so if your logs are stored in default AWS locations, you don't need to override the `file_path` argument.
+Each AWS table defines a default `file_path` for the `aws_s3_bucket` source, so if your logs are stored in default AWS log locations, you don't need to override the `file_path` argument.
 
-## Examples
+## CloudTrail Log Examples
 
-Collect logs for all accounts and regions:
+### Collect logs
+
+Collect CloudTrail logs for all accounts and regions.
 
 ```hcl
-partition "aws_cloudtrail_log" "all" {
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     bucket = "cloudtrail-s3-log-bucket"
   }
 }
 ```
 
-Collect logs stored behind a prefix:
+### Specify a prefix
+
+Collect CloudTrail logs stored with an S3 key prefix.
 
 ```hcl
-partition "aws_cloudtrail_log" "all_with_prefix" {
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     bucket = "cloudtrail-s3-log-bucket"
     prefix = "sample/prefix/"
@@ -34,7 +38,9 @@ partition "aws_cloudtrail_log" "all_with_prefix" {
 }
 ```
 
-Use a specific AWS connection:
+### Use an AWS connection
+
+Use a specific AWS connection when connecting to the AWS account.
 
 ```hcl
 connection "aws" "dev" {
@@ -49,11 +55,25 @@ partition "aws_cloudtrail_log" "dev" {
 }
 ```
 
+### Collect for an account
 
-Collect logs for us-east-1:
+Collect CloudTrail logs for a specific account in all regions.
 
 ```hcl
-partition "aws_cloudtrail_log" "cloudtrail_logs" {
+partition "aws_cloudtrail_log" "my_logs" {
+  source "aws_s3_bucket"  {
+    bucket      = "cloudtrail-s3-log-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+  }
+}
+```
+
+### Collect for a specific region
+
+Collect CloudTrail logs for all accounts in us-east-1.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     bucket      = "cloudtrail-s3-log-bucket"
     file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
@@ -61,10 +81,12 @@ partition "aws_cloudtrail_log" "cloudtrail_logs" {
 }
 ```
 
-Collect logs for multiple regions:
+### Collect for multiple regions
+
+Collect CloudTrail logs for all accounts in us-east-1 and us-east-2.
 
 ```hcl
-partition "aws_cloudtrail_log" "cloudtrail_logs" {
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     bucket      = "cloudtrail-s3-log-bucket"
     file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
@@ -72,33 +94,10 @@ partition "aws_cloudtrail_log" "cloudtrail_logs" {
 }
 ```
 
-Collect logs for organization `o-aa111bb222`:
+### Collect logs in a custom path
 
 ```hcl
-partition "aws_cloudtrail_log" "cloudtrail_logs" {
-  source "aws_s3_bucket"  {
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
-  }
-}
-```
-
-
-Collect logs for account `123456789012`:
-
-```hcl
-partition "aws_cloudtrail_log" "cloudtrail_logs" {
-  source "aws_s3_bucket"  {
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
-  }
-}
-```
-
-Collect logs from a custom path:
-
-```hcl
-partition "aws_cloudtrail_log" "cloudtrail_logs" {
+partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     bucket      = "cloudtrail-s3-log-bucket"
     file_layout = "CustomLogs/Dev/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
