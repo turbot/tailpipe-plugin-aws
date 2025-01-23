@@ -75,7 +75,7 @@ func (s *AwsCloudwatchCollectionState) Save() error {
 	// if we are empty, delete the file
 	if s.IsEmpty() {
 		err := os.Remove(s.jsonPath)
-		if err != nil {
+		if err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("failed to delete collection state file: %w", err)
 		}
 		return nil
