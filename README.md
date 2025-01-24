@@ -2,9 +2,18 @@
 
 Collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
 
+## Table of Contents
+
+- [Documentation](#documentation)
+- [Getting Started](#getting-started)
+- [Credentials](#credentials)
+- [Developing](#developing)
+- [Open Source & Contributing](#open-source-contributing)
+- [Get Involved](#get-involved)
+
 ## Documentation
 
-- **[Table definitions →](https://hub.tailpipe.io/plugins/turbot/aws/tables)**
+- **[Table configuration and definitions →](https://hub.tailpipe.io/plugins/turbot/aws/tables)**
 - **[Table queries →](https://hub.tailpipe.io/plugins/turbot/aws/queries)**
 - **[Source definitions →](https://hub.tailpipe.io/plugins/turbot/aws/sources)**
 
@@ -46,7 +55,7 @@ partition "aws_cloudtrail_log" "my_logs" {
 }
 ```
 
-### Usage
+### Log Collection
 
 Collect logs:
 
@@ -54,11 +63,25 @@ Collect logs:
 tailpipe collect aws_cloudtrail_log
 ```
 
-List partitions and view row counts:
+When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
+
+You can override the default behaviour by specifying `--from`:
 
 ```sh
-tailpipe partition list
+tailpipe collect aws_cloudtrail_log --from 2025-01-01
 ```
+
+You can also use relative times. For instance, to collect logs from the last 60 days:
+
+```sh
+tailpipe collect aws_cloudtrail_log --from T-60d
+```
+
+Please note that if you specify a date in `--from`, Tailpipe will delete any collected data for that partition starting from that date to help avoid gaps in the data.
+
+For additional examples on using `tailpipe collect`, please see [tailpipe collect](https://tailpipe.io/docs/reference/cli/collect) reference documentation.
+
+### Query
 
 Run a query:
 
@@ -81,27 +104,7 @@ For example:
 +----------------------+-----------------------+----------------------+-------------+
 ```
 
-### Collection Dates
-
-When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
-
-You can override the collection window by specifying `--from`:
-
-```sh
-tailpipe collect aws_cloudtrail_log --from 2025-01-01
-```
-
-You can also use relative times. For instance, to collect logs from the last 60 days:
-
-```sh
-tailpipe collect aws_cloudtrail_log --from T-60d
-```
-
-Please note that if you specify a date in `--from`, Tailpipe will delete any collected data for that partition starting from that date to help avoid gaps in the data.
-
-For more examples of how to use `--from` and other arguments, please see [tailpipe collect](https://tailpipe.io/docs/reference/cli/collect) reference documentation.
-
-### Connections
+## Credentials
 
 By default, the following environment variables will be used for authentication:
 
@@ -132,7 +135,7 @@ connection "aws" "aws_session_token" {
 }
 ```
 
-For more information on connections in Tailpipe, please see [Managing AWS Connections](https://tailpipe.io/docs/reference/config-files/connection/aws).
+For more information on AWS connections in Tailpipe, please see [Managing AWS Connections](https://tailpipe.io/docs/reference/config-files/connection/aws).
 
 ## Developing
 
@@ -158,7 +161,7 @@ Try it!
 
 ```
 tailpipe query
-> .inspect
+> .inspect aws_cloudtrail_log
 ```
 
 ## Open Source & Contributing

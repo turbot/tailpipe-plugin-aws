@@ -9,7 +9,11 @@ The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs
 
 ## Configuration
 
-CloudTrail logs are normally stored within S3 buckets, so a typical configuration would look like:
+CloudTrail logs are normally stored within S3 buckets, so a typical partition configuration would look like:
+
+```sh
+vi ~/.tailpipe/config/aws.tpc
+```
 
 ```hcl
 connection "aws" "aws_profile" {
@@ -27,12 +31,8 @@ partition "aws_cloudtrail_log" "my_logs" {
 To reduce the amount of logs stored locally, you can use the `filter` argument in your partition:
 
 ```hcl
-connection "aws" "aws_profile" {
-  profile = "my-profile"
-}
-
 partition "aws_cloudtrail_log" "my_logs" {
-  # Avoid saving read-only events, which often make up to 90% of all log entries
+  # Avoid saving read-only events, which can drastically reduce local log size
   filter = "not read_only"
 
   source "aws_s3_bucket" {
@@ -47,10 +47,6 @@ The `filter` argument values use SQL `where` clause syntax with any of the colum
 You can also collect logs for a single account:
 
 ```hcl
-connection "aws" "aws_profile" {
-  profile = "my-profile"
-}
-
 partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.aws_profile
@@ -63,10 +59,6 @@ partition "aws_cloudtrail_log" "my_logs" {
 Or for a single region:
 
 ```hcl
-connection "aws" "aws_profile" {
-  profile = "my-profile"
-}
-
 partition "aws_cloudtrail_log" "my_logs" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.aws_profile
@@ -78,7 +70,7 @@ partition "aws_cloudtrail_log" "my_logs" {
 
 For more examples using the `aws_s3_bucket` source, please see [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket).
 
-You can also work with local files, like the [public dataset from flaws.cloud](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/):
+You can also collect and query local log files, like the [public dataset from flaws.cloud](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/):
 
 ```hcl
 partition "aws_cloudtrail_log" "local_logs" {
