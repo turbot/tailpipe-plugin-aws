@@ -7,83 +7,21 @@ description: "Allows users to query AWS CloudTrail logs."
 
 The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
 
-## Configuration
-
-CloudTrail logs are normally stored within S3 buckets, so a typical partition configuration would look like:
+To [collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_cloudtrail_log` [partitions](https://tailpipe.io/docs/manage/partition):
 
 ```sh
-vi ~/.tailpipe/config/aws.tpc
+tailpipe collect aws_cloudtrail_log
 ```
 
-```hcl
-connection "aws" "aws_profile" {
-  profile = "my-profile"
-}
+Or to collect for a single partition:
 
-partition "aws_cloudtrail_log" "my_logs" {
-  source "aws_s3_bucket" {
-    connection = connection.aws.aws_profile
-    bucket     = "aws-cloudtrail-logs-bucket"
-  }
-}
-```
-
-To reduce the amount of logs stored locally, you can use the `filter` argument in your partition:
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs" {
-  # Avoid saving read-only events, which can drastically reduce local log size
-  filter = "not read_only"
-
-  source "aws_s3_bucket" {
-    connection = connection.aws.aws_profile
-    bucket     = "aws-cloudtrail-logs-bucket"
-  }
-}
-```
-
-The `filter` argument values use SQL `where` clause syntax with any of the columns in the `aws_cloudtrail_log` table.
-
-You can also collect logs for a single account:
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.aws_profile
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
-  }
-}
-```
-
-Or for a single region:
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.aws_profile
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
-  }
-}
-```
-
-For more examples using the `aws_s3_bucket` source, please see [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket).
-
-You can also collect and query local log files, like the [public dataset from flaws.cloud](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/):
-
-```hcl
-partition "aws_cloudtrail_log" "local_logs" {
-  source "file"  {
-    paths       = ["/Users/mscott/cloudtrail_logs"]
-    file_layout = "%{DATA}.json.gz"
-  }
-}
+```sh
+tailpipe collect aws_cloudtrail_log.my_logs
 ```
 
 ## Queries
 
-For a full list of example queries, please see [aws_cloudtrail_log queries](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log).
+Explore 100+ example queries for this table **[Queries →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log)**
 
 ### Root activity
 
@@ -146,3 +84,130 @@ having
 order by
   event_count desc;
 ```
+
+## Example Configurations
+
+### Collect logs from an S3 bucket
+
+Collect CloudTrail logs stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/get-and-view-cloudtrail-log-files.html).
+
+```hcl
+connection "aws" "logging_account" {
+  profile = "my-logging-account"
+}
+
+partition "aws_cloudtrail_log" "my_logs" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "aws-cloudtrail-logs-bucket"
+  }
+}
+```
+
+### Collect logs from an S3 bucket with a prefix
+
+Collect CloudTrail logs stored in an S3 bucket using a prefix.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs_prefix" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "aws-cloudtrail-logs-bucket"
+    prefix     = "my/prefix/"
+  }
+}
+```
+
+### Collect logs from local files
+
+You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/):
+
+```hcl
+partition "aws_cloudtrail_log" "local_logs" {
+  source "file"  {
+    paths       = ["/Users/myuser/cloudtrail_logs"]
+    file_layout = "%{DATA}.json.gz"
+  }
+}
+```
+
+### Exclude read-only events
+
+Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs_write" {
+  # Avoid saving read-only events, which can drastically reduce local log size
+  filter = "not read_only"
+
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "aws-cloudtrail-logs-bucket"
+  }
+}
+```
+
+### Collect logs for all accounts in an organization
+
+For a specific organization, collect logs for all accounts and regions.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs_org" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.logging_account
+    bucket      = "cloudtrail-s3-log-bucket"
+    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+  }
+}
+```
+
+### Collect logs for a single account
+
+For a specific account, collect logs for all regions.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs_account" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.logging_account
+    bucket      = "cloudtrail-s3-log-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+  }
+}
+```
+
+### Collect logs for a single region
+
+For all accounts, collect logs from us-east-1.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs_region" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.logging_account
+    bucket      = "cloudtrail-s3-log-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+  }
+}
+```
+
+### Collect logs for multiple regions
+
+For all accounts, collect logs from us-east-1 and us-east-2.
+
+```hcl
+partition "aws_cloudtrail_log" "my_logs_regions" {
+  source "aws_s3_bucket"  {
+    bucket      = "cloudtrail-s3-log-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+  }
+}
+```
+
+## Source Defaults
+
+### aws_s3_bucket
+
+This table sets the following defaults for the [aws_s3_bucket source](https://tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
+
+| Argument      | Default |
+|---------------|---------|
+| file_layout   | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
