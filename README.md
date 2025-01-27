@@ -1,6 +1,10 @@
 # AWS Plugin for Tailpipe
 
-Collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
+[Tailpipe](https://tailpipe.io) is an open-source CLI tool that allows you to collect logs and query them with SQL.
+
+[AWS](https://aws.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
+
+The [AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows you to collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
 
 - **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
 - Documentation: [Table definitions & examples](https://hub.tailpipe.io/plugins/turbot/aws/tables)
@@ -8,18 +12,18 @@ Collect and query AWS logs using SQL to track activity, monitor trends, detect a
 - Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
 ```sh
-select event_source, event_name, recipient_account_id, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name, recipient_account_id order by event_count desc;
+select event_source, event_name, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name order by event_count desc;
 
-+----------------------+-----------------------+----------------------+-------------+
-| event_source         | event_name            | recipient_account_id | event_count |
-+----------------------+-----------------------+----------------------+-------------+
-| logs.amazonaws.com   | CreateLogStream       | 123456789012         | 793845      |
-| ecs.amazonaws.com    | RunTask               | 456789012345         | 350836      |
-| ecs.amazonaws.com    | SubmitTaskStateChange | 456789012345         | 190185      |
-| s3.amazonaws.com     | PutObject             | 789012345678         | 60842       |
-| sns.amazonaws.com    | TagResource           | 456789012345         | 25499       |
-| lambda.amazonaws.com | TagResource           | 123456789012         | 20673       |
-+----------------------+-----------------------+----------------------+-------------+
++----------------------+-----------------------+-------------+
+| event_source         | event_name            | event_count |
++----------------------+-----------------------+-------------+
+| logs.amazonaws.com   | CreateLogStream       | 793845      |
+| ecs.amazonaws.com    | RunTask               | 350836      |
+| ecs.amazonaws.com    | SubmitTaskStateChange | 190185      |
+| s3.amazonaws.com     | PutObject             | 60842       |
+| sns.amazonaws.com    | TagResource           | 25499       |
+| lambda.amazonaws.com | TagResource           | 20673       |
++----------------------+-----------------------+-------------+
 ```
 
 ## Getting Started
@@ -42,7 +46,7 @@ Install the [plugin](https://hub.tailpipe.io/plugins/turbot/aws):
 tailpipe plugin install aws
 ```
 
-Configure your connection credentials, table partition, and data source:
+Configure your [connection credentials](https://tailpipe.io/docs/reference/config-files/connection/aws), [table partition](https://tailpipe.io/docs/manage/partition), and [data source](https://tailpipe.io/docs/manage/source):
 
 ```sh
 vi ~/.tailpipe/config/aws.tpc
@@ -67,6 +71,11 @@ Download, enrich, and save logs from your S3 bucket:
 tailpipe collect aws_cloudtrail_log
 ```
 
+> [!NOTE]
+> When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
+>
+> For more information, please see [Managing Collection](https://tailpipe.io/docs/manage/collection).
+
 Enter interactive query mode:
 
 ```sh
@@ -76,80 +85,37 @@ tailpipe query
 Run a query:
 
 ```sql
-select event_source, event_name, recipient_account_id, count(*) as event_count
+select event_source, event_name, count(*) as event_count
 from aws_cloudtrail_log
 where not read_only
-group by event_source, event_name, recipient_account_id
+group by event_source, event_name
 order by event_count desc;
 ```
 
 For example:
 
 ```sh
-+----------------------+-----------------------+----------------------+-------------+
-| event_source         | event_name            | recipient_account_id | event_count |
-+----------------------+-----------------------+----------------------+-------------+
-| logs.amazonaws.com   | CreateLogStream       | 123456789012         | 793845      |
-| ecs.amazonaws.com    | RunTask               | 456789012345         | 350836      |
-| ecs.amazonaws.com    | SubmitTaskStateChange | 456789012345         | 190185      |
-| s3.amazonaws.com     | PutObject             | 789012345678         | 60842       |
-| sns.amazonaws.com    | TagResource           | 456789012345         | 25499       |
-| lambda.amazonaws.com | TagResource           | 123456789012         | 20673       |
-+----------------------+-----------------------+----------------------+-------------+
++----------------------+-----------------------+-------------+
+| event_source         | event_name            | event_count |
++----------------------+-----------------------+-------------+
+| logs.amazonaws.com   | CreateLogStream       | 793845      |
+| ecs.amazonaws.com    | RunTask               | 350836      |
+| ecs.amazonaws.com    | SubmitTaskStateChange | 190185      |
+| s3.amazonaws.com     | PutObject             | 60842       |
+| sns.amazonaws.com    | TagResource           | 25499       |
+| lambda.amazonaws.com | TagResource           | 20673       |
++----------------------+-----------------------+-------------+
 ```
 
-## Credentials
+## Detections as Code with Powerpipe
 
-By default, the following environment variables will be used for authentication:
+Pre-built dashboards and detections for the AWS plugin are available in [Powerpipe](https://powerpipe.io) mods, helping you monitor and analyze activity across your AWS accounts.
 
-- `AWS_PROFILE`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+For example, the [AWS CloudTrail Logs Detections mod](https://hub.powerpipe.io/mods/turbot/tailpipe-mod-aws-cloudtrail-log-detections) scans your CloudTrail logs for anomalies, such as an S3 bucket being made public or a change in your VPC network infrastructure.
 
-You can also create `connection` resources in configuration files:
+Dashboards and detections in this mod and others are written as code, making them easy to customize and adapt to your specific requirements.
 
-```sh
-vi ~/.tailpipe/config/aws.tpc
-```
-
-```hcl
-connection "aws" "aws_profile" {
-  profile = "my-profile"
-}
-
-connection "aws" "aws_access_key_pair" {
-  access_key = "AKIA..."
-  secret_key = "dP+C+J..."
-}
-
-connection "aws" "aws_session_token" {
-  access_key    = "AKIA..."
-  secret_key    = "dP+C+J..."
-  session_token = "AQoDX..."
-}
-```
-
-For more information on AWS connections in Tailpipe, please see [Managing AWS Connections](https://tailpipe.io/docs/reference/config-files/connection/aws).
-
-### Log Collection 2
-
-When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
-
-You can override the default behaviour by specifying `--from`:
-
-```sh
-tailpipe collect aws_cloudtrail_log --from 2025-01-01
-```
-
-You can also use relative times. For instance, to collect logs from the last 60 days:
-
-```sh
-tailpipe collect aws_cloudtrail_log --from T-60d
-```
-
-Please note that if you specify a date in `--from`, Tailpipe will delete any collected data for that partition starting from that date to help avoid gaps in the data.
-
-For additional examples on using `tailpipe collect`, please see [tailpipe collect](https://tailpipe.io/docs/reference/cli/collect) reference documentation.
+To get started, browse the [Powerpipe Mods for the AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws/mods) and follow the instructions provided for each mod.
 
 ## Developing
 
@@ -169,6 +135,15 @@ After making your local changes, build the plugin, which automatically installs 
 
 ```
 make
+```
+
+> [!TIP]
+> Please change the `aws_cloudtrail_log` table name in the commands below to match the name of the table you modified.
+
+Re-collect your data:
+
+```
+tailpipe collect aws_cloudtrail_log
 ```
 
 Try it!
