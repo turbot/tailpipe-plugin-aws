@@ -4,7 +4,7 @@
 
 [AWS](https://aws.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
 
-The [AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows you to collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
+The [Tailpipe AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows you to collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
 
 - **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
 - Documentation: [Table definitions & examples](https://hub.tailpipe.io/plugins/turbot/aws/tables)
