@@ -21,8 +21,8 @@ The [AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows
 - Community: [Join #tailpipe on Slack →](https://turbot.com/community/join)
 - Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
-<img src="https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_terminal.png" width="50%" type="thumbnail"/>
-<img src="https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_mitre_dashboard.png" width="50%" type="thumbnail"/>
+<img src="https://raw.githubusercontent.com/turbot/tailpipe-plugin-aws/main/docs/images/aws_cloudtrail_log_terminal.png" width="50%" type="thumbnail"/>
+<img src="https://raw.githubusercontent.com/turbot/tailpipe-plugin-aws/main/docs/images/aws_cloudtrail_log_mitre_dashboard.png" width="50%" type="thumbnail"/>
 
 ## Getting Started
 
