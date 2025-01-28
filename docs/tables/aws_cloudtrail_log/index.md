@@ -13,7 +13,7 @@ To [collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_cloud
 tailpipe collect aws_cloudtrail_log
 ```
 
-Or to collect for a single partition:
+Or for a single partition:
 
 ```sh
 tailpipe collect aws_cloudtrail_log.my_logs

@@ -11,20 +11,11 @@ The [AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows
 - Community: [Join #tailpipe on Slack →](https://turbot.com/community/join)
 - Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
-```sh
-select event_source, event_name, count(*) as event_count from aws_cloudtrail_log where not read_only group by event_source, event_name order by event_count desc;
+Collect and query logs:
+![image](https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_terminal.png)
 
-+----------------------+-----------------------+-------------+
-| event_source         | event_name            | event_count |
-+----------------------+-----------------------+-------------+
-| logs.amazonaws.com   | CreateLogStream       | 793845      |
-| ecs.amazonaws.com    | RunTask               | 350836      |
-| ecs.amazonaws.com    | SubmitTaskStateChange | 190185      |
-| s3.amazonaws.com     | PutObject             | 60842       |
-| sns.amazonaws.com    | TagResource           | 25499       |
-| lambda.amazonaws.com | TagResource           | 20673       |
-+----------------------+-----------------------+-------------+
-```
+Run detections in a dashboard:
+![image](https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_mitre_dashboard.png)
 
 ## Getting Started
 
@@ -40,7 +31,7 @@ brew install turbot/tap/tailpipe
 sudo /bin/sh -c "$(curl -fsSL https://tailpipe.io/install/tailpipe.sh)"
 ```
 
-Install the [plugin](https://hub.tailpipe.io/plugins/turbot/aws):
+Install the plugin:
 
 ```sh
 tailpipe plugin install aws
@@ -138,7 +129,7 @@ make
 ```
 
 > [!TIP]
-> Please change the `aws_cloudtrail_log` table name in the commands below to match the name of the table you modified.
+> Replace `aws_cloudtrail_log` with your table's name if it's different.
 
 Re-collect your data:
 

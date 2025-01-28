@@ -21,36 +21,8 @@ The [AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows
 - Community: [Join #tailpipe on Slack →](https://turbot.com/community/join)
 - Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
-For example:
-
-```sql
-select
-  event_source,
-  event_name,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-where
-  not read_only
-group by
-  event_source,
-  event_name
-order by
-  event_count desc;
-```
-
-```sh
-+----------------------+-----------------------+-------------+
-| event_source         | event_name            | event_count |
-+----------------------+-----------------------+-------------+
-| logs.amazonaws.com   | CreateLogStream       | 793845      |
-| ecs.amazonaws.com    | RunTask               | 350836      |
-| ecs.amazonaws.com    | SubmitTaskStateChange | 190185      |
-| s3.amazonaws.com     | PutObject             | 60842       |
-| sns.amazonaws.com    | TagResource           | 25499       |
-| lambda.amazonaws.com | TagResource           | 20673       |
-+----------------------+-----------------------+-------------+
-```
+<img src="https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_terminal.png" width="50%" type="thumbnail"/>
+<img src="https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_mitre_dashboard.png" width="50%" type="thumbnail"/>
 
 ## Getting Started
 
@@ -66,7 +38,7 @@ brew install turbot/tap/tailpipe
 sudo /bin/sh -c "$(curl -fsSL https://tailpipe.io/install/tailpipe.sh)"
 ```
 
-Install the [plugin](https://hub.tailpipe.io/plugins/turbot/aws):
+Install the plugin:
 
 ```sh
 tailpipe plugin install aws
