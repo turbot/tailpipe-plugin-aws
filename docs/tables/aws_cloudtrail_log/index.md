@@ -7,7 +7,9 @@ description: "Allows users to query AWS CloudTrail logs."
 
 The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
 
-To [collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_cloudtrail_log` [partitions](https://tailpipe.io/docs/manage/partition):
+## Collect
+
+[Collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_cloudtrail_log` [partitions](https://tailpipe.io/docs/manage/partition):
 
 ```sh
 tailpipe collect aws_cloudtrail_log
@@ -19,9 +21,9 @@ Or for a single partition:
 tailpipe collect aws_cloudtrail_log.my_logs
 ```
 
-## Queries
+## Query
 
-Explore 100+ example queries for this table **[Queries →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log)**
+**[Explore 100+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log)**
 
 ### Root activity
 
