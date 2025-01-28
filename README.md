@@ -34,7 +34,7 @@ Install the plugin:
 tailpipe plugin install aws
 ```
 
-Configure your connection credentials, table partition, and data source ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#example-configurations)):
+Configure your [connection credentials](https://hub.tailpipe.io/plugins/turbot/aws#connection-credentials), table partition, and data source ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#example-configurations)):
 
 ```sh
 vi ~/.tailpipe/config/aws.tpc
@@ -68,11 +68,19 @@ tailpipe query
 Run a query:
 
 ```sql
-select event_source, event_name, count(*) as event_count
-from aws_cloudtrail_log
-where not read_only
-group by event_source, event_name
-order by event_count desc;
+select
+  event_source,
+  event_name,
+  count(*) as event_count
+from
+  aws_cloudtrail_log
+where
+  not read_only
+group by
+  event_source,
+  event_name
+order by
+  event_count desc;
 ```
 
 ```sh
