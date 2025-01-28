@@ -4,7 +4,7 @@
 
 [AWS](https://aws.amazon.com/) provides on-demand cloud computing platforms and APIs to authenticated customers on a metered pay-as-you-go basis.
 
-The [Tailpipe AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows you to collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
+The [AWS Plugin for Tailpipe](https://hub.tailpipe.io/plugins/turbot/aws) allows you to collect and query AWS logs using SQL to track activity, monitor trends, detect anomalies, and more!
 
 - **[Get started →](https://hub.tailpipe.io/plugins/turbot/aws)**
 - Documentation: [Table definitions & examples](https://hub.tailpipe.io/plugins/turbot/aws/tables)
@@ -13,9 +13,6 @@ The [Tailpipe AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpi
 
 Collect and query logs:
 ![image](docs/images/aws_cloudtrail_log_terminal.png)
-
-Run detections in a dashboard:
-![image](docs/images/aws_cloudtrail_log_mitre_dashboard.png)
 
 ## Getting Started
 
@@ -37,7 +34,7 @@ Install the plugin:
 tailpipe plugin install aws
 ```
 
-Configure your [connection credentials](https://tailpipe.io/docs/reference/config-files/connection/aws), [table partition](https://tailpipe.io/docs/manage/partition), and [data source](https://tailpipe.io/docs/manage/source):
+Configure your connection credentials, table partition, and data source ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#example-configurations)):
 
 ```sh
 vi ~/.tailpipe/config/aws.tpc
@@ -56,16 +53,11 @@ partition "aws_cloudtrail_log" "my_logs" {
 }
 ```
 
-Download, enrich, and save logs from your S3 bucket:
+Download, enrich, and save logs from your source ([examples](https://tailpipe.io/docs/reference/cli/collect)):
 
 ```sh
 tailpipe collect aws_cloudtrail_log
 ```
-
-> [!NOTE]
-> When running `tailpipe collect` for the first time, logs from the last 7 days are collected. Subsequent `tailpipe collect` runs will collect logs from the last collection date.
->
-> For more information, please see [Managing Collection](https://tailpipe.io/docs/manage/collection).
 
 Enter interactive query mode:
 
@@ -82,8 +74,6 @@ where not read_only
 group by event_source, event_name
 order by event_count desc;
 ```
-
-For example:
 
 ```sh
 +----------------------+-----------------------+-------------+
@@ -104,9 +94,11 @@ Pre-built dashboards and detections for the AWS plugin are available in [Powerpi
 
 For example, the [AWS CloudTrail Logs Detections mod](https://hub.powerpipe.io/mods/turbot/tailpipe-mod-aws-cloudtrail-log-detections) scans your CloudTrail logs for anomalies, such as an S3 bucket being made public or a change in your VPC network infrastructure.
 
-Dashboards and detections in this mod and others are written as code, making them easy to customize and adapt to your specific requirements.
+Dashboards and detections are [open source](https://github.com/topics/tailpipe-mod), allowing easy customization and collaboration.
 
-To get started, browse the [Powerpipe Mods for the AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws/mods) and follow the instructions provided for each mod.
+To get started, choose a mod from the [Powerpipe Hub](https://hub.powerpipe.io/?engines=tailpipe&q=aws).
+
+![image](docs/images/aws_cloudtrail_log_mitre_dashboard.png)
 
 ## Developing
 
@@ -127,9 +119,6 @@ After making your local changes, build the plugin, which automatically installs 
 ```
 make
 ```
-
-> [!TIP]
-> Replace `aws_cloudtrail_log` with your table's name if it's different.
 
 Re-collect your data:
 
