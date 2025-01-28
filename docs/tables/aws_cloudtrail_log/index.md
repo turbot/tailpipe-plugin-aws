@@ -1,15 +1,36 @@
 ---
 title: "Tailpipe Table: aws_cloudtrail_log - Query AWS CloudTrail Logs"
-description: "Allows users to query AWS CloudTrail logs."
+description: "AWS CloudTrail logs capture API activity and user actions within your AWS account."
 ---
 
 # Table: aws_cloudtrail_log - Query AWS CloudTrail logs
 
 The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
 
+## Configure
+
+Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cloudtrail_log`:
+
+```sh
+vi ~/.tailpipe/config/aws.tpc
+```
+
+```hcl
+connection "aws" "logging_account" {
+  profile = "my-logging-account"
+}
+
+partition "aws_cloudtrail_log" "my_logs" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "aws-cloudtrail-logs-bucket"
+  }
+}
+```
+
 ## Collect
 
-[Collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_cloudtrail_log` [partitions](https://tailpipe.io/docs/manage/partition):
+[Collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_cloudtrail_log` partitions:
 
 ```sh
 tailpipe collect aws_cloudtrail_log

@@ -5,7 +5,7 @@ icon_url: "/images/plugins/turbot/aws.svg"
 brand_color: "#FF9900"
 display_name: "Amazon Web Services"
 description: "Tailpipe plugin for collecting and querying various logs from AWS."
-og_description: "Collect and query AWS logs with SQL! Open source CLI. No DB required."
+og_description: "Collect AWS logs and query them instantly with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/turbot/aws-social-graphic.png"
 ---
 
@@ -116,11 +116,22 @@ Dashboards and detections are [open source](https://github.com/topics/tailpipe-m
 
 To get started, choose a mod from the [Powerpipe Hub](https://hub.powerpipe.io/?engines=tailpipe&q=aws).
 
-![image](docs/images/aws_cloudtrail_log_mitre_dashboard.png)
-
 <img src="https://raw.githubusercontent.com/turbot/tailpipe-plugin-aws/main/docs/images/aws_cloudtrail_log_mitre_dashboard.png"/>
 
 ## Connection Credentials
+
+### Arguments
+
+| Name                   | Type          | Required | Description                                                                                              |
+|------------------------|---------------|----------|----------------------------------------------------------------------------------------------------------|
+| `access_key`           | String        | No       | AWS access key used for authentication.                                                                 |
+| `endpoint_url`         | String        | No       | The custom endpoint URL for AWS services (e.g., for local testing with tools like LocalStack).           |
+| `max_error_retry_attempts` | Number    | No       | The maximum number of retry attempts for AWS API calls.                                                 |
+| `min_error_retry_delay`    | Number    | No       | The minimum delay in milliseconds between retry attempts for AWS API calls.                             |
+| `profile`              | String        | No       | The AWS CLI profile to use for credentials and configuration.                                           |
+| `s3_force_path_style`  | Boolean       | No       | Forces the use of path-style URLs for S3 operations instead of the default virtual-hosted style.         |
+| `secret_key`           | String        | No       | AWS secret key used for authentication.                                                                 |
+| `session_token`        | String        | No       | AWS session token used for temporary credentials. This is only used if you specify `access_key` and `secret_key`. |
 
 ### AWS Profile Credentials
 
@@ -139,7 +150,7 @@ aws_access_key_id = AKIA4YFAKEKEYJ7HS98F
 aws_secret_access_key = Apf938vDKd8ThisIsNotRealzTiEUwXj9nKLWP9mg4
 ```
 
-#### aws.spc:
+#### aws.tpc:
 
 ```hcl
 connection "aws_account_a" {
@@ -156,7 +167,7 @@ Using named profiles allows Tailpipe to work with your existing CLI configuratio
 ### AWS SSO Credentials
 
 Tailpipe works with [AWS SSO](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#sso-configure-profile-auto) via AWS profiles however:
-- You must login to SSO (`aws sso login` ) before starting Tailpipe
+- You must login to SSO (`aws sso login`) before starting Tailpipe
 - If your credentials expire, you will need to re-authenticate outside of Tailpipe - Tailpipe currently cannot re-authenticate you.
 
 #### aws credential file:
@@ -170,7 +181,7 @@ sso_role_name = SSO-ReadOnly
 region = us-east-1
 ```
 
-#### aws.spc:
+#### aws.tpc:
 
 ```hcl
 connection "aws_account_a_with_sso" {
@@ -185,23 +196,23 @@ If your aws credential file contains profiles that assume a role via the `source
 #### aws credential file:
 
 ```ini
-# This user must have sts:AssumeRole permission for arn:aws:iam::*:role/spc_role
+# This user must have sts:AssumeRole permission for arn:aws:iam::*:role.tpc_role
 [cli_user]
 aws_access_key_id = AKIA4YFAKEKEYXTDS252
 aws_secret_access_key = SH42YMW5p3EThisIsNotRealzTiEUwXN8BOIOF5J8m
 
 [account_a_role_without_mfa]
-role_arn = arn:aws:iam::111111111111:role/spc_role
+role_arn = arn:aws:iam::111111111111:role.tpc_role
 source_profile = cli_user
 external_id = xxxxx
 
 [account_b_role_without_mfa]
-role_arn = arn:aws:iam::222222222222:role/spc_role
+role_arn = arn:aws:iam::222222222222:role.tpc_role
 source_profile = cli_user
 external_id = yyyyy
 ```
 
-#### aws.spc:
+#### aws.tpc:
 
 ```hcl
 connection "aws_account_a" {
@@ -219,7 +230,7 @@ Currently Tailpipe doesn't support prompting for an MFA token at run time. To ov
 
 One way to accomplish this is to use the `credential_process` to [generate the credentials with a script or program](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sourcing-external.html) and cache the tokens in a new profile. There is a [sample `mfa.sh` script](https://raw.githubusercontent.com/turbot/tailpipe-plugin-aws/main/scripts/mfa.sh) in the `scripts` directory of the [tailpipe-plugin-aws](https://github.com/turbot/tailpipe-plugin-aws) repo that you can use, and there are several open source projects that automate this process as well.
 
-Note that Tailpipe cannot prompt you for your token currently, so you must authenticate before starting Tailpipe, and re-authenticate outside of Tailpipe whenever your credentials expire.
+Note that Tailpipe cannot prompt you for your token currently, so you must authenticate before running `tailpipe collect`, and re-authenticate outside of Tailpipe whenever your credentials expire.
 
 #### aws credential file:
 
@@ -236,7 +247,7 @@ credential_process = sh -c 'mfa.sh arn:aws:iam::111111111111:role/my_role arn:aw
 credential_process = sh -c 'mfa.sh arn:aws:iam::222222222222:role/my_role arn:aws:iam::999999999999:mfa/my_role_mfa cli_user 2> $(tty)'
 ```
 
-#### aws.spc:
+#### aws.tpc:
 
 ```hcl
 connection "aws_account_a" {
@@ -255,6 +266,7 @@ If you are using Tailpipe on AWS ECS then you need to ensure that have separated
 The Task Role should have permissions to assume your service role. Additionally your service role needs a trust relationship set up, and have permissions to assume your other roles.
 
 #### Task Role IAM Assume Role
+
 ```json
 {
     "Version": "2012-10-17"
@@ -273,6 +285,7 @@ The Task Role should have permissions to assume your service role. Additionally 
 ```
 
 #### Service Role
+
 ```json
 {
     "Version": "2012-10-17",
@@ -289,7 +302,7 @@ The Task Role should have permissions to assume your service role. Additionally 
 }
 ```
 
-This will allow you to configure tailpipe now to assume the service role.
+This will allow you to configure Tailpipe now to assume the service role.
 
 #### aws credential file:
 
@@ -307,7 +320,7 @@ source_profile = default
 
 Tailpipe can use profiles that use [aws-vault](https://github.com/99designs/aws-vault) via the `credential_process`. aws-vault can even be used when using AssumeRole Credentials with MFA (you must authenticate/re-authenticate outside of Tailpipe whenever your credentials expire if you are using MFA).
 
-When authenticating with temporary credentials, like using an access key pair with aws-vault, some IAM and STS APIs may be restricted. You can avoid creating a temporary session with the `--no-session` option (e.g., `aws-vault exec my_profile --no-session -- tailpipe query "select name from aws_iam_user;"`). For more information, please see [aws-vault Temporary credentials limitations with STS, IAM
+When authenticating with temporary credentials, like using an access key pair with aws-vault, some IAM and STS APIs may be restricted. You can avoid creating a temporary session with the `--no-session` option (e.g., `aws-vault exec my_profile --no-session -- tailpipe collect aws_cloudtrail_log"`). For more information, please see [aws-vault Temporary credentials limitations with STS, IAM
 ](https://github.com/99designs/aws-vault/blob/master/USAGE.md#temporary-credentials-limitations-with-sts-iam).
 
 #### aws credential file:
@@ -322,7 +335,7 @@ role_arn = arn:aws:iam::123456789012:role/my_role
 mfa_serial = arn:aws:iam::123456789012:mfa/my_role_mfa
 ```
 
-#### aws.spc:
+#### aws.tpc:
 
 ```hcl
 connection "aws_account_a" {
@@ -343,7 +356,7 @@ connection "aws_account_a" {
 
 ### Credentials from Environment Variables
 
-The AWS plugin will use the standard AWS environment variables to obtain credentials **only if other arguments (`profile`, `access_key`/`secret_key`, `regions`) are not specified** in the connection:
+The AWS plugin will use the standard AWS environment variables to obtain credentials **only if other arguments (`profile`, `access_key`/`secret_key`) are not specified** in the connection:
 
 ```sh
 export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
@@ -355,4 +368,4 @@ export AWS_ROLE_SESSION_NAME=tailpipe@myaccount
 
 ### Credentials from an EC2 Instance Profile
 
-If you are running Tailpipe on a AWS EC2 instance, and that instance has an [instance profile attached](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) then Tailpipe will automatically use the associated IAM role without other credentials:
+If you are running Tailpipe on a AWS EC2 instance, and that instance has an [instance profile attached](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) then Tailpipe will automatically use the associated IAM role without other credentials.
