@@ -12,10 +12,10 @@ The [AWS plugin](https://hub.tailpipe.io/plugins/turbot/aws) for Tailpipe allows
 - Get involved: [Issues](https://github.com/turbot/tailpipe-plugin-aws/issues)
 
 Collect and query logs:
-![image](https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_terminal.png)
+![image](docs/images/aws_cloudtrail_log_terminal.png)
 
 Run detections in a dashboard:
-![image](https://raw.githubusercontent.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections/develop/docs/images/aws_cloudtrail_log_mitre_dashboard.png)
+![image](docs/images/aws_cloudtrail_log_mitre_dashboard.png)
 
 ## Getting Started
 
