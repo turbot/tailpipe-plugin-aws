@@ -1,8 +1,8 @@
-## Count Examples
+## Activity Examples
 
-### Daily event counts
+### Daily activity trends
 
-Return a count of events per day to see trends over time.
+Count events per day to identify activity trends over time.
 
 ```sql
 select
@@ -18,7 +18,7 @@ order by
 
 ### Top 10 events
 
-List the top 10 events and how many times they were called.
+List the 10 most frequently called events.
 
 ```sql
 select
@@ -37,7 +37,7 @@ limit 10;
 
 ### Top 10 events (exclude read-only)
 
-List the top 10 events, excluding read-only events, and how many times they were called.
+List the top 10 most frequently called events, excluding read-only events.
 
 ```sql
 select
@@ -56,9 +56,9 @@ order by
 limit 10;
 ```
 
-### Event counts by account
+### Top events by account
 
-Count and group events by account ID, event source, and event name to highlight activity distribution across accounts.
+Count and group events by account ID, event source, and event name to analyze activity across accounts.
 
 ```sql
 select
@@ -76,7 +76,9 @@ order by
   event_count desc;
 ```
 
-### Error code counts
+### Top error codes
+
+Identify the most frequent error codes.
 
 ```sql
 select
@@ -94,7 +96,9 @@ order by
 
 ## Detection Examples
 
-### Detect default EBS encryption disabled in a region
+### Default EBS encryption disabled in a region
+
+Detect when default EBS encryption was disabled in a region.
 
 ```sql
 select
@@ -115,7 +119,9 @@ order by
   event_time desc;
 ```
 
-### Detect attempts to stop CloudTrail trail logging
+### CloudTrail trail logging stopped
+
+Detect when logging was stopped for a CloudTrail trail.
 
 ```sql
 select
@@ -129,14 +135,16 @@ select
 from
   aws_cloudtrail_log
 where
-  event_name in ('StopLogging', 'DeleteTrail')
-  and event_source = 'cloudtrail.amazonaws.com'
+  event_source = 'cloudtrail.amazonaws.com'
+  and event_name in ('StopLogging', 'DeleteTrail')
   and error_code is not null
 order by
   event_time desc;
 ```
 
-### Detect unsuccessful AWS console login attempts
+### Unsuccessful AWS console login attempts
+
+Find failed console login attempts, highlighting potential unauthorized access attempts.
 
 ```sql
 select
@@ -160,7 +168,7 @@ order by
 
 ### Root activity
 
-Find any actions taken by the root user.
+Track any actions performed by the root user.
 
 ```sql
 select
@@ -178,7 +186,9 @@ order by
   event_time desc;
 ```
 
-### Detect actions in unapproved regions
+### Activity in unapproved regions
+
+Identify actions occurring in AWS regions outside an approved list.
 
 ```sql
 select
@@ -197,7 +207,9 @@ order by
   event_time desc;
 ```
 
-### Detect actions from unapproved IP addresses
+### Activity from unapproved IP addresses
+
+Flag activity originating from IP addresses outside an approved list.
 
 ```sql
 select
@@ -218,7 +230,9 @@ order by
 
 ## Operational Examples
 
-### List VPC security group rule updates
+### VPC security group rule updates
+
+Track changes to VPC security group ingress and egress rules.
 
 ```sql
 select
@@ -239,7 +253,9 @@ order by
   event_time desc;
 ```
 
-### List IAM user policy updates
+### IAM user permission updates
+
+List events where an IAM user has added or removed permissions through managed policies, inline policies, or groups.
 
 ```sql
 select
@@ -255,14 +271,16 @@ from
   aws_cloudtrail_log
 where
   event_source = 'iam.amazonaws.com'
-  and event_name in ('AttachUserPolicy', 'DetachUserPolicy', 'PutUserPolicy')
+  and event_name in ('AddUserToGroup', 'AttachUserPolicy', 'DeleteUserPolicy', 'DetachUserPolicy', 'PutUserPolicy', 'RemoveUserFromGroup')
 order by
   event_time desc;
 ```
 
 ## Volume Examples
 
-### Detect high volume of S3 bucket access requests
+### High volume of S3 bucket access requests
+
+Detect unusually high access activity to S3 buckets and objects.
 
 ```sql
 select
@@ -283,7 +301,9 @@ order by
   event_count desc;
 ```
 
-### Detect excessive IAM role assumption
+### Excessive IAM role assumptions
+
+Identify IAM roles being assumed at an unusually high frequency.
 
 ```sql
 select
@@ -307,7 +327,9 @@ order by
 
 ## Baseline Examples
 
-### Detect unusual source IP addresses for users
+### Unrecognized user source IP addresses
+
+Detect user activity from unexpected or new source IP addresses.
 
 ```sql
 select
@@ -328,7 +350,9 @@ order by
   access_count desc;
 ```
 
-### Detect activity outside of normal hours (between 8 PM and 6 AM)
+### Activity outside of normal hours
+
+Flag activity occurring outside of standard working hours, e.g., activity bewteen 8 PM and 6 AM.
 
 ```sql
 select
@@ -343,7 +367,7 @@ select
 from
   aws_cloudtrail_log
 where
-  cast(strftime(event_time, '%H') as integer) >= 20
-  or cast(strftime(event_time, '%H') as integer) < 6
+  cast(strftime(event_time, '%H') as integer) >= 20 -- 8 PM
+  or cast(strftime(event_time, '%H') as integer) < 6 -- 6 AM
 order by
   event_time desc;
