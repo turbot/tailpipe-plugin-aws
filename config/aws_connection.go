@@ -25,16 +25,14 @@ import (
 const PluginName = "aws"
 
 type AwsConnection struct {
-	Regions               []string `hcl:"regions,optional"`
-	DefaultRegion         *string  `hcl:"default_region"`
-	Profile               *string  `hcl:"profile"`
-	AccessKey             *string  `hcl:"access_key"`
-	SecretKey             *string  `hcl:"secret_key"`
-	SessionToken          *string  `hcl:"session_token"`
-	MaxErrorRetryAttempts *int     `hcl:"max_error_retry_attempts"`
-	MinErrorRetryDelay    *int     `hcl:"min_error_retry_delay"`
-	EndpointUrl           *string  `hcl:"endpoint_url"`
-	S3ForcePathStyle      *bool    `hcl:"s3_force_path_style"`
+	Profile               *string `hcl:"profile"`
+	AccessKey             *string `hcl:"access_key"`
+	SecretKey             *string `hcl:"secret_key"`
+	SessionToken          *string `hcl:"session_token"`
+	MaxErrorRetryAttempts *int    `hcl:"max_error_retry_attempts"`
+	MinErrorRetryDelay    *int    `hcl:"min_error_retry_delay"`
+	EndpointUrl           *string `hcl:"endpoint_url"`
+	S3ForcePathStyle      *bool   `hcl:"s3_force_path_style"`
 }
 
 func (c *AwsConnection) Validate() error {
@@ -95,12 +93,7 @@ func (c *AwsConnection) GetClientConfiguration(ctx context.Context, overrideRegi
 	if overrideRegion != nil {
 		cfg.Region = *overrideRegion
 	} else if cfg.Region == "" {
-		defaultRegion := c.getDefaultRegion()
-		configOptions = append(configOptions, config.WithRegion(defaultRegion))
-		cfg, err = config.LoadDefaultConfig(ctx, configOptions...)
-		if err != nil {
-			return nil, fmt.Errorf("error loading AWS config: %w", err)
-		}
+		cfg.Region = "us-east-1"
 	}
 
 	// retry handling
@@ -144,22 +137,6 @@ func (c *AwsConnection) GetClientConfiguration(ctx context.Context, overrideRegi
 	}
 
 	return &cfg, nil
-}
-
-func (c *AwsConnection) getDefaultRegion() string {
-	if c.DefaultRegion != nil {
-		return *c.DefaultRegion
-	}
-
-	for _, r := range c.Regions {
-		lastResort := awsLastResortRegionFromRegionWildcard(r)
-		if lastResort != "" {
-			return lastResort
-		}
-	}
-
-	// ultimate fallback is to default to most common region
-	return "us-east-1"
 }
 
 // Helper function to get value from Config or environment variable
