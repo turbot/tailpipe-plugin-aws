@@ -6,7 +6,7 @@ import (
 
 	"github.com/rs/xid"
 
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/extractors"
 	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-aws/sources"

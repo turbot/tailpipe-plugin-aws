@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/elastic/go-grok"
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/filter"
+	"github.com/turbot/pipe-fittings/v2/filter"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"

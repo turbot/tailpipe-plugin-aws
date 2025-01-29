@@ -2,11 +2,7 @@ module github.com/turbot/tailpipe-plugin-aws
 
 go 1.23.2
 
-replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
-
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
-
-require github.com/turbot/tailpipe-plugin-sdk v0.0.0
+require github.com/turbot/tailpipe-plugin-sdk v0.1.0-rc.0
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
@@ -65,11 +61,11 @@ require (
 	github.com/goccy/go-yaml v1.11.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
-	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-getter v1.7.5 // indirect
@@ -95,7 +91,6 @@ require (
 	github.com/jackc/pgx/v5 v5.6.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/karrick/gows v0.3.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -122,11 +117,9 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/satyrius/gonx v1.4.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/smarty/assertions v1.15.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
@@ -134,6 +127,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/stevenle/topsort v0.2.0 // indirect
+	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
@@ -183,16 +177,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.11
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.52
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.49
-	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.37.3
-	github.com/aws/aws-sdk-go-v2/service/guardduty v1.50.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.72.3
 	github.com/elastic/go-grok v0.3.1
-	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.5.0
-	github.com/stretchr/testify v1.10.0
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings v1.4.1
+	github.com/turbot/pipe-fittings/v2 v2.0.0-rc.1
 	golang.org/x/sync v0.10.0
 )
