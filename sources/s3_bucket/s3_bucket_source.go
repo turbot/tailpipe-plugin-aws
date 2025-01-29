@@ -1,4 +1,4 @@
-package sources
+package s3_bucket
 
 import (
 	"context"
@@ -28,11 +28,6 @@ const (
 	AwsS3BucketSourceIdentifier = "aws_s3_bucket"
 	defaultBucketRegion         = "us-east-1"
 )
-
-// register the source from the package init function
-func init() {
-	row_source.RegisterRowSource[*AwsS3BucketSource]()
-}
 
 // AwsS3BucketSource is a [ArtifactSource] implementation that reads artifacts from an S3 bucket
 type AwsS3BucketSource struct {

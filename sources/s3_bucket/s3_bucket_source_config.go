@@ -1,4 +1,4 @@
-package sources
+package s3_bucket
 
 import (
 	"fmt"

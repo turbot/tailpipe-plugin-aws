@@ -1,4 +1,4 @@
-package rows
+package cloudtrail
 
 import (
 	"time"

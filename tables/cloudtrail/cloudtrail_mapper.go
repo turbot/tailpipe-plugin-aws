@@ -1,11 +1,10 @@
-package mappers
+package cloudtrail
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
@@ -16,15 +15,15 @@ func (m *CloudTrailMapper) Identifier() string {
 	return "cloudtrail_mapper"
 }
 
-func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...table.MapOption[*rows.CloudTrailLog]) (*rows.CloudTrailLog, error) {
-	var log rows.CloudTrailLog
+func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...table.MapOption[*CloudTrailLog]) (*CloudTrailLog, error) {
+	var log CloudTrailLog
 	var jsonBytes []byte
 	var err error
 
 	switch v := a.(type) {
-	case *rows.CloudTrailLog:
+	case *CloudTrailLog:
 		return v, nil
-	case rows.CloudTrailLog:
+	case CloudTrailLog:
 		return &v, nil
 	case []byte:
 		jsonBytes = v

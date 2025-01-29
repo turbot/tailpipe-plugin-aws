@@ -1,4 +1,4 @@
-package extractors
+package cloudtrail
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/turbot/tailpipe-plugin-aws/rows"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 )
 
@@ -33,7 +32,7 @@ func (c *CloudTrailLogExtractor) Extract(_ context.Context, a any) ([]any, error
 	}
 
 	// decode json ito CloudTrailLogBatch
-	var log rows.CloudTrailLogBatch
+	var log CloudTrailLogBatch
 	err := json.Unmarshal(jsonBytes, &log)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding json: %w", err)
