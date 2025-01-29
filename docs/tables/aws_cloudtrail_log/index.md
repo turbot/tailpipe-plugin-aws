@@ -9,7 +9,7 @@ The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs
 
 ## Configure
 
-Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cloudtrail_log`:
+Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cloudtrail_log` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#example-configurations):
 
 ```sh
 vi ~/.tailpipe/config/aws.tpc
