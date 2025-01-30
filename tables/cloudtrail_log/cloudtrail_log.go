@@ -1,4 +1,4 @@
-package rows
+package cloudtrail_log
 
 import (
 	"time"

@@ -2,7 +2,7 @@ module github.com/turbot/tailpipe-plugin-aws
 
 go 1.23.2
 
-require github.com/turbot/tailpipe-plugin-sdk v0.1.0-rc.0
+require github.com/turbot/tailpipe-plugin-sdk v0.1.0
 
 require (
 	cloud.google.com/go v0.115.0 // indirect

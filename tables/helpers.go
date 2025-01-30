@@ -2,14 +2,14 @@ package tables
 
 import "strings"
 
-// awsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
+// AwsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
 // * the full arn
 // * the account ID
 // * EC2 instance ID
 // * S3 bucket name
 // * EC2 volume ID
 
-func awsAkasFromArn(arn string) []string {
+func AwsAkasFromArn(arn string) []string {
 	// Split the ARN into its components.
 	parts := strings.Split(arn, ":")
 	if len(parts) < 6 {

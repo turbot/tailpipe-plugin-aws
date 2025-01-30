@@ -1,4 +1,4 @@
-package sources
+package s3_bucket
 
 import (
 	"context"
@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/elastic/go-grok"
+
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/filter"
 	"github.com/turbot/tailpipe-plugin-aws/config"
@@ -28,11 +29,6 @@ const (
 	AwsS3BucketSourceIdentifier = "aws_s3_bucket"
 	defaultBucketRegion         = "us-east-1"
 )
-
-// register the source from the package init function
-func init() {
-	row_source.RegisterRowSource[*AwsS3BucketSource]()
-}
 
 // AwsS3BucketSource is a [ArtifactSource] implementation that reads artifacts from an S3 bucket
 type AwsS3BucketSource struct {

@@ -1,15 +1,14 @@
-package tables
+package cloudtrail_log
 
 import (
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 
 	"github.com/turbot/pipe-fittings/v2/utils"
-	"github.com/turbot/tailpipe-plugin-aws/extractors"
-	"github.com/turbot/tailpipe-plugin-aws/rows"
-	"github.com/turbot/tailpipe-plugin-aws/sources"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -20,36 +19,28 @@ import (
 
 const CloudTrailLogTableIdentifier = "aws_cloudtrail_log"
 
-func init() {
-	// Register the table, with type parameters:
-	// 1. row struct
-	// 2. table config struct
-	// 3. table implementation
-	table.RegisterTable[*rows.CloudTrailLog, *CloudTrailLogTable]()
-}
-
 // CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct{}
 
-func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*rows.CloudTrailLog] {
+func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*CloudTrailLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"),
 	}
 
-	return []*table.SourceMetadata[*rows.CloudTrailLog]{
+	return []*table.SourceMetadata[*CloudTrailLog]{
 		{
 			// S3 artifact source
-			SourceName: sources.AwsS3BucketSourceIdentifier,
+			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(extractors.NewCloudTrailLogExtractor()),
+				artifact_source.WithArtifactExtractor(NewCloudTrailLogExtractor()),
 			},
 		},
 		{
 			// any other artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(extractors.NewCloudTrailLogExtractor()),
+				artifact_source.WithArtifactExtractor(NewCloudTrailLogExtractor()),
 			},
 		},
 	}
@@ -61,7 +52,7 @@ func (t *CloudTrailLogTable) Identifier() string {
 }
 
 // EnrichRow implements table.Table
-func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichmentFields schema.SourceEnrichment) (*rows.CloudTrailLog, error) {
+func (t *CloudTrailLogTable) EnrichRow(row *CloudTrailLog, sourceEnrichmentFields schema.SourceEnrichment) (*CloudTrailLog, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
@@ -76,7 +67,7 @@ func (t *CloudTrailLogTable) EnrichRow(row *rows.CloudTrailLog, sourceEnrichment
 	}
 	for _, resource := range row.Resources {
 		if resource.ARN != nil {
-			newAkas := awsAkasFromArn(*resource.ARN)
+			newAkas := tables.AwsAkasFromArn(*resource.ARN)
 			row.TpAkas = append(row.TpAkas, newAkas...)
 		}
 	}
