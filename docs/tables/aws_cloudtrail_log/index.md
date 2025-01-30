@@ -229,7 +229,7 @@ partition "aws_cloudtrail_log" "my_logs_regions" {
 
 ### aws_s3_bucket
 
-This table sets the following defaults for the [aws_s3_bucket source](https://tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
+This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
 | Argument      | Default |
 |---------------|---------|
