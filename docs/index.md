@@ -151,11 +151,11 @@ aws_secret_access_key = Apf938vDKd8ThisIsNotRealzTiEUwXj9nKLWP9mg4
 #### aws.tpc:
 
 ```hcl
-connection "aws_account_a" {
+connection "aws" "aws_account_a" {
   profile = "account_a"
 }
 
-connection "aws_account_b" {
+connection "aws" "aws_account_b" {
   profile = "account_b"
 }
 ```
@@ -182,7 +182,7 @@ region = us-east-1
 #### aws.tpc:
 
 ```hcl
-connection "aws_account_a_with_sso" {
+connection "aws" "aws_account_a_with_sso" {
   profile = "account_a_with_sso"
 }
 ```
@@ -213,11 +213,11 @@ external_id = yyyyy
 #### aws.tpc:
 
 ```hcl
-connection "aws_account_a" {
+connection "aws" "aws_account_a" {
   profile = "account_a_role_without_mfa"
 }
 
-connection "aws_account_b" {
+connection "aws" "aws_account_b" {
   profile = "account_b_role_without_mfa"
 }
 ```
@@ -248,11 +248,11 @@ credential_process = sh -c 'mfa.sh arn:aws:iam::222222222222:role/my_role arn:aw
 #### aws.tpc:
 
 ```hcl
-connection "aws_account_a" {
+connection "aws" "aws_account_a" {
   profile = "account_a_role_with_mfa"
 }
 
-connection "aws_account_b" {
+connection "aws" "aws_account_b" {
   profile = "account_b_role_with_mfa"
 }
 ```
@@ -336,7 +336,7 @@ mfa_serial = arn:aws:iam::123456789012:mfa/my_role_mfa
 #### aws.tpc:
 
 ```hcl
-connection "aws_account_a" {
+connection "aws" "aws_account_a" {
   profile = "account_a"
 }
 ```
@@ -346,7 +346,7 @@ connection "aws_account_a" {
 The AWS plugin allows you set static credentials with the `access_key`, `secret_key`, and `session_token` arguments in your connection.
 
 ```hcl
-connection "aws_account_a" {
+connection "aws" "aws_account_a" {
   secret_key = "gMCYsoGqjfThisISNotARealKeyVVhh"
   access_key = "ASIA3ODZSWFYSN2PFHPJ"
 }
