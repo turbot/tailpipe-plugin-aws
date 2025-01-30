@@ -124,19 +124,19 @@ cd tailpipe-plugin-aws
 
 After making your local changes, build the plugin, which automatically installs the new version to your `~/.tailpipe/plugins` directory:
 
-```
+```sh
 make
 ```
 
 Re-collect your data:
 
-```
+```sh
 tailpipe collect aws_cloudtrail_log
 ```
 
 Try it!
 
-```
+```sh
 tailpipe query
 > .inspect aws_cloudtrail_log
 ```

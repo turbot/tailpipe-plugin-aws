@@ -143,7 +143,7 @@ partition "aws_cloudtrail_log" "my_logs_prefix" {
 
 ### Collect logs from local files
 
-You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/):
+You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/).
 
 ```hcl
 partition "aws_cloudtrail_log" "local_logs" {

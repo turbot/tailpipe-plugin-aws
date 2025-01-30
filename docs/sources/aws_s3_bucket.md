@@ -46,6 +46,8 @@ partition "aws_cloudtrail_log" "my_logs_prefix" {
 
 ### Collect CloudTrail logs with a custom path
 
+Collect CloudTrail logs stored in an S3 bucket with a custom log file format.
+
 ```hcl
 partition "aws_cloudtrail_log" "my_logs_custom_path" {
   source "aws_s3_bucket" {
@@ -61,7 +63,7 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 | Argument      | Required | Default                  | Description                                                                                                                |
 |---------------|----------|--------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | bucket        | Yes      |                          | The name of the S3 bucket to collect logs from.                                                                            |
-| connection    | No       | `connection.aws.default` | The [AWS connection](https://tailpipe.io/docs/reference/config-files/connection/aws) to use to connect to the AWS account. |
+| connection    | No       | `connection.aws.default` | The [AWS connection](https://hub.tailpipe.io.plugins/turbot/aws#connection-credentials) to use to connect to the AWS account. |
 | file_layout   | No       |                          | The Grok pattern that defines the log file structure.                                                                      |
 | prefix        | No       |                          | The S3 key prefix that comes after the name of the bucket you have designated for log file delivery.                       |
 
@@ -69,4 +71,4 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 
 The following tables define their own default values for certain source arguments:
 
-- **[aws_cloudtrail_log](https://tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_s3_bucket)**
+- **[aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_s3_bucket)**
