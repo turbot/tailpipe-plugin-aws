@@ -116,8 +116,6 @@ Dashboards and detections are [open source](https://github.com/topics/tailpipe-m
 
 To get started, choose a mod from the [Powerpipe Hub](https://hub.powerpipe.io/?engines=tailpipe&q=aws).
 
-<img src="https://raw.githubusercontent.com/turbot/tailpipe-plugin-aws/main/docs/images/aws_cloudtrail_log_mitre_dashboard.png"/>
-
 ## Connection Credentials
 
 ### Arguments
