@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -120,13 +119,16 @@ func (c *AwsConnection) GetClientConfiguration(ctx context.Context, overrideRegi
 	// custom endpoint
 	endpointUrl := getConfigOrEnv(c.EndpointUrl, "AWS_ENDPOINT_URL")
 	if endpointUrl != "" {
+		//nolint:staticcheck // TODO: update to using newer endpoint resolver
 		customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			//nolint:staticcheck
 			return aws.Endpoint{
 				PartitionID:   "aws",
 				URL:           endpointUrl,
 				SigningRegion: region,
 			}, nil
 		})
+		//nolint:staticcheck // TODO: update to using newer endpoint resolver
 		newCfg, err := config.LoadDefaultConfig(ctx, config.WithEndpointResolverWithOptions(customResolver))
 		if err != nil {
 			return nil, fmt.Errorf("error loading AWS config with custom endpoint resolver: %w", err)
@@ -308,62 +310,6 @@ func readEnvVarToInt(name string, defaultVal int) int {
 		}
 	}
 	return val
-}
-
-// Given a region (including wildcards), guess at the best last resort region
-// based on the partition. Examples:
-//
-//	us-gov-* -> us-gov-west-1
-//	cn* -> cn-northwest-1
-//	us-west-2 -> us-east-1
-//	* -> us-east-1
-//	crap -> ""
-func awsLastResortRegionFromRegionWildcard(regionWildcard string) string {
-
-	// Check prefixes for obscure partitions
-	if strings.HasPrefix(regionWildcard, "us-gov") {
-		return "us-gov-west-1"
-	} else if strings.HasPrefix(regionWildcard, "cn") {
-		return "cn-northwest-1"
-	} else if strings.HasPrefix(regionWildcard, "us-isob") {
-		return "us-isob-east-1"
-	} else if strings.HasPrefix(regionWildcard, "us-iso") {
-		return "us-iso-east-1"
-	}
-
-	// Check if the prefix is for a commercial region.
-	// Must be done after obscure partitions, because they have the same
-	// prefixes but longer.
-	for _, prefix := range awsCommercialRegionPrefixes() {
-		if strings.HasPrefix(regionWildcard, prefix) {
-			return "us-east-1"
-		}
-	}
-
-	// Unknown partition
-	return ""
-}
-
-//
-// AWS STANDARD REGIONS
-//
-// Source: https://docs.aws.amazon.com/general/latest/gr/rande.html#regional-endpoints
-//
-// Maintain a hard coded list of regions to use when API calls to the region
-// list endpoint are not possible. This list must be updated manually as new
-// regions are announced.
-//
-
-func awsCommercialRegionPrefixes() []string {
-	return []string{
-		"af",
-		"ap",
-		"ca",
-		"eu",
-		"me",
-		"sa",
-		"us",
-	}
 }
 
 // NoOpRateLimit https://github.com/aws/aws-sdk-go-v2/issues/543

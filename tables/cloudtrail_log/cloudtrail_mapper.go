@@ -29,8 +29,14 @@ func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...table.MapOption[*C
 		jsonBytes = v
 	case *string:
 		jsonBytes, err = m.decodeString(*v)
+		if err != nil {
+			return nil, fmt.Errorf("error decoding string: %w", err)
+		}
 	case string:
 		jsonBytes, err = m.decodeString(v)
+		if err != nil {
+			return nil, fmt.Errorf("error decoding string: %w", err)
+		}
 	default:
 		return nil, fmt.Errorf("expected byte[], string or rows.CloudTailLog got %T", a)
 	}
