@@ -1,4 +1,4 @@
-package cloudtrail
+package cloudtrail_log
 
 import (
 	"time"

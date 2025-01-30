@@ -1,4 +1,4 @@
-package cloudtrail
+package cloudtrail_log
 
 import (
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
