@@ -1,29 +1,14 @@
-package util
+package tables
 
-import (
-	"path/filepath"
-	"strings"
-)
+import "strings"
 
-func IsValidExtension(path string, extensions []string) bool {
-	if len(extensions) == 0 {
-		return true
-	}
-	ext := filepath.Ext(path)
-	for _, validExt := range extensions {
-		if ext == validExt {
-			return true
-		}
-	}
-	return false
-}
-
-// awsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
+// AwsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
 // * the full arn
 // * the account ID
 // * EC2 instance ID
 // * S3 bucket name
 // * EC2 volume ID
+
 func AwsAkasFromArn(arn string) []string {
 	// Split the ARN into its components.
 	parts := strings.Split(arn, ":")

@@ -1,5 +1,18 @@
 package main
 
-import "github.com/turbot/tailpipe-plugin-aws/plugin"
+import (
+	"log/slog"
 
-var Plugin plugin.AwsPlugin
+	"github.com/turbot/tailpipe-plugin-aws/aws"
+	"github.com/turbot/tailpipe-plugin-sdk/plugin"
+)
+
+func main() {
+	err := plugin.Serve(&plugin.ServeOpts{
+		PluginFunc: aws.NewPlugin,
+	})
+
+	if err != nil {
+		slog.Error("Error starting aws", "error", err)
+	}
+}

@@ -1,4 +1,4 @@
-package plugin
+package aws
 
 import (
 	"testing"
@@ -7,5 +7,5 @@ import (
 )
 
 func TestConformance(t *testing.T) {
-	plugin.RunConformanceTests(t, &AwsPlugin{})
+	plugin.Validate(t, NewPlugin)
 }
