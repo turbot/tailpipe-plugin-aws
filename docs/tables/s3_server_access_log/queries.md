@@ -22,12 +22,16 @@ List the 10 most frequently accessed S3 objects.
 
 ```sql
 select
+  timestamp,
+  requester,
   bucket,
   key,
   count(*) as access_count
 from
   aws_s3_server_access_log
 group by
+  timestamp,
+  requester,
   bucket,
   key
 order by
@@ -41,11 +45,13 @@ Identify the top 10 requesters generating the most traffic.
 
 ```sql
 select
+  timestamp,
   requester,
   count(*) as request_count
 from
   aws_s3_server_access_log
 group by
+  timestamp,
   requester
 order by
   request_count desc
@@ -58,6 +64,8 @@ Identify the most frequent error codes.
 
 ```sql
 select
+  timestamp,
+  requester,
   error_code,
   count(*) as access_count
 from
@@ -65,6 +73,8 @@ from
 where
   error_code is not null
 group by
+  timestamp,
+  requester,
   error_code
 order by
   access_count desc;
@@ -79,6 +89,7 @@ Detect unusually large downloads from S3.
 ```sql
 select
   timestamp,
+  requester,
   bucket,
   key,
   bytes_sent,
@@ -100,9 +111,9 @@ Identify S3 access from unknown or unapproved IP addresses.
 ```sql
 select
   timestamp,
+  requester,
   bucket,
   remote_ip,
-  requester,
   operation
 from
   aws_s3_server_access_log
@@ -121,6 +132,7 @@ Identify all S3 requests that resulted in an error.
 ```sql
 select
   timestamp,
+  requester,
   bucket,
   request_uri,
   http_status,
@@ -143,6 +155,7 @@ Find requests requiring ACLs that might indicate permission misconfigurations.
 ```sql
 select
   timestamp,
+  requester,
   bucket,
   key,
   operation,
@@ -163,12 +176,16 @@ Detect unusually high access activity to S3 buckets and objects.
 
 ```sql
 select
+  timestamp,
+  requester,
   bucket,
   count(*) as access_count,
   date_trunc('minute', timestamp) as access_minute
 from
   aws_s3_server_access_log
 group by
+  timestamp,
+  requester,
   bucket,
   access_minute
 having
@@ -183,6 +200,7 @@ Identify accounts with a high number of failed requests.
 
 ```sql
 select
+  timestamp,
   requester,
   count(*) as failed_requests
 from
@@ -191,6 +209,7 @@ where
   http_status is not null
   and http_status >= 400
 group by
+  timestamp,
   requester
 having
   count(*) > 50
@@ -206,6 +225,7 @@ Detect user access from unexpected or new source IP addresses.
 
 ```sql
 select
+  timestamp,
   requester,
   remote_ip,
   count(*) as access_count,
@@ -215,7 +235,10 @@ from
 where
   remote_ip not in (select distinct remote_ip from aws_s3_server_access_log)
 group by
-  requester, remote_ip, access_day
+  timestamp,
+  requester,
+  remote_ip,
+  access_day
 having
   access_count > 5
 order by
@@ -229,8 +252,8 @@ Flag access occurring outside of standard working hours, e.g., between 8 PM and 
 ```sql
 select
   timestamp,
-  bucket,
   requester,
+  bucket,
   remote_ip,
   operation
 from
