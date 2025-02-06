@@ -1,3 +1,9 @@
+## v0.2.0 [2025-02-06]
+
+_Enhancements_
+
+- Updated documentation formatting and enhanced argument descriptions for `aws_s3_bucket` source. ([#76](https://github.com/turbot/tailpipe-plugin-aws/pull/76))
+
 ## v0.1.0 [2025-01-30]
 
 _What's new?_
