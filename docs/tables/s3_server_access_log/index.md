@@ -75,7 +75,7 @@ select
 from
   aws_s3_server_access_log
 where
-  bucket = 'my-bucket-name'
+  bucket = 'test-tailpipe-source-pc'
 group by
   requester
 order by
@@ -133,29 +133,6 @@ partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
 }
 ```
 
-### Collect logs from local files
-
-```hcl
-partition "aws_s3_server_access_log" "local_s3_logs" {
-  source "file"  {
-    paths       = ["/Users/myuser/s3_access_logs"]
-    file_layout = "AWSLogs/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"
-  }
-}
-```
-
-### Collect logs for all accounts in an organization
-
-```hcl
-partition "aws_s3_server_access_log" "my_s3_logs_org" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.logging_account
-    bucket      = "s3-access-logs-bucket"
-    file_layout = "AWSLogs/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"
-  }
-}
-```
-
 ## Source Defaults
 
 ### aws_s3_bucket
@@ -164,5 +141,6 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 
 | Argument      | Default |
 |--------------|---------|
-| file_layout  | `AWSLogs/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}` |
+| file_layout  | `%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}` |
+| file_layout | `%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}` |
 
