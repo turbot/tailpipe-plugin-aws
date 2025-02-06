@@ -168,3 +168,41 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
+func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
+	return map[string]string{
+		"bucket_owner":        "The canonical user ID of the bucket owner.",
+		"bucket":              "The name of the S3 bucket where the request was made.",
+		"timestamp":           "The date and time when the request was received by S3.",
+		"remote_ip":           "The IP address of the client that made the request.",
+		"requester":           "The canonical user ID or IAM role of the entity making the request.",
+		"request_id":          "A unique identifier assigned to the request by AWS.",
+		"operation":           "The type of operation performed on the S3 object (e.g., REST.GET.OBJECT).",
+		"key":                 "The object key (name) if applicable to the request.",
+		"request_uri":         "The full request URI used in the operation.",
+		"http_status":         "The HTTP status code returned for the request.",
+		"error_code":          "The error code returned, if the request resulted in an error.",
+		"bytes_sent":          "The number of bytes sent in response to the request.",
+		"object_size":         "The size of the requested object in bytes.",
+		"total_time":          "The total time taken for the request from start to finish (in milliseconds).",
+		"turn_around_time":    "The time taken by S3 to process the request (in milliseconds).",
+		"referer":             "The referer header from the client request, if present.",
+		"user_agent":          "The User-Agent string from the client making the request.",
+		"version_id":          "The version ID of the object, if versioning is enabled.",
+		"host_id":             "An identifier assigned to help diagnose request failures.",
+		"signature_version":   "The signature version used for request authentication (e.g., SigV2, SigV4).",
+		"cipher_suite":        "The cipher suite used for SSL/TLS connections.",
+		"authentication_type": "The authentication method used (e.g., AuthHeader, QueryString).",
+		"host_header":         "The host header included in the request.",
+		"tls_version":         "The TLS protocol version used for the request.",
+		"access_point_arn":    "The ARN of the S3 Access Point used for the request, if applicable.",
+		"acl_required":        "Indicates if ACLs were required for the request (true/false).",
+
+		// Tailpipe-specific metadata fields
+		"tp_id":               "A unique identifier for the log entry.",
+		"tp_index":            "The index of the event in the ingestion pipeline.",
+		"tp_ingest_timestamp": "The timestamp when the log was ingested by Tailpipe.",
+		"tp_ips":              "All IP addresses associated with the request.",
+		"tp_timestamp":        "The exact time the event was recorded in the logs.",
+		"tp_usernames":        "Usernames or access key IDs associated with the request.",
+	}
+}

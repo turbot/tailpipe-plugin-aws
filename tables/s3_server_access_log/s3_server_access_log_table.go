@@ -7,7 +7,7 @@ import (
 
 	"github.com/rs/xid"
 
-	// "github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -29,18 +29,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 
 func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*S3ServerAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		// non date based partitioning pattern which worked
-		// FileLayout: utils.ToStringPointer("%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),
-		// date based partitioning pattern which worked
-		// FileLayout: utils.ToStringPointer("%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),
-		// both date and non date based partitioning pattern which did not work
-		// FileLayout: utils.ToStringPointer("(?:%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/)?%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),		// FileLayout: utils.ToStringPointer("(?:%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/)?%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),
-		// FileLayout: utils.ToStringPointer("(?:%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/)?%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),
-		// FileLayout: utils.ToStringPointer(".*%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}$"),
-		Patterns: map[string]string{
-			"nonDateBasedPattern": "%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}",
-			"dateBasedPattern": "%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}",
-		},
+		FileLayout: utils.ToStringPointer("(%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/)?%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),
 	}
 
 	return []*table.SourceMetadata[*S3ServerAccessLog]{
@@ -80,4 +69,8 @@ func (c *S3ServerAccessLogTable) EnrichRow(row *S3ServerAccessLog, sourceEnrichm
 	row.TpUsernames = append(row.TpUsernames, row.Requester, row.BucketOwner)
 
 	return row, nil
+}
+
+func (c *S3ServerAccessLogTable) GetDescription() string {
+	return "AWS S3 Server Access logs capture detailed information about the requests that are made to a bucket. This table provides a structured representation of the log data."
 }
