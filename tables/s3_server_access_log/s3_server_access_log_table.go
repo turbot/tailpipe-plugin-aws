@@ -3,6 +3,8 @@ package s3_server_access_log
 import (
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 
 	"github.com/rs/xid"
@@ -61,8 +63,11 @@ func (c *S3ServerAccessLogTable) EnrichRow(row *S3ServerAccessLog, sourceEnrichm
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-	row.TpIndex = row.Bucket // TODO: #enrichment this would ideally be the AccountID, how to obtain?
-	// IPs
+	callerIdentityData, err := sts.New(session.Must(session.NewSession())).GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		return nil, err
+	}
+	row.TpIndex = *callerIdentityData.Account
 	row.TpSourceIP = &row.RemoteIP
 	row.TpIps = append(row.TpIps, row.RemoteIP)
 
