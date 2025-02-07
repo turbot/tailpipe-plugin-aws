@@ -2,7 +2,7 @@ module github.com/turbot/tailpipe-plugin-aws
 
 go 1.23.2
 
-replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
+require github.com/turbot/tailpipe-plugin-sdk v0.1.0
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
@@ -18,7 +18,6 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.183 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.8 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.28 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.32 // indirect
@@ -177,6 +176,7 @@ require (
 )
 
 require (
+	github.com/aws/aws-sdk-go v1.44.183
 	github.com/aws/aws-sdk-go-v2 v1.36.1
 	github.com/aws/aws-sdk-go-v2/config v1.29.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.59
@@ -188,6 +188,5 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/turbot/go-kit v0.10.0-rc.0
 	github.com/turbot/pipe-fittings/v2 v2.0.0
-	github.com/turbot/tailpipe-plugin-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.10.0
 )
