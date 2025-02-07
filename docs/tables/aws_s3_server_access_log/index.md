@@ -1,11 +1,11 @@
 ---
 title: "Tailpipe Table: aws_s3_server_access_log - Query AWS S3 Server Access Logs"
-description: "AWS S3 Server Access Logs provide detailed information about requests made to your S3 buckets, including request source, operations performed, and response details."
+description: "AWS S3 server access logs provide detailed information about requests made to your S3 buckets, including request source, operations performed, and response details."
 ---
 
-# Table: aws_s3_server_access_log - Query AWS S3 Server Access Logs
+# Table: aws_s3_server_access_log - Query AWS S3 server access logs
 
-The `aws_s3_server_access_log` table allows you to query AWS S3 Server Access Logs. This table capture detailed request and access information for S3 buckets, helping to analyze access patterns, troubleshoot issues, and enhance security monitoring.
+The `aws_s3_server_access_log` table allows you to query AWS S3 server access logs. This table captures detailed request and access information for S3 buckets, helping to analyze access patterns, troubleshoot issues, and enhance security monitoring.
 
 ## Configure
 
@@ -44,7 +44,7 @@ tailpipe collect aws_s3_server_access_log.my_s3_logs
 
 ## Query
 
-**[Explore 100+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
+**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
 
 ### Find all failed requests
 
@@ -106,7 +106,7 @@ order by
 
 ### Collect logs from an S3 bucket
 
-Collect S3 Server Access logs stored in a S3 bucket 
+Collect S3 server access logs stored in an S3 bucket.
 
 ```hcl
 connection "aws" "logging_account" {
@@ -123,12 +123,28 @@ partition "aws_s3_server_access_log" "my_s3_logs" {
 
 ### Collect logs from an S3 bucket with a prefix
 
+Collect S3 server access logs stored in an S3 bucket using a prefix.
+
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
     bucket     = "s3-server-access-logs-bucket"
     prefix     = "my/prefix/"
+  }
+}
+```
+
+### Collect logs using a prefix with year and month
+
+Include the year and month in the prefix to speed up collection when using [non-date-based partition](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html#server-log-keyname-format).
+
+```hcl
+partition "aws_s3_server_access_log" "my_s3_logs_year_prefix" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "s3-server-access-logs-bucket"
+    prefix     = "my/prefix/2025-01"
   }
 }
 ```
