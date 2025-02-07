@@ -199,7 +199,7 @@ func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 
 		// Tailpipe-specific metadata fields
 		"tp_id":               "A unique identifier for the log entry.",
-		"tp_index":            "The index of the event in the ingestion pipeline.",
+		"tp_index":            "The AWS account ID that received the request.",
 		"tp_ingest_timestamp": "The timestamp when the log was ingested by Tailpipe.",
 		"tp_ips":              "All IP addresses associated with the request.",
 		"tp_timestamp":        "The exact time the event was recorded in the logs.",
