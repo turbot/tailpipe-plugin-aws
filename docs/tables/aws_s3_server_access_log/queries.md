@@ -6,7 +6,7 @@ Count access log entries per day to identify trends over time.
 
 ```sql
 select
-  strftime(timestamp, '%Y-%m-%d') AS access_date,
+  strftime(timestamp, '%y-%m-%d') AS access_date,
   count(*) AS access_count
 from
   aws_s3_server_access_log
