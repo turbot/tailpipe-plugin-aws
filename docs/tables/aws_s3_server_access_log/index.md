@@ -142,4 +142,3 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument      | Default |
 |--------------|---------|
 | file_layout  | `(%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/)?%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}` |
-
