@@ -2,9 +2,7 @@ module github.com/turbot/tailpipe-plugin-aws
 
 go 1.23.2
 
-replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
-
-//require github.com/turbot/tailpipe-plugin-sdk v0.1.0
+require github.com/turbot/tailpipe-plugin-sdk v0.1.1
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
@@ -190,6 +188,5 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/turbot/go-kit v0.10.0-rc.0
 	github.com/turbot/pipe-fittings/v2 v2.0.0
-	github.com/turbot/tailpipe-plugin-sdk v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.11.0
 )
