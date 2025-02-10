@@ -200,7 +200,6 @@ func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 		// Tailpipe-specific metadata fields
 		"tp_index":            "The AWS account ID that received the request.",
 		"tp_ips":              "All IP addresses associated with the request, including the remote IP.",
-		"tp_timestamp":        "The exact time the event was recorded in the logs.",
 		"tp_usernames":        "Canonical user IDs or role ARNs associated with the request.",
 	}
 }

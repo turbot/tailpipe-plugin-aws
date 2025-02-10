@@ -22,18 +22,16 @@ List the 10 most frequently accessed S3 objects.
 
 ```sql
 select
-  timestamp,
-  requester,
   bucket,
-  key,
+  key as object,
   count(*) as access_count
 from
   aws_s3_server_access_log
+where
+  key is not null
 group by
-  timestamp,
-  requester,
-  bucket,
-  key
+  key,
+  bucket
 order by
   access_count desc
 limit 10;
@@ -45,13 +43,14 @@ Identify the top 10 requesters generating the most traffic.
 
 ```sql
 select
-  timestamp,
-  requester,
+  case
+    when requester = '-' then 'Unauthenticated'
+    else requester
+  end as requester,
   count(*) as request_count
 from
   aws_s3_server_access_log
 group by
-  timestamp,
   requester
 order by
   request_count desc
@@ -64,20 +63,18 @@ Identify the most frequent error codes.
 
 ```sql
 select
-  timestamp,
-  requester,
+  http_status,
   error_code,
-  count(*) as access_count
+  count(*) as error_count
 from
   aws_s3_server_access_log
 where
   error_code is not null
 group by
-  timestamp,
-  requester,
+  http_status,
   error_code
 order by
-  access_count desc;
+  error_count desc;
 ```
 
 ## Detection Examples
@@ -132,12 +129,12 @@ Identify all S3 requests that resulted in an error.
 ```sql
 select
   timestamp,
-  requester,
   bucket,
-  request_uri,
+  operation,
+  requester,
+  remote_ip,
   http_status,
   error_code,
-  remote_ip,
   user_agent
 from
   aws_s3_server_access_log
@@ -148,28 +145,21 @@ order by
   timestamp desc;
 ```
 
-### Detect ACL-related access issues
+### Find authenticated requests
 
-Find failed requests where ACL permissions were required, helping identify potential permission misconfigurations or access control issues.
+Identify all authenticated requests to S3.
 
 ```sql
 select
   timestamp,
-  requester,
   bucket,
-  key,
   operation,
-  error_code,
-  http_status,
-  acl_required
+  requester,
+  remote_ip
 from
   aws_s3_server_access_log
 where
-  acl_required = true
-  and (
-    http_status >= 400
-    or error_code is not null
-  )
+  requester != '-'
 order by
   timestamp desc;
 ```
@@ -182,22 +172,20 @@ Detect unusually high access activity to S3 buckets and objects.
 
 ```sql
 select
-  timestamp,
-  requester,
+  remote_ip,
   bucket,
-  count(*) as access_count,
-  date_trunc('minute', timestamp) as access_minute
+  count(*) as request_count,
+  date_trunc('minute', timestamp) as request_minute
 from
   aws_s3_server_access_log
 group by
-  timestamp,
-  requester,
+  remote_ip,
   bucket,
-  access_minute
+  request_minute
 having
   count(*) > 100
 order by
-  access_count desc;
+  request_count desc;
 ```
 
 ### High volume of failed requests
@@ -224,32 +212,6 @@ order by
 ```
 
 ## Baseline Examples
-
-### Unrecognized user source IP addresses
-
-Detect user access from unexpected or new source IP addresses.
-
-```sql
-select
-  timestamp,
-  requester,
-  remote_ip,
-  count(*) as access_count,
-  date_trunc('day', timestamp) as access_day
-from
-  aws_s3_server_access_log
-where
-  remote_ip not in (select distinct remote_ip from aws_s3_server_access_log)
-group by
-  timestamp,
-  requester,
-  remote_ip,
-  access_day
-having
-  access_count > 5
-order by
-  access_count desc;
-```
 
 ### Access outside of normal hours
 
