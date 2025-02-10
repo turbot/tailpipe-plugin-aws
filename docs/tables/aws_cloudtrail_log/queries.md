@@ -6,7 +6,7 @@ Count events per day to identify activity trends over time.
 
 ```sql
 select
-  strftime(event_time, '%y-%m-%d') AS event_date,
+  strftime(event_time, '%Y-%m-%d') AS event_date,
   count(*) AS event_count
 from
   aws_cloudtrail_log

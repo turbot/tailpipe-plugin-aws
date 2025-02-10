@@ -6,8 +6,8 @@ Count access log entries per day to identify trends over time.
 
 ```sql
 select
-  strftime(timestamp, '%y-%m-%d') AS access_date,
-  count(*) AS access_count
+  strftime(timestamp, '%y-%m-%d') as date,
+  count(*) AS requests
 from
   aws_s3_server_access_log
 group by
@@ -89,10 +89,10 @@ Detect unusually large downloads from S3.
 ```sql
 select
   timestamp,
-  requester,
   bucket,
   key,
   bytes_sent,
+  requester,
   remote_ip,
   user_agent
 from
@@ -111,10 +111,10 @@ Identify S3 access from unknown or unapproved IP addresses.
 ```sql
 select
   timestamp,
-  requester,
   bucket,
-  remote_ip,
-  operation
+  operation,
+  requester,
+  remote_ip
 from
   aws_s3_server_access_log
 where
