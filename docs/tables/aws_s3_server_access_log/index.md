@@ -48,6 +48,8 @@ tailpipe collect aws_s3_server_access_log.my_s3_logs
 
 ### Find all failed requests
 
+Identify and analyze all failed S3 requests with HTTP status codes 400 and above to troubleshoot access issues and improve security monitoring.
+
 ```sql
 select
   timestamp,
@@ -68,6 +70,8 @@ order by
 
 ### Identify top 10 users accessing a bucket
 
+Discover the most frequent users accessing a specific S3 bucket to understand access patterns and potential security concerns.
+
 ```sql
 select
   requester,
@@ -84,6 +88,8 @@ limit 10;
 ```
 
 ### Detect unusually large S3 downloads
+
+Monitor for large file downloads exceeding 50MB to identify potential data exfiltration or unusual access patterns.
 
 ```sql
 select
@@ -114,6 +120,22 @@ connection "aws" "logging_account" {
 }
 
 partition "aws_s3_server_access_log" "my_s3_logs" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "s3-server-access-logs-bucket"
+  }
+}
+```
+
+### Exclude read-only events
+
+Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+
+```hcl
+partition "aws_s3_server_access_log" "my_s3_logs_write" {
+  # Avoid saving read-only events, which can drastically reduce local log size
+  filter = "not read_only"
+
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
     bucket     = "s3-server-access-logs-bucket"

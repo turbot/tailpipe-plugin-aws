@@ -39,7 +39,7 @@ order by
 limit 10;
 ```
 
-### Top requesters
+### Top 10 requesters
 
 Identify the top 10 requesters generating the most traffic.
 
@@ -150,7 +150,7 @@ order by
 
 ### Detect ACL-related access issues
 
-Find requests requiring ACLs that might indicate permission misconfigurations.
+Find failed requests where ACL permissions were required, helping identify potential permission misconfigurations or access control issues.
 
 ```sql
 select
@@ -159,11 +159,17 @@ select
   bucket,
   key,
   operation,
+  error_code,
+  http_status,
   acl_required
 from
   aws_s3_server_access_log
 where
   acl_required = true
+  and (
+    http_status >= 400
+    or error_code is not null
+  )
 order by
   timestamp desc;
 ```

@@ -198,11 +198,9 @@ func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 		"acl_required":        "Indicates if ACLs were required for the request (true/false).",
 
 		// Tailpipe-specific metadata fields
-		"tp_id":               "A unique identifier for the log entry.",
 		"tp_index":            "The AWS account ID that received the request.",
-		"tp_ingest_timestamp": "The timestamp when the log was ingested by Tailpipe.",
 		"tp_ips":              "All IP addresses associated with the request.",
 		"tp_timestamp":        "The exact time the event was recorded in the logs.",
-		"tp_usernames":        "Usernames or access key IDs associated with the request.",
+		"tp_usernames":        "All usernames, IAM roles, or assumed role ARNs associated with the request, including IAM users, AWS SSO users, and service roles.",
 	}
 }
