@@ -44,7 +44,7 @@ tailpipe collect aws_s3_server_access_log.my_s3_logs
 
 ## Query
 
-**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
+**[Explore 19+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
 
 ### Find all failed requests
 
