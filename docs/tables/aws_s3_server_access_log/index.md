@@ -127,6 +127,19 @@ partition "aws_s3_server_access_log" "my_s3_logs" {
 }
 ```
 
+### Collect logs from local files
+
+You can also collect S3 server access logs from local files
+
+```hcl
+partition "aws_s3_server_access_log" "my_s3_logs" {
+  source "file"  {
+    paths       = ["/Users/myuser/s3_server_access_log"]
+    file_layout = "%{DATA}.txt"
+  }
+}
+```
+
 ### Exclude read-only events
 
 Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
