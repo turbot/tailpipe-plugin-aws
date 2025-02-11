@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
@@ -42,16 +43,18 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAcce
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
+			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewElbAccessLogExtractor()),
+				artifact_source.WithRowPerLine(),
 			},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
+			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewElbAccessLogExtractor()),
+				artifact_source.WithRowPerLine(),
 			},
 		},
 	}
