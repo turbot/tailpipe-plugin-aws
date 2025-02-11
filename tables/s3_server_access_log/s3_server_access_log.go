@@ -57,9 +57,13 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 			}
 			l.Timestamp = ts
 		case "remote_ip":
-			l.RemoteIP = value
+			if value != "-" {
+				l.RemoteIP = value
+				}
 		case "requester":
+			if value != "-" {
 			l.Requester = value
+			}
 		case "request_id":
 			l.RequestID = value
 		case "operation":

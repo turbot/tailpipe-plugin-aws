@@ -62,6 +62,7 @@ select
 from
   aws_s3_server_access_log
 where
+  operation = 'REST.HEAD.BUCKET'
   http_status is not null
   and http_status >= 400
 order by

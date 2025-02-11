@@ -44,7 +44,7 @@ Identify the top 10 requesters generating the most traffic.
 ```sql
 select
   case
-    when requester = '-' then 'Unauthenticated'
+    when requester = '' then 'Unauthenticated'
     else requester
   end as requester,
   count(*) as request_count
@@ -122,9 +122,9 @@ order by
 
 ## Operational Examples
 
-### Find failed requests
+### Failed requests to upload objects
 
-Identify all S3 requests that resulted in an error.
+Identify failed requests to upload objects.
 
 ```sql
 select
@@ -139,7 +139,8 @@ select
 from
   aws_s3_server_access_log
 where
-  http_status is not null
+  operation = 'REST.PUT.OBJECT'
+  and http_status is not null
   and http_status >= 400
 order by
   timestamp desc;
@@ -159,7 +160,7 @@ select
 from
   aws_s3_server_access_log
 where
-  requester != '-'
+  requester != ''
 order by
   timestamp desc;
 ```
@@ -200,8 +201,7 @@ select
 from
   aws_s3_server_access_log
 where
-  http_status is not null
-  and http_status >= 400
+  http_status >= 400
 group by
   timestamp,
   requester
