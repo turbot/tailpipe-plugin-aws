@@ -59,10 +59,10 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "remote_ip":
 			if value != "-" {
 				l.RemoteIP = value
-				}
+			}
 		case "requester":
 			if value != "-" {
-			l.Requester = value
+				l.Requester = value
 			}
 		case "request_id":
 			l.RequestID = value
@@ -202,8 +202,8 @@ func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 		"version_id":          "The version ID of the object, if versioning is enabled.",
 
 		// Tailpipe-specific metadata fields
-		"tp_index":            "The AWS account ID that received the request.",
-		"tp_ips":              "All IP addresses associated with the request, including the remote IP.",
-		"tp_usernames":        "Canonical user IDs or role ARNs associated with the request.",
+		"tp_index":     "The AWS account ID that received the request.",
+		"tp_ips":       "All IP addresses associated with the request, including the remote IP.",
+		"tp_usernames": "Canonical user IDs or role ARNs associated with the request.",
 	}
 }
