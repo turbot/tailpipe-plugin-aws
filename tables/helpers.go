@@ -1,6 +1,22 @@
 package tables
 
-import "strings"
+import (
+	"strings"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
+)
+
+// Caller identity data includes:
+// Account ID 
+// Arn
+// UserId
+func GetCallerIdentityData() (*sts.GetCallerIdentityOutput, error) {
+	callerIdentityData, err := sts.New(session.Must(session.NewSession())).GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		return nil, err
+	}
+	return callerIdentityData, nil
+}
 
 // AwsAkasFromArn will extract key identifiers from an AWS ARN string. For example:
 // * the full arn
