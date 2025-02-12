@@ -6,10 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 )
 
-// We get GetCallerIdentityOutput struct which contains: 
+// Caller identity data includes:
 // Account ID 
 // Arn
-// UserId.
+// UserId
 func GetCallerIdentityData() (*sts.GetCallerIdentityOutput, error) {
 	callerIdentityData, err := sts.New(session.Must(session.NewSession())).GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
