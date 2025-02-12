@@ -1,11 +1,12 @@
 package cloudtrail_log
 
 import (
-	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"strings"
 	"time"
+
+	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch"
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/tables"
 
 	"github.com/rs/xid"
 

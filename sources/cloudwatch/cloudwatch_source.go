@@ -3,7 +3,6 @@ package cloudwatch
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -33,7 +32,6 @@ type AwsCloudWatchSource struct {
 }
 
 func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
-	slog.Info("Initializing AwsCloudwatchSource")
 	// set the collection state ctor
 
 	s.NewCollectionStateFunc = collection_state.NewTimeRangeCollectionState
@@ -48,7 +46,7 @@ func (s *AwsCloudWatchSource) Identifier() string {
 func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 
 	// obtain log streams which have active events in the time range
-	logStreamCollection, err := s.collectLogStreams(ctx, s.Config.LogGroupName, s.Config.LogStreamPrefix)
+	logStreamCollection, err := s.getLogStreamsToCollect(ctx, s.Config.LogGroupName, s.Config.LogStreamPrefix)
 	if err != nil {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
@@ -59,7 +57,7 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 			CommonFields: schema.CommonFields{
 				TpSourceType:     AwsCloudwatchSourceIdentifier,
 				TpSourceName:     &s.Config.LogGroupName,
-				TpSourceLocation: ls.LogStream.LogStreamName,
+				TpSourceLocation: ls.LogStreamName,
 			},
 		}
 
@@ -78,7 +76,7 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 
 		input := &cloudwatchlogs.GetLogEventsInput{
 			LogGroupName:  &s.Config.LogGroupName,
-			LogStreamName: ls.LogStream.LogStreamName,
+			LogStreamName: ls.LogStreamName,
 			StartFromHead: aws.Bool(true),
 			StartTime:     &startTime,
 			Limit:         &pageSize,
@@ -107,7 +105,7 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 				unixMillis := *event.Timestamp
 				timestamp := time.Unix(0, unixMillis*int64(time.Millisecond))
 
-				err := s.CollectionState.OnCollected(*ls.LogStream.LogStreamName, timestamp)
+				err := s.CollectionState.OnCollected(*ls.LogStreamName, timestamp)
 				if err != nil {
 					return fmt.Errorf("failed to update collection state, %w", err)
 				}
@@ -129,8 +127,8 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 }
 
 // Get log steams for the specified log group
-func (s *AwsCloudWatchSource) collectLogStreams(ctx context.Context, logGroupName string, logStreamPrefix *string) ([]logStreamsToCollect, error) {
-	var logStreams []logStreamsToCollect
+func (s *AwsCloudWatchSource) getLogStreamsToCollect(ctx context.Context, logGroupName string, logStreamPrefix *string) ([]cwtypes.LogStream, error) {
+	var logStreams []cwtypes.LogStream
 	var nextToken *string
 
 	// Get client
@@ -150,10 +148,7 @@ func (s *AwsCloudWatchSource) collectLogStreams(ctx context.Context, logGroupNam
 		if err != nil {
 			return nil, fmt.Errorf("failed to describe log streams, %w", err)
 		}
-
-		for _, logStream := range output.LogStreams {
-			logStreams = append(logStreams, logStreamsToCollect{LogStream: logStream})
-		}
+		logStreams = append(logStreams, output.LogStreams...)
 
 		if output.NextToken == nil {
 			break
@@ -177,8 +172,4 @@ func (s *AwsCloudWatchSource) getClient(ctx context.Context) (*cloudwatchlogs.Cl
 
 	client := cloudwatchlogs.NewFromConfig(*cfg)
 	return client, nil
-}
-
-type logStreamsToCollect struct {
-	LogStream cwtypes.LogStream
 }
