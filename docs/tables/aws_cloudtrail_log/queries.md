@@ -367,7 +367,7 @@ select
 from
   aws_cloudtrail_log
 where
-  cast(strftime(event_time, '%H') as integer) >= 20 -- 8 PM
-  or cast(strftime(event_time, '%H') as integer) < 6 -- 6 AM
+  extract('hour' from timestamp) >= 20 -- 8 PM
+  or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   event_time desc;
