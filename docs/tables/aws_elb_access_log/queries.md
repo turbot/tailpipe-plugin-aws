@@ -68,7 +68,7 @@ group by
 order by
   response_count desc;
 ```
-<!-- 
+
 ## Detection Examples
 
 ### Failed backend connections
@@ -88,7 +88,7 @@ select
 from
   aws_elb_access_log
 where
-  target_status_code = 0
+  target_status_code is null
   and elb_status_code = 502
 order by
   timestamp desc;
@@ -107,7 +107,7 @@ from
   aws_elb_access_log
 where
   ssl_cipher is not null
-  and ssl_protocol in ('TLSv1', 'SSLv3')
+  and ssl_protocol in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols (TLSv1.1, TLSv1, SSLv3, SSLv2)
 group by
   ssl_cipher,
   ssl_protocol
@@ -121,10 +121,7 @@ Identify potentially suspicious user agents making requests.
 
 ```sql
 select
-  timestamp,
-  client_ip,
   user_agent,
-  request,
   count(*) as request_count
 from
   aws_elb_access_log
@@ -133,7 +130,6 @@ where
   or user_agent like '%curl%'
   or user_agent like '%wget%'
 group by
-  client_ip,
   user_agent
 having
   count(*) > 100
@@ -145,7 +141,7 @@ order by
 
 ### Slow response times
 
-Find requests with unusually high processing times.
+Top 10 requests with unusually high processing times.
 
 ```sql
 select
@@ -164,7 +160,7 @@ where
   (request_processing_time + target_processing_time + response_processing_time) > 1
 order by
   total_time desc
-limit 20;
+limit 10;
 ```
 
 ### Target health issues
@@ -179,12 +175,12 @@ select
 from
   aws_elb_access_log
 where
-  target_status_code >= 500
+  target_status_code >= 400
 group by
   target_ip,
   target_status_code
 having
-  count(*) > 10
+  count(*) > 100
 order by
   error_count desc;
 ```
@@ -231,7 +227,7 @@ order by
   sent_bytes desc;
 ```
 
-## Baseline Examples
+<!-- ## Baseline Examples
 
 ### Traffic patterns by hour
 
