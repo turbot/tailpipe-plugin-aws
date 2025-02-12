@@ -1,4 +1,4 @@
-## Access Log Examples
+## Activity Examples
 
 ### Daily access trends
 
@@ -6,7 +6,7 @@ Count access log entries per day to identify trends over time.
 
 ```sql
 select
-  strftime(timestamp, '%Y-%m-%d') as date,
+  strftime(timestamp, '%Y-%m-%d') as access_date,
   count(*) AS requests
 from
   aws_s3_server_access_log
@@ -23,35 +23,32 @@ List the 10 most frequently accessed S3 objects.
 ```sql
 select
   bucket,
-  key as object,
-  count(*) as access_count
+  key,
+  count(*) as requests
 from
   aws_s3_server_access_log
 where
   key is not null
 group by
-  key,
-  bucket
+  bucket,
+  key
 order by
-  access_count desc
+  requests desc
 limit 10;
 ```
 
-### Top 10 requesters
+### Top 10 requester IP addresses
 
-Identify the top 10 requesters generating the most traffic.
+List the top 10 requester IP addresses.
 
 ```sql
 select
-  case
-    when requester = '' then 'Unauthenticated'
-    else requester
-  end as requester,
+  remote_ip,
   count(*) as request_count
 from
   aws_s3_server_access_log
 group by
-  requester
+  remote_ip
 order by
   request_count desc
 limit 10;
@@ -79,9 +76,9 @@ order by
 
 ## Detection Examples
 
-### Unusual large file downloads
+### Unusually large file downloads
 
-Detect unusually large downloads from S3.
+Detect unusually large downloads based on file size.
 
 ```sql
 select
@@ -89,21 +86,23 @@ select
   bucket,
   key,
   bytes_sent,
+  operation,
+  request_uri,
   requester,
   remote_ip,
   user_agent
 from
   aws_s3_server_access_log
 where
-  bytes_sent is not null
-  and bytes_sent > 50000000 -- 50MB
+  bytes_sent > 50000000 -- 50MB
+  and http_status = 200
 order by
   bytes_sent desc;
 ```
 
-### Requests from unknown IPs
+### Requests from unapproved IAM roles and users
 
-Identify S3 access from unknown or unapproved IP addresses.
+Flag requests from IAM roles and users outside an approved list (by AWS account ID in this example).
 
 ```sql
 select
@@ -111,65 +110,66 @@ select
   bucket,
   operation,
   requester,
-  remote_ip
+  remote_ip,
+  user_agent
 from
   aws_s3_server_access_log
 where
-  remote_ip not in ('192.0.2.146', '206.253.208.100')
+  requester is not null -- Exclude unauthenticated requests
+  and requester not like 'arn:%:%:%:123456789012:%'
 order by
   timestamp desc;
 ```
 
 ## Operational Examples
 
-### Failed requests to upload objects
+### Failed object upload requests
 
-Identify failed requests to upload objects.
+List failed object upload requests along with the error codes.
 
 ```sql
 select
   timestamp,
   bucket,
-  operation,
+  key,
   requester,
   remote_ip,
   http_status,
-  error_code,
-  user_agent
+  error_code
 from
   aws_s3_server_access_log
 where
   operation = 'REST.PUT.OBJECT'
-  and http_status is not null
   and http_status >= 400
 order by
   timestamp desc;
 ```
 
-### Find authenticated requests
+### Unauthenticated requests
 
-Identify all authenticated requests to S3.
+List all unauthenticated requests.
 
 ```sql
 select
   timestamp,
   bucket,
   operation,
-  requester,
-  remote_ip
+  request_uri,
+  remote_ip,
+  user_agent
 from
   aws_s3_server_access_log
 where
-  requester != ''
+  requester is null
 order by
   timestamp desc;
 ```
 
 ## Volume Examples
 
-### High volume of access requests
+### High volume of requests
 
-Detect unusually high access activity to S3 buckets and objects.
+Detect unusually high number of requests by remote IP address.
 
 ```sql
 select
@@ -191,20 +191,20 @@ order by
 
 ### High volume of failed requests
 
-Identify accounts with a high number of failed requests.
+Identify remote IPs with a high number of failed requests.
 
 ```sql
 select
-  timestamp,
-  requester,
+  remote_ip,
+  bucket,
   count(*) as failed_requests
 from
   aws_s3_server_access_log
 where
   http_status >= 400
 group by
-  timestamp,
-  requester
+  remote_ip,
+  bucket
 having
   count(*) > 50
 order by
@@ -213,22 +213,23 @@ order by
 
 ## Baseline Examples
 
-### Access outside of normal hours
+### Requests outside of normal hours
 
-Flag access occurring outside of standard working hours, e.g., between 8 PM and 6 AM.
+Flag requests occurring outside of standard working hours, e.g., between 8 PM and 6 AM.
 
 ```sql
 select
   timestamp,
-  requester,
   bucket,
+  operation,
+  requester,
   remote_ip,
-  operation
+  user_agent
 from
   aws_s3_server_access_log
 where
-  cast(strftime(timestamp, '%H') as integer) >= 20 -- 8 PM
-  or cast(strftime(timestamp, '%H') as integer) < 6 -- 6 AM
+  extract('hour' from timestamp) >= 20 -- 8 PM
+  or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   timestamp desc;
 ```

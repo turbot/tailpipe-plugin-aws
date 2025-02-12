@@ -11,32 +11,32 @@ import (
 type S3ServerAccessLog struct {
 	schema.CommonFields
 
-	BucketOwner        string    `json:"bucket_owner"`
-	Bucket             string    `json:"bucket"`
-	Timestamp          time.Time `json:"timestamp"`
-	RemoteIP           string    `json:"remote_ip"`
-	Requester          string    `json:"requester"`
-	RequestID          string    `json:"request_id"`
-	Operation          string    `json:"operation"`
-	Key                *string   `json:"key,omitempty"`
-	RequestURI         *string   `json:"request_uri,omitempty"`
-	HTTPStatus         *int      `json:"http_status,omitempty"`
-	ErrorCode          *string   `json:"error_code,omitempty"`
-	BytesSent          *int64    `json:"bytes_sent,omitempty"`
-	ObjectSize         *int64    `json:"object_size,omitempty"`
-	TotalTime          *int      `json:"total_time,omitempty"`
-	TurnAroundTime     *int      `json:"turn_around_time,omitempty"`
-	Referer            *string   `json:"referer,omitempty"`
-	UserAgent          *string   `json:"user_agent,omitempty"`
-	VersionID          *string   `json:"version_id,omitempty"`
-	HostID             *string   `json:"host_id,omitempty"`
-	SignatureVersion   *string   `json:"signature_version,omitempty"`
-	CipherSuite        *string   `json:"cipher_suite,omitempty"`
-	AuthenticationType *string   `json:"authentication_type,omitempty"`
-	HostHeader         *string   `json:"host_header,omitempty"`
-	TLSVersion         *string   `json:"tls_version,omitempty"`
 	AccessPointArn     *string   `json:"access_point_arn,omitempty"`
 	AclRequired        *bool     `json:"acl_required,omitempty"`
+	AuthenticationType *string   `json:"authentication_type,omitempty"`
+	Bucket             string    `json:"bucket"`
+	BucketOwner        string    `json:"bucket_owner"`
+	BytesSent          *int64    `json:"bytes_sent,omitempty"`
+	CipherSuite        *string   `json:"cipher_suite,omitempty"`
+	ErrorCode          *string   `json:"error_code,omitempty"`
+	HTTPStatus         *int      `json:"http_status"`
+	HostHeader         *string   `json:"host_header,omitempty"`
+	HostID             *string   `json:"host_id,omitempty"`
+	Key                *string   `json:"key,omitempty"`
+	ObjectSize         *int64    `json:"object_size,omitempty"`
+	Operation          string    `json:"operation"`
+	Referer            *string   `json:"referer,omitempty"`
+	RemoteIP           string    `json:"remote_ip"`
+	RequestID          string    `json:"request_id"`
+	RequestURI         *string   `json:"request_uri"`
+	Requester          string    `json:"requester,omitempty"`
+	SignatureVersion   *string   `json:"signature_version,omitempty"`
+	TLSVersion         *string   `json:"tls_version,omitempty"`
+	Timestamp          time.Time `json:"timestamp"`
+	TotalTime          *int      `json:"total_time"`
+	TurnAroundTime     *int      `json:"turn_around_time,omitempty"`
+	UserAgent          *string   `json:"user_agent,omitempty"`
+	VersionID          *string   `json:"version_id,omitempty"`
 }
 
 func NewS3ServerAccessLog() *S3ServerAccessLog {
@@ -57,9 +57,7 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 			}
 			l.Timestamp = ts
 		case "remote_ip":
-			if value != "-" {
-				l.RemoteIP = value
-			}
+			l.RemoteIP = value
 		case "requester":
 			if value != "-" {
 				l.Requester = value
@@ -73,17 +71,13 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 				l.Key = &value
 			}
 		case "request_uri":
-			if value != "-" {
-				l.RequestURI = &value
-			}
+			l.RequestURI = &value
 		case "http_status":
-			if value != "-" {
-				hs, err := strconv.Atoi(value)
-				if err != nil {
-					return fmt.Errorf("error parsing http_status: %w", err)
-				}
-				l.HTTPStatus = &hs
+			hs, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing http_status: %w", err)
 			}
+			l.HTTPStatus = &hs
 		case "error_code":
 			if value != "-" {
 				l.ErrorCode = &value
@@ -105,13 +99,11 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 				l.ObjectSize = &os
 			}
 		case "total_time":
-			if value != "-" {
-				tt, err := strconv.Atoi(value)
-				if err != nil {
-					return fmt.Errorf("error parsing total_time: %w", err)
-				}
-				l.TotalTime = &tt
+			tt, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing total_time: %w", err)
 			}
+			l.TotalTime = &tt
 		case "turn_around_time":
 			if value != "-" {
 				tat, err := strconv.Atoi(value)
@@ -172,6 +164,7 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
+
 func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"access_point_arn":    "The ARN of the S3 Access Point used for the request, if applicable.",

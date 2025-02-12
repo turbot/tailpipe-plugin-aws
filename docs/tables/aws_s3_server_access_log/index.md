@@ -44,11 +44,11 @@ tailpipe collect aws_s3_server_access_log.my_s3_logs
 
 ## Query
 
-**[Explore 19+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
+**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
 
-### Find all failed requests
+### Failed requests
 
-Identify and analyze all failed S3 requests with HTTP status codes 400 and above to troubleshoot access issues and improve security monitoring.
+Find failed HTTP requests (with status codes 400 and above) to troubleshoot access issues and improve security monitoring.
 
 ```sql
 select
@@ -62,35 +62,31 @@ select
 from
   aws_s3_server_access_log
 where
-  operation = 'REST.HEAD.BUCKET'
-  http_status is not null
-  and http_status >= 400
+  http_status >= 400
 order by
   timestamp desc;
 ```
 
-### Identify top 10 users accessing a bucket
+### Top 10 requester IP addresses
 
-Discover the most frequent users accessing a specific S3 bucket to understand access patterns and potential security concerns.
+List the top 10 requester IP addresses.
 
 ```sql
 select
-  requester,
+  remote_ip,
   count(*) as request_count
 from
   aws_s3_server_access_log
-where
-  bucket = 'test-tailpipe-source-pc'
 group by
-  requester
+  remote_ip
 order by
   request_count desc
 limit 10;
 ```
 
-### Detect unusually large S3 downloads
+### Unusually large file downloads
 
-Monitor for large file downloads exceeding 50MB to identify potential data exfiltration or unusual access patterns.
+Detect unusually large downloads based on file size.
 
 ```sql
 select
@@ -98,13 +94,15 @@ select
   bucket,
   key,
   bytes_sent,
+  operation,
+  request_uri,
   remote_ip,
   user_agent
 from
   aws_s3_server_access_log
 where
-  bytes_sent is not null
-  and bytes_sent > 50000000 -- 50MB
+  bytes_sent > 50000000 -- 50MB
+  and http_status = 200
 order by
   bytes_sent desc;
 ```
@@ -130,7 +128,7 @@ partition "aws_s3_server_access_log" "my_s3_logs" {
 
 ### Collect logs from local files
 
-You can also collect S3 server access logs from local files
+You can also collect logs from local files.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs" {
@@ -141,14 +139,13 @@ partition "aws_s3_server_access_log" "my_s3_logs" {
 }
 ```
 
-### Exclude read-only events
+### Exclude read-only requests
 
-Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs_write" {
-  # Avoid saving read-only events, which can drastically reduce local log size
-  filter = "not read_only"
+  filter = "operation not like '%.GET.%' and operation not like '%.HEAD.%'"
 
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
@@ -159,7 +156,7 @@ partition "aws_s3_server_access_log" "my_s3_logs_write" {
 
 ### Collect logs from an S3 bucket with a prefix
 
-Collect S3 server access logs stored in an S3 bucket using a prefix.
+Collect logs stored in an S3 bucket using a prefix.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
@@ -167,20 +164,6 @@ partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
     connection = connection.aws.logging_account
     bucket     = "s3-server-access-logs-bucket"
     prefix     = "my/prefix/"
-  }
-}
-```
-
-### Collect logs using a prefix with year and month
-
-Include the year and month in the prefix to speed up collection when using [non-date-based partition](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html#server-log-keyname-format).
-
-```hcl
-partition "aws_s3_server_access_log" "my_s3_logs_year_prefix" {
-  source "aws_s3_bucket" {
-    connection = connection.aws.logging_account
-    bucket     = "s3-server-access-logs-bucket"
-    prefix     = "my/prefix/2025-01"
   }
 }
 ```
