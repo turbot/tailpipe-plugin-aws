@@ -10,44 +10,44 @@ import (
 )
 
 type ElbAccessLogBatch struct {
-	Records [] ElbAccessLog `json:"Records"`
+	Records []ElbAccessLog `json:"Records"`
 }
 
 type ElbAccessLog struct {
 	schema.CommonFields
 
-	Type                   string    `json:"type"`
-	Timestamp              time.Time `json:"timestamp"`
-	Elb                    string    `json:"elb"`
+	ActionsExecuted        string    `json:"actions_executed"`
+	ChosenCertArn          string    `json:"chosen_cert_arn"`
+	Classification         *string   `json:"classification,omitempty"`
+	ClassificationReason   *string   `json:"classification_reason,omitempty"`
 	ClientIP               string    `json:"client_ip"`
 	ClientPort             int       `json:"client_port"`
-	TargetIP               *string   `json:"target_ip,omitempty"`
-	TargetPort             int       `json:"target_port,omitempty"`
-	RequestProcessingTime  float64   `json:"request_processing_time"`
-	TargetProcessingTime   float64   `json:"target_processing_time"`
-	ResponseProcessingTime float64   `json:"response_processing_time"`
+	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
+	DomainName             string    `json:"domain_name"`
+	Elb                    string    `json:"elb"`
 	ElbStatusCode          *int      `json:"elb_status_code,omitempty"`
-	TargetStatusCode       *int      `json:"target_status_code,omitempty"`
+	ErrorReason            *string   `json:"error_reason,omitempty"`
+	MatchedRulePriority    int       `json:"matched_rule_priority"`
 	ReceivedBytes          *int64    `json:"received_bytes"`
-	SentBytes              *int64    `json:"sent_bytes"`
+	RedirectURL            *string   `json:"redirect_url,omitempty"`
 	Request                string    `json:"request"`
-	UserAgent              string    `json:"user_agent"`
+	RequestCreationTime    time.Time `json:"request_creation_time"`
+	RequestProcessingTime  float64   `json:"request_processing_time"`
+	ResponseProcessingTime float64   `json:"response_processing_time"`
+	SentBytes              *int64    `json:"sent_bytes"`
 	SslCipher              string    `json:"ssl_cipher"`
 	SslProtocol            string    `json:"ssl_protocol"`
 	TargetGroupArn         string    `json:"target_group_arn"`
-	TraceID                string    `json:"trace_id"`
-	DomainName             string    `json:"domain_name"`
-	ChosenCertArn          string    `json:"chosen_cert_arn"`
-	MatchedRulePriority    int       `json:"matched_rule_priority"`
-	RequestCreationTime    time.Time `json:"request_creation_time"`
-	ActionsExecuted        string    `json:"actions_executed"`
-	RedirectURL            *string   `json:"redirect_url,omitempty"`
-	ErrorReason            *string   `json:"error_reason,omitempty"`
+	TargetIP               *string   `json:"target_ip,omitempty"`
 	TargetList             *string   `json:"target_list,omitempty"`
+	TargetPort             int       `json:"target_port,omitempty"`
+	TargetProcessingTime   float64   `json:"target_processing_time"`
+	TargetStatusCode       *int      `json:"target_status_code,omitempty"`
 	TargetStatusList       *string   `json:"target_status_list,omitempty"`
-	Classification         *string   `json:"classification,omitempty"`
-	ClassificationReason   *string   `json:"classification_reason,omitempty"`
-	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
+	Timestamp              time.Time `json:"timestamp"`
+	TraceID                string    `json:"trace_id"`
+	Type                   string    `json:"type"`
+	UserAgent              string    `json:"user_agent"`
 }
 
 // InitialiseFromMap - initialise the struct from a map

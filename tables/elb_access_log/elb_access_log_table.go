@@ -1,15 +1,16 @@
 package elb_access_log
 
 import (
-	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"time"
+
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
-	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -36,7 +37,7 @@ func (c *ElbAccessLogTable) Identifier() string {
 
 func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*ElbAccessLog]{
