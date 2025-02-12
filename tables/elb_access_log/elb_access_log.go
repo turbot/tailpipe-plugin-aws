@@ -173,3 +173,42 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
+func (c *ElbAccessLog) GetColumnDescriptions() map[string]string {
+	return map[string]string{
+		"actions_executed":         "The actions taken when processing the request, such as forwarding, redirecting, or fixed responses.",
+		"chosen_cert_arn":          "The ARN of the certificate presented to the client during the TLS handshake.",
+		"classification":           "The classification for desync mitigation, indicating compliance with RFC 7230.",
+		"classification_reason":    "The classification reason code, describing why a request was classified as Acceptable, Ambiguous, or Severe.",
+		"client_ip":                "The IP address of the client making the request.",
+		"client_port":              "The source port used by the client for the connection.",
+		"conn_trace_id":            "A unique identifier linking multiple log entries to the same connection.",
+		"domain_name":              "The SNI domain provided by the client during the TLS handshake.",
+		"elb":                      "The resource ID of the load balancer handling the request.",
+		"elb_status_code":          "The HTTP status code returned by the load balancer.",
+		"error_reason":             "The reason for request failure, including errors from AWS WAF or connection issues.",
+		"matched_rule_priority":    "The priority of the rule that matched the request. Default rules are assigned 0.",
+		"received_bytes":           "The number of bytes received from the client, including headers.",
+		"redirect_url":             "The target URL for redirection if a redirect action was executed.",
+		"request":                  "The full request line from the client, including method, protocol, and URI.",
+		"request_creation_time":    "The timestamp when the load balancer received the request from the client.",
+		"request_processing_time":  "The time elapsed from receiving the request to sending it to a target, in seconds.",
+		"response_processing_time": "The time taken from receiving the response header to sending the response to the client.",
+		"sent_bytes":               "The number of bytes sent to the client, including headers and body.",
+		"ssl_cipher":               "The SSL cipher used for encrypting the connection.",
+		"ssl_protocol":             "The SSL/TLS version used for the connection.",
+		"target_group_arn":         "The ARN of the target group that handled the request.",
+		"target_ip":                "The IP address of the target that processed the request.",
+		"target_list":              "A space-delimited list of target IP addresses and ports.",
+		"target_port":              "The port on the target that processed the request.",
+		"target_processing_time":   "The time from when the request was sent to the target to when the response started.",
+		"target_status_code":       "The HTTP status code returned by the target.",
+		"target_status_list":       "A space-delimited list of status codes from targets that processed the request.",
+		"timestamp":                "The timestamp when the load balancer generated a response.",
+		"trace_id":                 "A unique identifier for tracing requests across AWS services.",
+		"type":                     "The type of request (http, https, h2, grpcs, ws, wss).",
+		"user_agent":               "The User-Agent string from the client making the request.",
+
+		// Tailpipe-specific metadata fields
+		"tp_index": "The AWS account ID that received the request.",
+	}
+}

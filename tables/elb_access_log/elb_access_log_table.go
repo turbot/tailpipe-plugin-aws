@@ -3,10 +3,10 @@ package elb_access_log
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -70,7 +70,11 @@ func (c *ElbAccessLogTable) EnrichRow(row *ElbAccessLog, sourceEnrichmentFields 
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
-	row.TpIndex = row.Elb // TODO: #enrichment figure out how to get account id / other index
+	callerIdentityData, err := tables.GetCallerIdentityData()
+	if err != nil {
+		return nil, err
+	}
+	row.TpIndex = *callerIdentityData.Account
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
@@ -88,4 +92,8 @@ func (c *ElbAccessLogTable) EnrichRow(row *ElbAccessLog, sourceEnrichmentFields 
 	}
 
 	return row, nil
+}
+
+func (c *ElbAccessLogTable) GetDescription() string {
+	return "AWS ELB Access logs capture detailed information about the requests that are processed by an Elastic Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 }
