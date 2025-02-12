@@ -4,7 +4,7 @@ go 1.23.6
 
 replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
 
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
+replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
 require github.com/turbot/tailpipe-plugin-sdk v0.1.0
 
@@ -186,7 +186,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.5.0
-	github.com/turbot/go-kit v1.0.0
+	github.com/turbot/go-kit v1.0.1-rc.0
 	github.com/turbot/pipe-fittings/v2 v2.0.0
 	golang.org/x/sync v0.10.0
 )
