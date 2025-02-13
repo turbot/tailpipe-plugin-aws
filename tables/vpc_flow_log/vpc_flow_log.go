@@ -21,8 +21,8 @@ type VpcFlowLog struct {
 	Protocol                *int32     `json:"protocol,omitempty"`
 	Packets                 *int64     `json:"packets,omitempty"`
 	Bytes                   *int64     `json:"bytes,omitempty"`
-	Start                   *int64     `json:"start,omitempty"`
-	End                     *int64     `json:"end,omitempty"`
+	Start                   *int64     `json:"start_time,omitempty"`
+	End                     *int64     `json:"end_time,omitempty"`
 	Action                  *string    `json:"action,omitempty"`
 	LogStatus               *string    `json:"log_status,omitempty"`
 	VPCID                   *string    `json:"vpc_id,omitempty"`

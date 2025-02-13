@@ -15,6 +15,16 @@ var DefaultFlowLogFields = []string{
 	"end",
 	"action",
 	"log-status",
+	"ecs-cluster-name",
+	"ecs-cluster-arn",
+	"ecs-container-instance-id",
+	"ecs-container-instance-arn",
+	"ecs-service-name",
+	"ecs-task-definition-arn",
+	"ecs-task-id",
+	"ecs-task-arn",
+	"ecs-container-id",
+	"ecs-second-container-id",
 }
 
 type VpcFlowLogTableFormat struct {
