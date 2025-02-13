@@ -16,7 +16,7 @@ order by
   request_date asc;
 ```
 
-### Top 10 clients by request volume
+### Top 10 clients by request count
 
 List the top 10 client IP addresses making requests.
 
@@ -79,6 +79,7 @@ Identify instances where the load balancer couldn't connect to the backend targe
 select
   timestamp,
   elb,
+  tp_index as account_id,
   client_ip,
   target_ip,
   request,
@@ -147,6 +148,7 @@ Top 10 requests with unusually high processing times.
 select
   timestamp,
   elb,
+  tp_index as account_id,
   request,
   client_ip,
   target_ip,
@@ -215,6 +217,7 @@ Track requests generating unusually large responses.
 select
   timestamp,
   elb,
+  tp_index as account_id,
   request,
   client_ip,
   sent_bytes,

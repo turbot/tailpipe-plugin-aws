@@ -72,5 +72,5 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 The following tables define their own default values for certain source arguments:
 
 - **[aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_s3_bucket)**
-- **[aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log#aws_s3_bucket)**
 - **[aws_elb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_elb_access_log#aws_s3_bucket)**
+- **[aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log#aws_s3_bucket)**

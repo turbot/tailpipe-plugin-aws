@@ -16,18 +16,18 @@ type ElbAccessLogBatch struct {
 type ElbAccessLog struct {
 	schema.CommonFields
 
-	ActionsExecuted        string    `json:"actions_executed"`
-	ChosenCertArn          string    `json:"chosen_cert_arn"`
+	ActionsExecuted        string    `json:"actions_executed,omitempty"`
+	ChosenCertArn          string    `json:"chosen_cert_arn,omitempty"`
 	Classification         *string   `json:"classification,omitempty"`
 	ClassificationReason   *string   `json:"classification_reason,omitempty"`
 	ClientIP               string    `json:"client_ip"`
 	ClientPort             int       `json:"client_port"`
 	ConnTraceID            *string   `json:"conn_trace_id,omitempty"`
-	DomainName             string    `json:"domain_name"`
+	DomainName             string    `json:"domain_name,omitempty"`
 	Elb                    string    `json:"elb"`
 	ElbStatusCode          *int      `json:"elb_status_code,omitempty"`
 	ErrorReason            *string   `json:"error_reason,omitempty"`
-	MatchedRulePriority    int       `json:"matched_rule_priority"`
+	MatchedRulePriority    int       `json:"matched_rule_priority,omitempty"`
 	ReceivedBytes          *int64    `json:"received_bytes"`
 	RedirectURL            *string   `json:"redirect_url,omitempty"`
 	Request                string    `json:"request"`
@@ -35,8 +35,8 @@ type ElbAccessLog struct {
 	RequestProcessingTime  float64   `json:"request_processing_time"`
 	ResponseProcessingTime float64   `json:"response_processing_time"`
 	SentBytes              *int64    `json:"sent_bytes"`
-	SslCipher              string    `json:"ssl_cipher"`
-	SslProtocol            string    `json:"ssl_protocol"`
+	SslCipher              string    `json:"ssl_cipher,omitempty"`
+	SslProtocol            string    `json:"ssl_protocol,omitempty"`
 	TargetGroupArn         string    `json:"target_group_arn"`
 	TargetIP               *string   `json:"target_ip,omitempty"`
 	TargetList             *string   `json:"target_list,omitempty"`

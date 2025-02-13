@@ -44,7 +44,7 @@ tailpipe collect aws_elb_access_log.my_elb_logs
 
 ## Query
 
-**[Explore example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_elb_access_log)**
+**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_elb_access_log)**
 
 ### Failed requests
 
@@ -54,6 +54,7 @@ Find failed HTTP requests (with status codes 400 and above) to troubleshoot load
 select
   timestamp,
   elb,
+  tp_index as account_id,
   client_ip,
   target_ip,
   elb_status_code,
@@ -75,6 +76,7 @@ Identify requests with high processing times that might indicate performance iss
 select
   timestamp,
   elb,
+  tp_index as account_id,
   request,
   request_processing_time,
   target_processing_time,
@@ -155,6 +157,22 @@ partition "aws_elb_access_log" "local_logs" {
 }
 ```
 
+### Exclude read-only events
+
+Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+
+```hcl
+partition "aws_elb_access_log" "my_logs_write" {
+  # Avoid saving read-only events, which can drastically reduce local log size
+  filter = "not read_only"
+
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "aws-elb-logs-bucket"
+  }
+}
+```
+
 ### Collect logs for all accounts in an organization
 
 For a specific organization, collect logs for all accounts and regions.
@@ -165,6 +183,49 @@ partition "aws_elb_access_log" "my_logs_org" {
     connection  = connection.aws.logging_account
     bucket      = "elb-logs-bucket"
     file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+  }
+}
+```
+
+### Collect logs for a single account
+
+
+For a specific account, collect logs for all regions.
+
+```hcl
+partition "aws_elb_access_log" "my_logs_account" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.logging_account
+    bucket      = "elb-logs-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+  }
+}
+```
+
+### Collect logs for a single region
+
+For all accounts, collect logs from us-east-1.
+
+```hcl
+partition "aws_elb_access_log" "my_logs_region" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.logging_account
+    bucket      = "elb-logs-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+  }
+}
+```
+
+### Collect logs for multiple regions
+
+For all accounts, collect logs from us-east-1 and us-east-2.
+
+```hcl
+partition "aws_elb_access_log" "my_logs_regions" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.logging_account
+    bucket      = "elb-logs-bucket"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
   }
 }
 ```
