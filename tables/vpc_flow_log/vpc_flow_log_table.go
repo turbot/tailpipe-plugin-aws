@@ -80,6 +80,7 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpIndex = "default"
 	}
 
+	// TODO: How to handle if the log don't have timestamp value 
 	// populate the year, month, day from start time
 	if row.Timestamp != nil {
 		// convert to date in format yy-mm-dd
