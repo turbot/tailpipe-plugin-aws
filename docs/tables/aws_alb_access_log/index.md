@@ -1,15 +1,15 @@
 ---
-title: "Tailpipe Table: aws_elb_access_log - Query AWS ELB Access Logs"
-description: "AWS ELB Access logs capture detailed information about the requests that are processed by an Elastic Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+title: "Tailpipe Table: aws_alb_access_log - Query AWS ALB Access Logs"
+description: "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 ---
 
-# Table: aws_elb_access_log - Query AWS ELB access logs
+# Table: aws_alb_access_log - Query AWS ALB access logs
 
-The `aws_elb_access_log` table allows you to query AWS Elastic Load Balancer (ELB) access logs. This table provides detailed information about requests processed by your load balancers, including client and target details, processing times, and security parameters.
+The `aws_alb_access_log` table allows you to query AWS Application Load Balancer (ALB) access logs. This table provides detailed information about requests processed by your load balancers, including client and target details, processing times, and security parameters.
 
 ## Configure
 
-Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_elb_access_log` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_elb_access_log#example-configurations)):
+Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_alb_access_log` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_alb_access_log#example-configurations)):
 
 ```sh
 vi ~/.tailpipe/config/aws.tpc
@@ -20,31 +20,31 @@ connection "aws" "logging_account" {
   profile = "my-logging-account"
 }
 
-partition "aws_elb_access_log" "my_elb_logs" {
+partition "aws_alb_access_log" "my_alb_logs" {
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
-    bucket     = "aws-elb-logs-bucket"
+    bucket     = "aws-alb-logs-bucket"
   }
 }
 ```
 
 ## Collect
 
-[Collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_elb_access_log` partitions:
+[Collect](https://tailpipe.io/docs/manage/collection) logs for all `aws_alb_access_log` partitions:
 
 ```sh
-tailpipe collect aws_elb_access_log
+tailpipe collect aws_alb_access_log
 ```
 
 Or for a single partition:
 
 ```sh
-tailpipe collect aws_elb_access_log.my_elb_logs
+tailpipe collect aws_alb_access_log.my_alb_logs
 ```
 
 ## Query
 
-**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_elb_access_log)**
+**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_alb_access_log)**
 
 ### Failed requests
 
@@ -61,7 +61,7 @@ select
   target_status_code,
   request
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   elb_status_code >= 400
 order by
@@ -85,7 +85,7 @@ select
   response_processing_time, -- Time taken to process response
   (request_processing_time + target_processing_time + response_processing_time) as total_time
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   (request_processing_time + target_processing_time + response_processing_time) > 1 -- Requests taking longer than 1 second
 order by
@@ -103,7 +103,7 @@ select
   ssl_protocol,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   ssl_protocol in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols (TLSv1.1, TLSv1, SSLv3, SSLv2)
 group by
@@ -117,30 +117,30 @@ order by
 
 ### Collect logs from an S3 bucket
 
-Collect ELB access logs stored in an S3 bucket using the default log file format.
+Collect ALB access logs stored in an S3 bucket using the default log file format.
 
 ```hcl
 connection "aws" "logging_account" {
   profile = "my-logging-account"
 }
 
-partition "aws_elb_access_log" "my_elb_logs" {
+partition "aws_alb_access_log" "my_alb_logs" {
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
-    bucket     = "aws-elb-logs-bucket"
+    bucket     = "aws-alb-logs-bucket"
   }
 }
 ```
 
 ### Collect logs from an S3 bucket with a prefix
 
-Collect ELB access logs stored in an S3 bucket using a prefix.
+Collect ALB access logs stored in an S3 bucket using a prefix.
 
 ```hcl
-partition "aws_elb_access_log" "my_elb_logs_prefix" {
+partition "aws_alb_access_log" "my_alb_logs_prefix" {
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
-    bucket     = "aws-elb-logs-bucket"
+    bucket     = "aws-alb-logs-bucket"
     prefix     = "my/prefix/"
   }
 }
@@ -148,10 +148,10 @@ partition "aws_elb_access_log" "my_elb_logs_prefix" {
 
 ### Collect logs from local files
 
-You can also collect ELB access logs from local files.
+You can also collect ALB access logs from local files.
 
 ```hcl
-partition "aws_elb_access_log" "local_logs" {
+partition "aws_alb_access_log" "local_logs" {
   source "file"  {
     paths       = ["/Users/myuser/elb_logs"]
     file_layout = "%{DATA}.log.gz"
@@ -164,13 +164,13 @@ partition "aws_elb_access_log" "local_logs" {
 Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
 
 ```hcl
-partition "aws_elb_access_log" "my_logs_write" {
+partition "aws_alb_access_log" "my_logs_write" {
   # Avoid saving read-only events, which can drastically reduce local log size
   filter = "not read_only"
 
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
-    bucket     = "aws-elb-logs-bucket"
+    bucket     = "aws-alb-logs-bucket"
   }
 }
 ```
@@ -180,10 +180,10 @@ partition "aws_elb_access_log" "my_logs_write" {
 For a specific organization, collect logs for all accounts and regions.
 
 ```hcl
-partition "aws_elb_access_log" "my_logs_org" {
+partition "aws_alb_access_log" "my_logs_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
-    bucket      = "elb-logs-bucket"
+    bucket      = "aws-alb-logs-bucket"
     file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
   }
 }
@@ -195,10 +195,10 @@ partition "aws_elb_access_log" "my_logs_org" {
 For a specific account, collect logs for all regions.
 
 ```hcl
-partition "aws_elb_access_log" "my_logs_account" {
+partition "aws_alb_access_log" "my_logs_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
-    bucket      = "elb-logs-bucket"
+    bucket      = "aws-alb-logs-bucket"
     file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
   }
 }
@@ -209,10 +209,10 @@ partition "aws_elb_access_log" "my_logs_account" {
 For all accounts, collect logs from us-east-1.
 
 ```hcl
-partition "aws_elb_access_log" "my_logs_region" {
+partition "aws_alb_access_log" "my_logs_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
-    bucket      = "elb-logs-bucket"
+    bucket      = "aws-alb-logs-bucket"
     file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
   }
 }
@@ -223,10 +223,10 @@ partition "aws_elb_access_log" "my_logs_region" {
 For all accounts, collect logs from us-east-1 and us-east-2.
 
 ```hcl
-partition "aws_elb_access_log" "my_logs_regions" {
+partition "aws_alb_access_log" "my_logs_regions" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
-    bucket      = "elb-logs-bucket"
+    bucket      = "aws-alb-logs-bucket"
     file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
   }
 }

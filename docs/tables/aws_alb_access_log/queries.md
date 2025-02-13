@@ -9,7 +9,7 @@ select
   strftime(timestamp, '%Y-%m-%d') as request_date,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 group by
   request_date
 order by
@@ -25,7 +25,7 @@ select
   client_ip,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 group by
   client_ip
 order by
@@ -42,7 +42,7 @@ select
   target_ip,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   target_ip is not null
 group by
@@ -61,7 +61,7 @@ select
   count(*) as response_count,
   round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentage
 from
-  aws_elb_access_log
+  aws_alb_access_log
 group by
   elb_status_code
 order by
@@ -86,7 +86,7 @@ select
   target_status_code,
   error_reason
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   target_status_code is null
   and elb_status_code = 502
@@ -104,7 +104,7 @@ select
   ssl_protocol,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   ssl_protocol in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols (TLSv1.1, TLSv1, SSLv3, SSLv2)
 group by
@@ -123,7 +123,7 @@ select
   user_agent,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   user_agent like '%bot%'
   or user_agent like '%curl%'
@@ -155,7 +155,7 @@ select
   response_processing_time, -- Time taken to process response
   (request_processing_time + target_processing_time + response_processing_time) as total_time
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   (request_processing_time + target_processing_time + response_processing_time) > 1 -- Requests taking longer than 1 second
 order by
@@ -173,7 +173,7 @@ select
   target_status_code,
   count(*) as error_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   target_status_code >= 400
 group by
@@ -197,7 +197,7 @@ select
   elb,
   count(*) as request_count
 from
-  aws_elb_access_log
+  aws_alb_access_log
 group by
   request_minute,
   elb
@@ -221,7 +221,7 @@ select
   sent_bytes,
   received_bytes
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   sent_bytes > 10485760 -- 10MB
 order by
@@ -240,7 +240,7 @@ select
   count(*) as request_count,
   avg(target_processing_time) as avg_processing_time
 from
-  aws_elb_access_log
+  aws_alb_access_log
 group by
   hour_of_day
 order by
@@ -260,7 +260,7 @@ select
   target_ip,
   elb_status_code
 from
-  aws_elb_access_log
+  aws_alb_access_log
 where
   extract('hour' from timestamp) >= 20 -- 8 PM
   or extract('hour' from timestamp) < 6 -- 6 AM

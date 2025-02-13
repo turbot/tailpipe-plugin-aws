@@ -1,4 +1,4 @@
-package elb_access_log
+package alb_access_log
 
 import (
 	"time"
@@ -16,34 +16,34 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const ElbAccessLogTableIdentifier = "aws_elb_access_log"
+const AlbAccessLogTableIdentifier = "aws_alb_access_log"
 
 func init() {
 	// Register the table, with type parameters:
 	// 1. row struct
 	// 2. table config struct
 	// 3. table implementation
-	table.RegisterTable[*ElbAccessLog, *ElbAccessLogTable]()
+	table.RegisterTable[*AlbAccessLog, *AlbAccessLogTable]()
 }
 
-const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
+const albLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
 
-type ElbAccessLogTable struct{}
+type AlbAccessLogTable struct{}
 
-func (c *ElbAccessLogTable) Identifier() string {
-	return ElbAccessLogTableIdentifier
+func (c *AlbAccessLogTable) Identifier() string {
+	return AlbAccessLogTableIdentifier
 }
 
-func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAccessLog] {
+func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*AlbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"),
 	}
 
-	return []*table.SourceMetadata[*ElbAccessLog]{
+	return []*table.SourceMetadata[*AlbAccessLog]{
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
-			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat),
+			Mapper:     mappers.NewGonxMapper[*AlbAccessLog](albLogFormat),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithRowPerLine(),
@@ -52,7 +52,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAcce
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat),
+			Mapper:     mappers.NewGonxMapper[*AlbAccessLog](albLogFormat),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -60,7 +60,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAcce
 	}
 }
 
-func (c *ElbAccessLogTable) EnrichRow(row *ElbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*ElbAccessLog, error) {
+func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*AlbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
@@ -93,6 +93,6 @@ func (c *ElbAccessLogTable) EnrichRow(row *ElbAccessLog, sourceEnrichmentFields 
 	return row, nil
 }
 
-func (c *ElbAccessLogTable) GetDescription() string {
-	return "AWS ELB Access logs capture detailed information about the requests that are processed by an Elastic Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+func (c *AlbAccessLogTable) GetDescription() string {
+	return "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 }

@@ -1,4 +1,4 @@
-package elb_access_log
+package alb_access_log
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
-type ElbAccessLogBatch struct {
-	Records []ElbAccessLog `json:"Records"`
+type AlbAccessLogBatch struct {
+	Records []AlbAccessLog `json:"Records"`
 }
 
-type ElbAccessLog struct {
+type AlbAccessLog struct {
 	schema.CommonFields
 
 	ActionsExecuted        string    `json:"actions_executed,omitempty"`
@@ -51,7 +51,7 @@ type ElbAccessLog struct {
 }
 
 // InitialiseFromMap - initialise the struct from a map
-func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
+func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error
 	for key, value := range m {
 		if value == "-" {
@@ -173,7 +173,7 @@ func (l *ElbAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
-func (c *ElbAccessLog) GetColumnDescriptions() map[string]string {
+func (c *AlbAccessLog) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"actions_executed":         "The actions taken when processing the request, such as forwarding, redirecting, or fixed responses.",
 		"chosen_cert_arn":          "The ARN of the certificate presented to the client during the TLS handshake.",
