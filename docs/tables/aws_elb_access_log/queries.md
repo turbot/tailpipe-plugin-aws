@@ -40,8 +40,7 @@ Analyze how requests are distributed across target instances.
 ```sql
 select
   target_ip,
-  count(*) as request_count,
-  avg(target_processing_time) as avg_processing_time
+  count(*) as request_count
 from
   aws_elb_access_log
 where
@@ -107,8 +106,7 @@ select
 from
   aws_elb_access_log
 where
-  ssl_cipher is not null
-  and ssl_protocol in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols (TLSv1.1, TLSv1, SSLv3, SSLv2)
+  ssl_protocol in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols (TLSv1.1, TLSv1, SSLv3, SSLv2)
 group by
   ssl_cipher,
   ssl_protocol
@@ -152,14 +150,14 @@ select
   request,
   client_ip,
   target_ip,
-  request_processing_time,
-  target_processing_time,
-  response_processing_time,
+  request_processing_time,  -- Time taken by load balancer to process request
+  target_processing_time,   -- Time taken by target to process request
+  response_processing_time, -- Time taken to process response
   (request_processing_time + target_processing_time + response_processing_time) as total_time
 from
   aws_elb_access_log
 where
-  (request_processing_time + target_processing_time + response_processing_time) > 1
+  (request_processing_time + target_processing_time + response_processing_time) > 1 -- Requests taking longer than 1 second
 order by
   total_time desc
 limit 10;

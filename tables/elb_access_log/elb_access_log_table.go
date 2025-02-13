@@ -27,7 +27,6 @@ func init() {
 }
 
 const elbLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
-const elbLogFormatNoConnTrace = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason"`
 
 type ElbAccessLogTable struct{}
 
@@ -44,7 +43,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAcce
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
-			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
+			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithRowPerLine(),
@@ -53,7 +52,7 @@ func (c *ElbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ElbAcce
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat, elbLogFormatNoConnTrace),
+			Mapper:     mappers.NewGonxMapper[*ElbAccessLog](elbLogFormat),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},

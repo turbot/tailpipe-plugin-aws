@@ -70,7 +70,7 @@ order by
 
 ### Slow response times
 
-Identify requests with high processing times that might indicate performance issues.
+Identify requests where the combined processing time (request + target + response) exceeds 1 second. This includes the time taken to process the request at the load balancer, the target's processing time, and the response processing time.
 
 ```sql
 select
@@ -78,22 +78,24 @@ select
   elb,
   tp_index as account_id,
   request,
-  request_processing_time,
-  target_processing_time,
-  response_processing_time,
+  client_ip,
+  target_ip,
+  request_processing_time,  -- Time taken by load balancer to process request
+  target_processing_time,   -- Time taken by target to process request
+  response_processing_time, -- Time taken to process response
   (request_processing_time + target_processing_time + response_processing_time) as total_time
 from
   aws_elb_access_log
 where
-  (request_processing_time + target_processing_time + response_processing_time) > 1
+  (request_processing_time + target_processing_time + response_processing_time) > 1 -- Requests taking longer than 1 second
 order by
   total_time desc
 limit 10;
 ```
 
-### SSL cipher usage analysis
+### SSL cipher vulnerabilities
 
-Analyze SSL cipher usage patterns across your load balancers.
+Detect usage of deprecated or insecure SSL ciphers.
 
 ```sql
 select
@@ -103,7 +105,7 @@ select
 from
   aws_elb_access_log
 where
-  ssl_cipher is not null
+  ssl_protocol in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols (TLSv1.1, TLSv1, SSLv3, SSLv2)
 group by
   ssl_cipher,
   ssl_protocol

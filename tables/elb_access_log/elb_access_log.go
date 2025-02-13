@@ -209,6 +209,8 @@ func (c *ElbAccessLog) GetColumnDescriptions() map[string]string {
 		"user_agent":               "The User-Agent string from the client making the request.",
 
 		// Tailpipe-specific metadata fields
-		"tp_index": "The AWS account ID that received the request.",
+		"tp_ips":     "A list of IP addresses involved in the request, including the client IP and target IP.",
+		"tp_domains": "A list of domains involved in the request, including the SNI domain from TLS connections.",
+		"tp_akas":    "A list of AWS ARNs associated with the request, including the target group ARN.",
 	}
 }
