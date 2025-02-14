@@ -1,4 +1,4 @@
-package alb_access_log
+package clb_access_log
 
 import (
 	"time"
@@ -19,14 +19,10 @@ import (
 const ClbAccessLogTableIdentifier = "aws_clb_access_log"
 
 func init() {
-	// Register the table, with type parameters:
-	// 1. row struct
-	// 2. table config struct
-	// 3. table implementation
 	table.RegisterTable[*ClbAccessLog, *ClbAccessLogTable]()
 }
 
-const albLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
+const clbLogFormat = `$timestamp $elb $client $backend $request_processing_time $backend_processing_time $response_processing_time $elb_status_code $backend_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol`
 
 type ClbAccessLogTable struct{}
 
@@ -41,18 +37,16 @@ func (c *ClbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ClbAcce
 
 	return []*table.SourceMetadata[*ClbAccessLog]{
 		{
-			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
-			Mapper:     mappers.NewGonxMapper[*ClbAccessLog](albLogFormat),
+			Mapper:     mappers.NewGonxMapper[*ClbAccessLog](clbLogFormat),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithRowPerLine(),
 			},
 		},
 		{
-			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     mappers.NewGonxMapper[*ClbAccessLog](albLogFormat),
+			Mapper:     mappers.NewGonxMapper[*ClbAccessLog](clbLogFormat),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -63,7 +57,6 @@ func (c *ClbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ClbAcce
 func (c *ClbAccessLogTable) EnrichRow(row *ClbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*ClbAccessLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
-	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
@@ -77,22 +70,14 @@ func (c *ClbAccessLogTable) EnrichRow(row *ClbAccessLog, sourceEnrichmentFields 
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
-	if row.TargetIP != nil {
-		row.TpDestinationIP = row.TargetIP
-		row.TpIps = append(row.TpIps, *row.TargetIP)
-	}
-
-	if row.DomainName != "" {
-		row.TpDomains = append(row.TpDomains, row.DomainName)
-	}
-
-	if row.TargetGroupArn != "" {
-		row.TpAkas = append(row.TpAkas, row.TargetGroupArn)
+	if row.BackendIP != nil {
+		row.TpDestinationIP = row.BackendIP
+		row.TpIps = append(row.TpIps, *row.BackendIP)
 	}
 
 	return row, nil
 }
 
 func (c *ClbAccessLogTable) GetDescription() string {
-	return "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+	return "AWS CLB Access logs capture detailed information about requests processed by a Classic Load Balancer, including client information, backend responses, and SSL details."
 }
