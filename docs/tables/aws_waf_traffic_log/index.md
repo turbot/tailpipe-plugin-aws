@@ -78,7 +78,7 @@ from
 where
   action = 'BLOCK'
 group by
-  (http_request ->> 'clientIp')
+  client_ip
 order by
   block_count desc
 limit 10;
@@ -98,7 +98,7 @@ select
 from
   aws_waf_traffic_log
 where
-  (rule_match_details ->> 'condition_type') = 'SQL_INJECTION'
+  condition_type = 'SQL_INJECTION'
 order by
   timestamp desc;
 ```
@@ -177,29 +177,30 @@ partition "aws_waf_traffic_log" "my_logs_account" {
 }
 ```
 
-### Collect logs for a single region
+### Collect logs from local files
 
-For all accounts, collect logs from `us-east-1`.
+You can also collect logs from local files.
 
 ```hcl
-partition "aws_waf_traffic_log" "my_logs_region" {
-  source "aws_s3_bucket" {
-    connection  = connection.aws.security_account
-    bucket      = "waf-traffic-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.json.gz"
+partition "aws_waf_traffic_log" "my_logs" {
+  source "file"  {
+    paths       = ["/Users/myuser/aws_waf_traffic_log"]
+    file_layout = "%{DATA}.txt"
   }
 }
 ```
 
-### Collect logs for multiple regions
+### Exclude read requests
 
-For all accounts, collect logs from `us-east-1` and `us-west-2`.
+Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
 
 ```hcl
-partition "aws_waf_traffic_log" "my_logs_regions" {
+partition "aws_waf_traffic_log" "my_logs_write" {
+  filter = "(http_request ->> 'httpMethod') != 'GET'"
+
   source "aws_s3_bucket" {
-    bucket      = "waf-traffic-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/(us-east-1|us-west-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.json.gz"
+    connection = connection.aws.security_account
+    bucket     = "waf-traffic-logs-bucket"
   }
 }
 ```
