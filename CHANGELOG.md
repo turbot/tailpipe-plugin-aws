@@ -2,7 +2,7 @@
 
 _Breaking changes_
 
-- The `aws_s3_server_access_log` table index is now based off of the source bucket's name instead of the destination bucket's AWS account ID. We recommend deleting your existing `aws_s3_server_access_log` partition data, e.g., `tailpipe partition delete aws_s3_server_access_log.my_partition`, and then recollecting your data.
+- The `aws_s3_server_access_log` table index is now based off of the source bucket's name instead of the destination bucket's AWS account ID. We recommend deleting your existing `aws_s3_server_access_log` partition data, e.g., `tailpipe partition delete aws_s3_server_access_log.my_partition`, and then recollecting your data. ([#89](https://github.com/turbot/tailpipe-plugin-aws/pull/89))
 
 ## v0.3.0 [2025-02-12]
 
