@@ -39,65 +39,75 @@ type S3ServerAccessLog struct {
 	VersionID          *string   `json:"version_id,omitempty"`
 }
 
-func NewS3ServerAccessLog() *S3ServerAccessLog {
-	return &S3ServerAccessLog{}
-}
-
+// InitialiseFromMap - initialise the struct from a map
 func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
+	var err error
 	for key, value := range m {
+		if value == "-" {
+			continue
+		}
 		switch key {
 		case "bucket_owner":
 			l.BucketOwner = value
 		case "bucket":
 			l.Bucket = value
 		case "timestamp":
-			ts, err := time.Parse("02/Jan/2006:15:04:05 -0700", value)
+			l.Timestamp, err = time.Parse("02/Jan/2006:15:04:05 -0700", value)
 			if err != nil {
 				return fmt.Errorf("error parsing timestamp: %w", err)
 			}
-			l.Timestamp = ts
 		case "remote_ip":
 			l.RemoteIP = value
-		case "requester":
-			if value != "-" {
-				l.Requester = value
-			}
 		case "request_id":
 			l.RequestID = value
 		case "operation":
 			l.Operation = value
+		case "requester":
+			l.Requester = value
 		case "key":
-			if value != "-" {
-				l.Key = &value
-			}
+			l.Key = &value
 		case "request_uri":
 			l.RequestURI = &value
+		case "error_code":
+			l.ErrorCode = &value
+		case "referer":
+			l.Referer = &value
+		case "user_agent":
+			l.UserAgent = &value
+		case "version_id":
+			l.VersionID = &value
+		case "host_id":
+			l.HostID = &value
+		case "signature_version":
+			l.SignatureVersion = &value
+		case "cipher_suite":
+			l.CipherSuite = &value
+		case "authentication_type":
+			l.AuthenticationType = &value
+		case "host_header":
+			l.HostHeader = &value
+		case "tls_version":
+			l.TLSVersion = &value
+		case "access_point_arn":
+			l.AccessPointArn = &value
 		case "http_status":
 			hs, err := strconv.Atoi(value)
 			if err != nil {
 				return fmt.Errorf("error parsing http_status: %w", err)
 			}
 			l.HTTPStatus = &hs
-		case "error_code":
-			if value != "-" {
-				l.ErrorCode = &value
-			}
 		case "bytes_sent":
-			if value != "-" {
-				bs, err := strconv.ParseInt(value, 10, 64)
-				if err != nil {
-					return fmt.Errorf("error parsing bytes_sent: %w", err)
-				}
-				l.BytesSent = &bs
+			bs, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing bytes_sent: %w", err)
 			}
+			l.BytesSent = &bs
 		case "object_size":
-			if value != "-" {
-				os, err := strconv.ParseInt(value, 10, 64)
-				if err != nil {
-					return fmt.Errorf("error parsing object_size: %w", err)
-				}
-				l.ObjectSize = &os
+			os, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing object_size: %w", err)
 			}
+			l.ObjectSize = &os
 		case "total_time":
 			tt, err := strconv.Atoi(value)
 			if err != nil {
@@ -105,61 +115,14 @@ func (l *S3ServerAccessLog) InitialiseFromMap(m map[string]string) error {
 			}
 			l.TotalTime = &tt
 		case "turn_around_time":
-			if value != "-" {
-				tat, err := strconv.Atoi(value)
-				if err != nil {
-					return fmt.Errorf("error parsing turn_around_time: %w", err)
-				}
-				l.TurnAroundTime = &tat
+			tat, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing turn_around_time: %w", err)
 			}
-		case "referer":
-			if value != "-" {
-				l.Referer = &value
-			}
-		case "user_agent":
-			if value != "-" {
-				l.UserAgent = &value
-			}
-		case "version_id":
-			if value != "-" {
-				l.VersionID = &value
-			}
-		case "host_id":
-			if value != "-" {
-				l.HostID = &value
-			}
-		case "signature_version":
-			if value != "-" {
-				l.SignatureVersion = &value
-			}
-		case "cipher_suite":
-			if value != "-" {
-				l.CipherSuite = &value
-			}
-		case "authentication_type":
-			if value != "-" {
-				l.AuthenticationType = &value
-			}
-		case "host_header":
-			if value != "-" {
-				l.HostHeader = &value
-			}
-		case "tls_version":
-			if value != "-" {
-				l.TLSVersion = &value
-			}
-		case "access_point_arn":
-			if value != "-" {
-				l.AccessPointArn = &value
-			}
+			l.TurnAroundTime = &tat
 		case "acl_required":
-			if value != "-" {
-				b := true
-				l.AclRequired = &b
-			} else {
-				b := false
-				l.AclRequired = &b
-			}
+			b := true
+			l.AclRequired = &b
 		}
 	}
 	return nil
@@ -195,7 +158,7 @@ func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 		"version_id":          "The version ID of the object, if versioning is enabled.",
 
 		// Tailpipe-specific metadata fields
-		"tp_index":     "The AWS account ID that received the request.",
+		"tp_index":     "The name of the S3 bucket where the request was made.",
 		"tp_ips":       "All IP addresses associated with the request, including the remote IP.",
 		"tp_usernames": "Canonical user IDs or role ARNs associated with the request.",
 	}
