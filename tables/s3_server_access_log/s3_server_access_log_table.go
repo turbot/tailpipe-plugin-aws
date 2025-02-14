@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 
 	"github.com/rs/xid"
 
@@ -63,11 +62,7 @@ func (c *S3ServerAccessLogTable) EnrichRow(row *S3ServerAccessLog, sourceEnrichm
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
-	callerIdentityData, err := tables.GetCallerIdentityData()
-	if err != nil {
-		return nil, err
-	}
-	row.TpIndex = *callerIdentityData.Account
+	row.TpIndex = row.Bucket
 	row.TpSourceIP = &row.RemoteIP
 	row.TpIps = append(row.TpIps, row.RemoteIP)
 
