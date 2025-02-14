@@ -228,42 +228,26 @@ order by
   sent_bytes desc;
 ```
 
-<!-- ## Baseline Examples
+### Count Requests by Listener Type (HTTP, HTTPS, HTTP/2, WebSockets, etc.)
 
-### Traffic patterns by hour
-
-Analyze traffic patterns throughout the day.
+Identify how many requests were received for each listener type.
 
 ```sql
 select
-  extract('hour' from timestamp) as hour_of_day,
-  count(*) as request_count,
-  avg(target_processing_time) as avg_processing_time
-from
-  aws_alb_access_log
-group by
-  hour_of_day
-order by
-  hour_of_day;
+  listener_type,
+  count(*) as request_count
+from (
+  select
+    case
+      when request like 'GET http://%' then 'HTTP'
+      when request like 'GET https://%' and ssl_protocol is not null then 'HTTPS'
+      when request like 'GET https://%' and ssl_protocol is null then 'HTTP/2'
+      when request like 'GET ws://%' then 'WebSockets'
+      when request like 'GET wss://%' then 'Secured WebSockets'
+      else 'Other'
+    end as listener_type
+  from aws_alb_access_log
+)
+group by listener_type
+order by request_count desc;
 ```
-
-### Requests outside normal hours
-
-Flag unusual activity outside business hours (8 PM - 6 AM).
-
-```sql
-select
-  timestamp,
-  elb,
-  client_ip,
-  request,
-  target_ip,
-  elb_status_code
-from
-  aws_alb_access_log
-where
-  extract('hour' from timestamp) >= 20 -- 8 PM
-  or extract('hour' from timestamp) < 6 -- 6 AM
-order by
-  timestamp desc;
-``` -->

@@ -1,12 +1,12 @@
 package alb_access_log
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -68,12 +68,15 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-
-	callerIdentityData, err := tables.GetCallerIdentityData()
-	if err != nil {
-		return nil, err
+	var accountID string
+	// arn:aws:elasticloadbalancing:us-east-1:882222555555:targetgroup/test-waf/9b994342d9d8d5cd
+	if row.TargetGroupArn != "" {
+		accountID = strings.Split(row.TargetGroupArn, ":")[4] // Account ID is the first part
+	}else{
+		accountID = row.TargetGroupArn  
 	}
-	row.TpIndex = *callerIdentityData.Account
+
+	row.TpIndex = accountID // Use the account ID as the index
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
