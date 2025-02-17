@@ -1,6 +1,8 @@
 package waf_traffic_log
 
 import (
+	"time"
+
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
@@ -37,12 +39,12 @@ type CustomValue struct {
 
 // RateBasedRule represents the main JSON structure
 type RateBasedRule struct {
-	RateBasedRuleID   *interface{}  `json:"rateBasedRuleId"` // Assuming ID could be a string or number
-	RateBasedRuleName *string       `json:"rateBasedRuleName"`
-	LimitKey          *string       `json:"limitKey"`
-	MaxRateAllowed    *int          `json:"maxRateAllowed"`
-	EvaluationWindow  *string       `json:"evaluationWindowSec"`
-	CustomValues      []CustomValue `json:"customValues" parquet:"type=JSON"`
+	RateBasedRuleID     *interface{}  `json:"rateBasedRuleId"` // Assuming ID could be a string or number
+	RateBasedRuleName   *string       `json:"rateBasedRuleName"`
+	LimitKey            *string       `json:"limitKey"`
+	MaxRateAllowed      *int          `json:"maxRateAllowed"`
+	EvaluationWindowSec *int32          `json:"evaluationWindowSec"`
+	CustomValues        []CustomValue `json:"customValues" parquet:"type=JSON"`
 }
 
 type RuleMatchDetail struct {
@@ -82,7 +84,7 @@ type Labels struct {
 type WafTrafficLog struct {
 	schema.CommonFields
 
-	Timestamp                   *int64                 `json:"timestamp,omitempty"`
+	Timestamp                   *time.Time             `json:"timestamp"`
 	FormatVersion               *int32                 `json:"formatVersion,omitempty" parquet:"name=format_version"`
 	WebAclId                    *string                `json:"webAclId,omitempty" parquet:"name=web_acl_id"`
 	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=terminating_rule_match_details, type=JSON"`
@@ -101,7 +103,7 @@ type WafTrafficLog struct {
 
 func (c *WafTrafficLog) GetColumnDescriptions() map[string]string {
 	return map[string]string{
-		"timestamp":                      "The timestamp in milliseconds when request was made.",
+		"timestamp":                      "The date and time when the request was made, in ISO 8601 format.",
 		"format_version":                 "The format version for the log.",
 		"web_acl_id":                     "The GUID of the web ACL.",
 		"terminating_rule_match_details": "Detailed information about the terminating rule that matched the request. A terminating rule has an action that ends the inspection process against a web request. Possible actions for a terminating rule include Allow, Block, CAPTCHA, and Challenge. During the inspection of a web request, at the first rule that matches the request and that has a terminating action, AWS WAF stops the inspection and applies the action. The web request might contain other threats, in addition to the one that's reported in the log for the matching terminating rule.",
