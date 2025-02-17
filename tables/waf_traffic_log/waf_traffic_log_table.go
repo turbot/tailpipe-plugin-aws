@@ -58,9 +58,9 @@ func (c *WafTrafficLogTable) EnrichRow(row *WafTrafficLog, sourceEnrichmentField
 
 	// Record standardization
 	row.TpID = xid.New().String()
-	row.TpTimestamp = time.UnixMilli(*row.Timestamp)
+	row.TpTimestamp = *row.Timestamp
 	row.TpIngestTimestamp = time.Now()
-	row.TpDate = time.UnixMilli(*row.Timestamp).Truncate(24 * time.Hour)
+	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
 	if row.HttpSourceId != nil {
 		// For ALB and APPService we are getting ID not ARN.

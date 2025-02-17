@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
@@ -29,10 +31,62 @@ func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTraff
 
 	// decode JSON into WafTrafficLog
 	var log WafTrafficLog
-	err := json.Unmarshal(jsonBytes, &log)
+	err := unmarshalWafTrafficLog(jsonBytes, &log)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding JSON: %w; partial log: %+v", err, log)
 	}
 
 	return &log, nil
+}
+
+func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
+	var temp struct {
+		Timestamp                   *int64                 `json:"timestamp,omitempty"`
+		FormatVersion               *int32                 `json:"formatVersion,omitempty"`
+		WebAclId                    *string                `json:"webAclId,omitempty"`
+		TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty"`
+		TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty"`
+		TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty"`
+		Action                      *string                `json:"action,omitempty"`
+		HttpSourceName              *string                `json:"httpSourceName,omitempty"`
+		HttpSourceId                *string                `json:"httpSourceId,omitempty"`
+		RuleGroupList               []RuleGroup            `json:"ruleGroupList,omitempty"`
+		RateBasedRuleList           []RateBasedRule        `json:"rateBasedRuleList,omitempty"`
+		NonTerminatingMatchingRules []Rule                 `json:"nonTerminatingMatchingRules,omitempty"`
+		HttpRequest                 *HttpRequest           `json:"httpRequest,omitempty"`
+		RequestHeadersInserted      []Header               `json:"requestHeadersInserted,omitempty"`
+		Labels                      []Labels               `json:"labels,omitempty"`
+	}
+
+	// Unmarshal JSON into temporary struct
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+	// w := &WafTrafficLog{}
+	// Assign values from temp struct
+	log.FormatVersion = temp.FormatVersion
+	log.WebAclId = temp.WebAclId
+	log.TerminatingRuleMatchDetails = temp.TerminatingRuleMatchDetails
+	log.TerminatingRuleId = temp.TerminatingRuleId
+	log.TerminatingRuleType = temp.TerminatingRuleType
+	log.Action = temp.Action
+	log.HttpSourceName = temp.HttpSourceName
+	log.HttpSourceId = temp.HttpSourceId
+	log.RuleGroupList = temp.RuleGroupList
+	log.RateBasedRuleList = temp.RateBasedRuleList
+	log.NonTerminatingMatchingRules = temp.NonTerminatingMatchingRules
+	log.HttpRequest = temp.HttpRequest
+	log.RequestHeadersInserted = temp.RequestHeadersInserted
+	log.Labels = temp.Labels
+
+	// Convert timestamp (if exists) to *time.Time
+	if temp.Timestamp != nil {
+		parsedTime := time.UnixMilli(*temp.Timestamp).UTC()
+		log.Timestamp = &parsedTime
+	} else {
+		slog.Error("Getting the timestamp value as null")
+		log.Timestamp = nil
+	}
+
+	return nil
 }
