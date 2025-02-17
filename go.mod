@@ -186,7 +186,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.6.0
-	github.com/turbot/go-kit v0.10.0-rc.0
+	github.com/turbot/go-kit v1.0.1-rc.0
 	github.com/turbot/pipe-fittings/v2 v2.0.0
 	golang.org/x/sync v0.11.0
 )
