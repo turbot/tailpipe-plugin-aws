@@ -53,9 +53,8 @@ Find all blocked requests recorded by AWS WAF.
 ```sql
 select
   tp_timestamp,
-  (http_request ->> 'client_ip') as client_ip,
-  (http_request ->> 'country') as country,
-  rule_group.name as rule_matched,
+  http_request.clientIp as client_ip,
+  http_request.country as country,
   action
 from
   aws_waf_traffic_log
@@ -71,7 +70,7 @@ Identify IPs frequently blocked by AWS WAF.
 
 ```sql
 select
-  (http_request ->> 'clientIp') as client_ip,
+  http_request.clientIp as client_ip,
   count(*) as block_count
 from
   aws_waf_traffic_log
@@ -91,14 +90,17 @@ Find web requests that matched AWS WAF’s SQL Injection detection.
 ```sql
 select
   timestamp,
-  (http_request ->> 'uri') as request_uri,
-  (terminating_rule_match_details ->> 'conditionType') as condition_type,
-  (http_request ->> 'clientIp') as client_ip,
-  action
+  http_request.uri as request_uri,
+  http_request.clientIp as client_ip,
+  action,
+  terminating_rule
 from
-  aws_waf_traffic_log
+  aws_waf_traffic_log,
+  unnest(
+    from_json(terminating_rule_match_details, '["JSON"]')
+  ) as terminating_rule
 where
-  condition_type = 'SQL_INJECTION'
+  json_contains(terminating_rule, '{"conditionType":"SQL_INJECTION"}')
 order by
   timestamp desc;
 ```
@@ -196,7 +198,7 @@ Use the filter argument in your partition to exclude read-only requests and redu
 
 ```hcl
 partition "aws_waf_traffic_log" "my_logs_write" {
-  filter = "(http_request ->> 'httpMethod') != 'GET'"
+  filter = "(http_request ->> 'httpMethod') not like 'GET'"
 
   source "aws_s3_bucket" {
     connection = connection.aws.security_account
@@ -211,6 +213,6 @@ partition "aws_waf_traffic_log" "my_logs_write" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument    | Default                                                                                                                                                                                |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:log_group_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.gz` |
+| Argument    | Default                                                                                                                                                                                                                |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:cloudfront_or_region}/%{DATA:cloudfront_name_or_resource_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.gz` |
