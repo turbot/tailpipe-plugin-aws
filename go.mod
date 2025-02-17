@@ -176,7 +176,7 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.44.183
+	github.com/aws/aws-sdk-go v1.55.6
 	github.com/aws/aws-sdk-go-v2 v1.36.1
 	github.com/aws/aws-sdk-go-v2/config v1.29.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.59
