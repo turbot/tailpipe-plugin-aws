@@ -228,7 +228,7 @@ order by
   sent_bytes desc;
 ```
 
-### Count Requests by Listener Type (HTTP, HTTPS, HTTP/2, WebSockets, etc.)
+### Count requests by Listener Type (HTTP, HTTPS, HTTP/2, WebSockets, etc.)
 
 Identify how many requests were received for each listener type.
 
@@ -250,4 +250,79 @@ from (
 )
 group by listener_type
 order by request_count desc;
+```
+
+### Authenticated requests with an invalid Id Token
+
+Identify requests with an invalid ID token.
+
+```sql
+select
+  timestamp,
+  client_ip,
+  request,
+  error_reason
+from
+  aws_alb_access_log
+where
+  error_reason = 'AuthInvalidIdToken'
+order by
+  timestamp desc;
+```
+
+### Requests with Invalid Lambda response
+
+Identify requests with an invalid Lambda response.
+
+```sql
+select
+  timestamp,
+  client_ip,
+  request,
+  error_reason
+from
+  aws_alb_access_log
+where
+  elb_status_code = 502
+  and error_reason like 'LambdaInvalidResponse'
+order by
+  timestamp desc;
+```
+
+### Requests with WAF Failure
+
+Identify requests that failed due to WAF rules.
+
+```sql
+select
+  timestamp,
+  client_ip,
+  request,
+  error_reason
+from
+  aws_alb_access_log
+where
+  error_reason in ('WAFConnectionError', 'WAFConnectionTimeout', 'WAFResponseReadTimeout', 'WAFServiceError', 'WAFUnhandledException')
+order by
+  timestamp desc;
+```
+
+### Requests Exceeding Maximum Allowed Body Size for Lambda
+
+Identify requests that exceed the maximum allowed body size for Lambda.
+
+```sql
+select
+  timestamp,
+  client_ip,
+  request,
+  sent_bytes,
+  received_bytes,
+  error_reason
+from
+  aws_alb_access_log
+where
+  error_reason = 'LambdaResponseTooLarge'
+order by
+  sent_bytes desc;
 ```
