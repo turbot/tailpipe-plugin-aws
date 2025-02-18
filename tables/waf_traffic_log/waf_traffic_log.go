@@ -84,8 +84,8 @@ type Labels struct {
 type WafTrafficLog struct {
 	schema.CommonFields
 
-	Action                      *string                `json:"action,omitempty"`
-	FormatVersion               *int32                 `json:"formatVersion,omitempty" parquet:"name=format_version"`
+	Action                      *string                `json:"action"`
+	FormatVersion               *int32                 `json:"formatVersion" parquet:"name=format_version"`
 	HttpRequest                 *HttpRequest           `json:"httpRequest,omitempty" parquet:"name=http_request"`
 	HttpSourceId                *string                `json:"httpSourceId,omitempty" parquet:"name=http_source_id"`
 	HttpSourceName              *string                `json:"httpSourceName,omitempty" parquet:"name=http_source_name"`
@@ -98,7 +98,7 @@ type WafTrafficLog struct {
 	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=terminating_rule_match_details, type=JSON"`
 	TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty" parquet:"name=terminating_rule_type"`
 	Timestamp                   *time.Time             `json:"timestamp"`
-	WebAclId                    *string                `json:"webAclId,omitempty" parquet:"name=web_acl_id"`
+	WebAclId                    *string                `json:"webAclId" parquet:"name=web_acl_id"`
 }
 
 func (c *WafTrafficLog) GetColumnDescriptions() map[string]string {

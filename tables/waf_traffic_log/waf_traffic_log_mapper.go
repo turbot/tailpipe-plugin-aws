@@ -41,13 +41,13 @@ func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTraff
 
 func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	var temp struct {
-		Timestamp                   *int64                 `json:"timestamp,omitempty"`
-		FormatVersion               *int32                 `json:"formatVersion,omitempty"`
-		WebAclId                    *string                `json:"webAclId,omitempty"`
+		Timestamp                   *int64                 `json:"timestamp"`
+		FormatVersion               *int32                 `json:"formatVersion"`
+		WebAclId                    *string                `json:"webAclId"`
 		TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty"`
 		TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty"`
 		TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty"`
-		Action                      *string                `json:"action,omitempty"`
+		Action                      *string                `json:"action"`
 		HttpSourceName              *string                `json:"httpSourceName,omitempty"`
 		HttpSourceId                *string                `json:"httpSourceId,omitempty"`
 		RuleGroupList               []RuleGroup            `json:"ruleGroupList,omitempty"`
