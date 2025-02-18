@@ -110,3 +110,24 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
+
+func (c *ClbAccessLog) GetColumnDescriptions() map[string]string {
+	return map[string]string{
+		"timestamp":                 "The time when the load balancer received the request from the client, in ISO 8601 format.",
+		"elb":                       "The name of the load balancer.",
+		"client_ip":                 "The IP address of the requesting client.",
+		"client_port":               "The source port used by the client for the connection.",
+		"backend_ip":                "The IP address of the registered instance that processed the request.",
+		"request":                   "The full request line from the client, including method, protocol, and URI.",
+		"request_processing_time":   "The time elapsed from receiving the request to sending it to a registered instance, in seconds.",
+		"backend_processing_time":   "The time elapsed from the load balancer sending the request to the registered instance until the instance starts sending response headers.",
+		"response_processing_time":  "The time elapsed from the load balancer receiving the response headers to sending the response to the client.",
+		"elb_status_code":           "The HTTP status code returned by the load balancer.",
+		"backend_status_code":       "The HTTP status code returned by the registered instance.",
+		"received_bytes":            "The size of the request in bytes received from the client.",
+		"sent_bytes":                "The size of the response in bytes sent to the client.",
+		"user_agent":                "A User-Agent string that identifies the client that originated the request.",
+		"ssl_cipher":                "The SSL cipher used for encrypting the connection.",
+		"ssl_protocol":              "The SSL/TLS version used for the connection.",
+	}
+}
