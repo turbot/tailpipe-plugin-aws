@@ -43,7 +43,7 @@ type RateBasedRule struct {
 	RateBasedRuleName   *string       `json:"rateBasedRuleName"`
 	LimitKey            *string       `json:"limitKey"`
 	MaxRateAllowed      *int          `json:"maxRateAllowed"`
-	EvaluationWindowSec *int32          `json:"evaluationWindowSec"`
+	EvaluationWindowSec *int32        `json:"evaluationWindowSec"`
 	CustomValues        []CustomValue `json:"customValues" parquet:"type=JSON"`
 }
 
