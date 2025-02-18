@@ -16,22 +16,22 @@ type ClbAccessLogBatch struct {
 type ClbAccessLog struct {
 	schema.CommonFields
 
-	ClientIP               string    `json:"client_ip"`
-	ClientPort             int       `json:"client_port"`
-	Elb                    string    `json:"elb"`
+	ClientIP               string    `json:"client_ip,omitempty"`
+	ClientPort             int       `json:"client_port,omitempty"`
+	Elb                    string    `json:"elb,omitempty"`
 	ElbStatusCode          *int      `json:"elb_status_code,omitempty"`
 	BackendStatusCode      *int      `json:"backend_status_code,omitempty"`
-	ReceivedBytes          *int64    `json:"received_bytes"`
-	SentBytes              *int64    `json:"sent_bytes"`
-	BackendIP              *string   `json:"backend_ip"`
-	Request                string    `json:"request"`
-	RequestProcessingTime  float64   `json:"request_processing_time"`
-	BackendProcessingTime  float64   `json:"backend_processing_time"`
-	ResponseProcessingTime float64   `json:"response_processing_time"`
+	ReceivedBytes          *int64    `json:"received_bytes,omitempty"`
+	SentBytes              *int64    `json:"sent_bytes,omitempty"`
+	BackendIP              *string   `json:"backend_ip,omitempty"`
+	Request                string    `json:"request,omitempty"`
+	RequestProcessingTime  float64   `json:"request_processing_time,omitempty"`
+	BackendProcessingTime  float64   `json:"backend_processing_time,omitempty"`
+	ResponseProcessingTime float64   `json:"response_processing_time,omitempty"`
 	SslCipher              string    `json:"ssl_cipher,omitempty"`
 	SslProtocol            string    `json:"ssl_protocol,omitempty"`
-	Timestamp              time.Time `json:"timestamp"`
-	UserAgent              string    `json:"user_agent"`
+	Timestamp              time.Time `json:"timestamp,omitempty"`
+	UserAgent              string    `json:"user_agent,omitempty"`
 }
 
 // InitialiseFromMap - initialise the struct from a map
