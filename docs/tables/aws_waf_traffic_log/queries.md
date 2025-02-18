@@ -23,7 +23,8 @@ Identify the top 10 client IP addresses that were blocked by AWS WAF, helping to
 ```sql
 select
   http_source_name,
-  (http_request ->> 'clientIp') as client_ip,
+  http_source_id,
+  http_request.clientIp as client_ip,
   count(*) as request_count
 from
   aws_waf_traffic_log
@@ -31,10 +32,31 @@ where
   action = 'BLOCK'
 group by
   http_source_name,
+  http_source_id,
   client_ip
 order by
   request_count desc
 limit 10;
+```
+
+### Top HTTP methods by source
+
+Analyzes the AWS WAF traffic logs to identify the most frequently used HTTP methods (GET, POST, PUT, DELETE, etc.) across different sources.
+
+```sql
+select
+  http_source_name,
+  http_source_id,
+  http_request.httpMethod,
+  count(*) as request_count
+from
+  aws_waf_traffic_log
+group by
+  http_source_name,
+  http_source_id,
+  http_request.httpMethod
+order by
+  request_count desc;
 ```
 
 ## Detection Examples
@@ -46,7 +68,7 @@ Labels in AWS WAF are metadata tags applied to web requests that match specific 
 ```sql
 select
   tp_timestamp,
-  (http_request ->> 'clientIp') as client_ip,
+  http_request.clientIp as client_ip,
   action,
   request_headers_inserted
 from
@@ -63,7 +85,7 @@ Identify IPs generating a high volume of blocked requests.
 
 ```sql
 select
-  (http_request ->> 'clientIp') as client_ip,
+  http_request.clientIp as client_ip,
   count(*) as block_count
 from
   aws_waf_traffic_log
@@ -82,18 +104,17 @@ Find requests that matched multiple non-terminating WAF rules.
 
 ```sql
 select
-  (http_request ->> 'clientIp') as client_ip,
+  timestamp,
+  http_request.clientIp as client_ip,
+  http_source_name,
+  http_source_id,
   json_array_length(non_terminating_matching_rules) as matched_rules,
-  count(*) as request_count
 from
   aws_waf_traffic_log
 where
   json_array_length(non_terminating_matching_rules) > 1
-group by
-  client_ip,
-  matched_rules
 order by
-  request_count desc;
+  matched_rules desc;
 ```
 
 ### Detect IPs bypassing CAPTCHA challenges
@@ -102,12 +123,12 @@ Find IPs that repeatedly triggered CAPTCHA but continued making requests.
 
 ```sql
 select
-  (http_request ->> 'clientIp') as client_ip,
+  http_request.clientIp as client_ip,
   count(*) as captcha_challenges
 from
   aws_waf_traffic_log
 where
- terminating_rule_id = 'CAPTCHA'
+ terminating_rule_type = 'CAPTCHA'
 group by
   client_ip
 order by
@@ -121,7 +142,7 @@ Identify web requests where the client IP is present in HTTP headers such as X-F
 ```sql
 select
   tp_timestamp,
-  (http_request ->> 'clientIp') as client_ip,
+  http_request.clientIp as client_ip,
   action,
   request_headers_inserted
 from 
@@ -142,9 +163,9 @@ Analyze high-volume blocked requests and provide statistics on blocked traffic t
 ```sql
 select 
   date_trunc('hour', tp_timestamp) as request_hour,
-  (http_request ->> 'clientIp') as client_ip,
+  http_request.clientIp as client_ip,
   http_source_name,
-  (http_request ->> 'uri') as request_uri,
+  http_request.uri as request_uri,
   count(*) as block_count
 from 
   aws_waf_traffic_log
@@ -189,7 +210,7 @@ Find requests that matched more than one rule.
 
 ```sql
 select 
-  http_request->>'clientIp' as client_ip,
+  http_request.clientIp as client_ip,
   json_array_length(non_terminating_matching_rules) as matched_rules,
   count(*) as request_count
 from 
@@ -209,7 +230,7 @@ Find the top countries where WAF rules are being triggered.
 
 ```sql
 select 
-  (http_request ->> 'country') as country,
+  http_request.country as country,
   count(*) as request_count
 from 
   aws_waf_traffic_log
