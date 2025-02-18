@@ -61,6 +61,24 @@ order by
 
 ## Operational Examples
 
+### Requests without labels
+
+Labels in AWS WAF are metadata tags applied to web requests that match specific rules within a Web ACL. These labels provide context on why a request was flagged, blocked, or allowed.
+
+```sql
+select
+  timestamp,
+  action,
+  http_request.clientIp as client_ip,
+  request_headers_inserted
+from
+  aws_waf_traffic_log,
+where
+  labels is null
+order by
+  timestamp;
+```
+
 ### Requests blocked by specific WAF rules
 
 This query retrieves the number of requests blocked by each WAF rule. It groups the blocked requests by WAF rule name and action type, providing insights into which rules are most actively blocking traffic. This helps in fine-tuning security policies, identifying potential threats, and optimizing WAF rules.
@@ -90,7 +108,7 @@ from
   blocked_rule;
 ```
 
-### Most Targeted URLs
+### Most targeted URLs
 
 Finds which URLs or endpoints are most frequently targeted URL. This helps identify high-risk areas in your application.
 
@@ -115,25 +133,7 @@ limit 10;
 
 ## Detection Examples
 
-### Requests without labels
-
-Labels in AWS WAF are metadata tags applied to web requests that match specific rules within a Web ACL. These labels provide context on why a request was flagged, blocked, or allowed.
-
-```sql
-select
-  timestamp,
-  http_request.clientIp as client_ip,
-  action,
-  request_headers_inserted
-from
-  aws_waf_traffic_log,
-where
-  labels is null
-order by
-  timestamp;
-```
-
-### XSS (Cross-Site Scripting) Attack Attempts
+### XSS (Cross-Site Scripting) attack attempts
 
 Finds requests blocked due to Cross-Site Scripting (XSS) attempts. These attacks try to inject malicious scripts into your web pages.
 
@@ -143,10 +143,10 @@ with blocked_rule as (
     timestamp,
     http_source_name,
     http_source_id,
+    action,
     unnest(
     from_json(rule_group_list, '["JSON"]')
     ) as rule_group,
-    action,
     http_request
   from
     aws_waf_traffic_log
@@ -163,7 +163,7 @@ select
 from
   blocked_rule
 where
-  (rule_group -> 'terminatingRule' ->> 'ruleId') like '%XSS%';
+  (rule_group -> 'terminatingRule' ->> 'ruleId') ilike '%XSS%';
 ```
 
 ### Detect high volume of blocked requests
