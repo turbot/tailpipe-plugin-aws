@@ -4,9 +4,9 @@
 
 Count events per day to identify request trends over time.
 
-```
+```sql
 select
-  strftime(tp_timestamp, '%Y-%m-%d') as access_date,
+  strftime(timestamp, '%Y-%m-%d') as access_date,
   count(*) as requests
 from
   aws_waf_traffic_log
@@ -59,6 +59,60 @@ order by
   request_count desc;
 ```
 
+## Operational Examples
+
+### Requests blocked by specific WAF rules
+
+This query retrieves the number of requests blocked by each WAF rule. It groups the blocked requests by WAF rule name and action type, providing insights into which rules are most actively blocking traffic. This helps in fine-tuning security policies, identifying potential threats, and optimizing WAF rules.
+
+```sql
+with blocked_rule as (
+  select
+    timestamp,
+    unnest(
+      from_json(rule_group_list, '["JSON"]')
+    ) as rule_group,
+    action,
+    http_request
+  from
+    aws_waf_traffic_log
+   where
+    action = 'BLOCK'
+)
+select
+  timestamp,
+  action,
+  http_request.clientIp as client_ip,
+  http_request.uri,
+  (rule_group -> 'terminatingRule' ->> 'ruleId') as terminating_rule_id,
+  (rule_group -> 'terminatingRule' ->> 'action') as terminating_rule_action
+from
+  blocked_rule;
+```
+
+### Most Targeted URLs
+
+Finds which URLs or endpoints are most frequently targeted URL. This helps identify high-risk areas in your application.
+
+```sql
+select
+  http_source_name,
+  http_source_id,
+  http_request.uri,
+  action,
+  count(*) as request_count
+from
+  aws_waf_traffic_log
+group by
+  http_source_name,
+  http_source_id,
+  http_request.uri,
+  action
+order by
+  request_count desc
+limit 10;
+```
+
 ## Detection Examples
 
 ### Requests without labels
@@ -67,7 +121,7 @@ Labels in AWS WAF are metadata tags applied to web requests that match specific 
 
 ```sql
 select
-  tp_timestamp,
+  timestamp,
   http_request.clientIp as client_ip,
   action,
   request_headers_inserted
@@ -76,7 +130,40 @@ from
 where
   labels is null
 order by
-  tp_timestamp;
+  timestamp;
+```
+
+### XSS (Cross-Site Scripting) Attack Attempts
+
+Finds requests blocked due to Cross-Site Scripting (XSS) attempts. These attacks try to inject malicious scripts into your web pages.
+
+```sql
+with blocked_rule as (
+  select
+    timestamp,
+    http_source_name,
+    http_source_id,
+    unnest(
+    from_json(rule_group_list, '["JSON"]')
+    ) as rule_group,
+    action,
+    http_request
+  from
+    aws_waf_traffic_log
+  where
+    action = 'BLOCK'
+)
+select
+  timestamp,
+  http_source_name,
+  http_source_id,
+  http_request.clientIp as client_ip,
+  http_request.httpMethod as http_method,
+  http_request.uri,
+from
+  blocked_rule
+where
+  (rule_group -> 'terminatingRule' ->> 'ruleId') like '%XSS%';
 ```
 
 ### Detect high volume of blocked requests
@@ -141,7 +228,7 @@ Identify web requests where the client IP is present in HTTP headers such as X-F
 
 ```sql
 select
-  tp_timestamp,
+  timestamp,
   http_request.clientIp as client_ip,
   action,
   request_headers_inserted
@@ -151,7 +238,7 @@ where
   (request_headers_inserted ->> 'name') in ('X-Forwarded-For', 'Client-IP', 'True-Client-IP', 'X-Real-IP')
   and (request_headers_inserted ->> 'value') is not null
 order by 
-  tp_timestamp desc;
+  timestamp desc;
 ```
 
 ## Volume Examples
@@ -162,7 +249,7 @@ Analyze high-volume blocked requests and provide statistics on blocked traffic t
 
 ```sql
 select 
-  date_trunc('hour', tp_timestamp) as request_hour,
+  date_trunc('hour', timestamp) as request_hour,
   http_request.clientIp as client_ip,
   http_source_name,
   http_request.uri as request_uri,
