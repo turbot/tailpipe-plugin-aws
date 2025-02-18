@@ -70,14 +70,20 @@ func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	log.TerminatingRuleId = temp.TerminatingRuleId
 	log.TerminatingRuleType = temp.TerminatingRuleType
 	log.Action = temp.Action
-	log.HttpSourceName = temp.HttpSourceName
-	log.HttpSourceId = temp.HttpSourceId
 	log.RuleGroupList = temp.RuleGroupList
 	log.RateBasedRuleList = temp.RateBasedRuleList
 	log.NonTerminatingMatchingRules = temp.NonTerminatingMatchingRules
 	log.HttpRequest = temp.HttpRequest
 	log.RequestHeadersInserted = temp.RequestHeadersInserted
 	log.Labels = temp.Labels
+	
+	// For a rule that triggered on SQLi detection(terminating/non-terminating) will not have HttpSourceName and HttpSourceId.
+	if *temp.HttpSourceName == "-" {
+		log.HttpSourceName = nil	
+	}
+	if *temp.HttpSourceId == "-" {
+		log.HttpSourceId = nil	
+	}
 
 	// Convert timestamp (if exists) to *time.Time
 	if temp.Timestamp != nil {
