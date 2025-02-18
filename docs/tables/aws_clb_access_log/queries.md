@@ -83,8 +83,7 @@ select
   backend_ip,
   request,
   elb_status_code,
-  backend_status_code,
-  error_reason
+  backend_status_code
 from
   aws_clb_access_log
 where
