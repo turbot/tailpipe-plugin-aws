@@ -16,6 +16,10 @@ order by
   event_date asc;
 ```
 
+```yaml
+folder: Account
+```
+
 ### Top 10 events
 
 List the 10 most frequently called events.
@@ -33,6 +37,10 @@ group by
 order by
   event_count desc
 limit 10;
+```
+
+```yaml
+folder: Account
 ```
 
 ### Top 10 events (exclude read-only)
@@ -56,6 +64,10 @@ order by
 limit 10;
 ```
 
+```yaml
+folder: Account
+```
+
 ### Top events by account
 
 Count and group events by account ID, event source, and event name to analyze activity across accounts.
@@ -76,6 +88,10 @@ order by
   event_count desc;
 ```
 
+```yaml
+folder: Account
+```
+
 ### Top error codes
 
 Identify the most frequent error codes.
@@ -92,6 +108,10 @@ group by
   error_code
 order by
   event_count desc;
+```
+
+```yaml
+folder: Account
 ```
 
 ## Detection Examples
@@ -119,6 +139,10 @@ order by
   event_time desc;
 ```
 
+```yaml
+folder: EBS
+```
+
 ### CloudTrail trail logging stopped
 
 Detect when logging was stopped for a CloudTrail trail.
@@ -140,6 +164,10 @@ where
   and error_code is not null
 order by
   event_time desc;
+```
+
+```yaml
+folder: CloudTrail
 ```
 
 ### Unsuccessful AWS console login attempts
@@ -166,6 +194,10 @@ order by
   event_time desc;
 ```
 
+```yaml
+folder: IAM
+```
+
 ### Root activity
 
 Track any actions performed by the root user.
@@ -184,6 +216,10 @@ where
   user_identity.type = 'Root'
 order by
   event_time desc;
+```
+
+```yaml
+folder: IAM
 ```
 
 ### Activity in unapproved regions
@@ -207,6 +243,10 @@ order by
   event_time desc;
 ```
 
+```yaml
+folder: Account
+```
+
 ### Activity from unapproved IP addresses
 
 Flag activity originating from IP addresses outside an approved list.
@@ -226,6 +266,10 @@ where
   source_ip_address not in ('192.0.2.146', '206.253.208.100')
 order by
   event_time desc;
+```
+
+```yaml
+folder: Account
 ```
 
 ## Operational Examples
@@ -253,6 +297,10 @@ order by
   event_time desc;
 ```
 
+```yaml
+folder: VPC
+```
+
 ### IAM user permission updates
 
 List events where an IAM user has added or removed permissions through managed policies, inline policies, or groups.
@@ -274,6 +322,10 @@ where
   and event_name in ('AddUserToGroup', 'AttachUserPolicy', 'DeleteUserPolicy', 'DetachUserPolicy', 'PutUserPolicy', 'RemoveUserFromGroup')
 order by
   event_time desc;
+```
+
+```yaml
+folder: IAM
 ```
 
 ## Volume Examples
@@ -301,6 +353,10 @@ order by
   event_count desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ### Excessive IAM role assumptions
 
 Identify IAM roles being assumed at an unusually high frequency.
@@ -323,6 +379,10 @@ having
 order by
   event_hour desc,
   event_count desc;
+```
+
+```yaml
+folder: IAM
 ```
 
 ## Baseline Examples
@@ -350,6 +410,10 @@ order by
   access_count desc;
 ```
 
+```yaml
+folder: Account
+```
+
 ### Activity outside of normal hours
 
 Flag activity occurring outside of standard working hours, e.g., activity bewteen 8 PM and 6 AM.
@@ -371,3 +435,7 @@ where
   or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   event_time desc;
+
+```yaml
+folder: Account
+```

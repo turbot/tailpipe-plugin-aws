@@ -16,6 +16,10 @@ order by
   access_date asc;
 ```
 
+```yaml
+folder: S3
+```
+
 ### Top 10 accessed objects
 
 List the 10 most frequently accessed S3 objects.
@@ -37,6 +41,10 @@ order by
 limit 10;
 ```
 
+```yaml
+folder: S3
+```
+
 ### Top 10 requester IP addresses
 
 List the top 10 requester IP addresses.
@@ -52,6 +60,10 @@ group by
 order by
   request_count desc
 limit 10;
+```
+
+```yaml
+folder: S3
 ```
 
 ### Top error codes
@@ -72,6 +84,10 @@ group by
   error_code
 order by
   error_count desc;
+```
+
+```yaml
+folder: S3
 ```
 
 ## Detection Examples
@@ -100,6 +116,10 @@ order by
   bytes_sent desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ### Requests from unapproved IAM roles and users
 
 Flag requests from IAM roles and users outside an approved list (by AWS account ID in this example).
@@ -119,6 +139,10 @@ where
   and requester not like 'arn:%:%:%:123456789012:%'
 order by
   timestamp desc;
+```
+
+```yaml
+folder: S3
 ```
 
 ## Operational Examples
@@ -145,6 +169,10 @@ order by
   timestamp desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ### Unauthenticated requests
 
 List all unauthenticated requests.
@@ -163,6 +191,10 @@ where
   requester is null
 order by
   timestamp desc;
+```
+
+```yaml
+folder: S3
 ```
 
 ## Volume Examples
@@ -189,6 +221,10 @@ order by
   request_count desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ### High volume of failed requests
 
 Identify remote IPs with a high number of failed requests.
@@ -209,6 +245,10 @@ having
   count(*) > 50
 order by
   failed_requests desc;
+```
+
+```yaml
+folder: S3
 ```
 
 ## Baseline Examples
@@ -232,4 +272,8 @@ where
   or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   timestamp desc;
+```
+
+```yaml
+folder: S3
 ```
