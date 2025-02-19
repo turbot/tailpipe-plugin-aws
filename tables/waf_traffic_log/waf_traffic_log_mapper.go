@@ -43,6 +43,7 @@ func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	var temp struct {
 		Timestamp                   *int64                 `json:"timestamp"`
 		FormatVersion               *int32                 `json:"formatVersion"`
+		CaptchaResponse             *CaptchaResponse       `json:"captchaResponse"`
 		WebAclId                    *string                `json:"webAclId"`
 		TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty"`
 		TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty"`
@@ -76,13 +77,14 @@ func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	log.HttpRequest = temp.HttpRequest
 	log.RequestHeadersInserted = temp.RequestHeadersInserted
 	log.Labels = temp.Labels
-	
+	log.CaptchaResponse = temp.CaptchaResponse
+
 	// For a rule that triggered on SQLi detection(terminating/non-terminating) will not have HttpSourceName and HttpSourceId.
 	if *temp.HttpSourceName == "-" {
-		log.HttpSourceName = nil	
+		log.HttpSourceName = nil
 	}
 	if *temp.HttpSourceId == "-" {
-		log.HttpSourceId = nil	
+		log.HttpSourceId = nil
 	}
 
 	// Convert timestamp (if exists) to *time.Time

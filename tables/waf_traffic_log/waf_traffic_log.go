@@ -85,6 +85,7 @@ type WafTrafficLog struct {
 	schema.CommonFields
 
 	Action                      *string                `json:"action"`
+	CaptchaResponse             *CaptchaResponse       `json:"captchaResponse,omitempty" parquet:"name=captcha_response"`
 	FormatVersion               *int32                 `json:"formatVersion" parquet:"name=format_version"`
 	HttpRequest                 *HttpRequest           `json:"httpRequest,omitempty" parquet:"name=http_request"`
 	HttpSourceId                *string                `json:"httpSourceId,omitempty" parquet:"name=http_source_id"`
@@ -95,7 +96,7 @@ type WafTrafficLog struct {
 	RequestHeadersInserted      []Header               `json:"requestHeadersInserted,omitempty" parquet:"name=request_headers_inserted, type=JSON"`
 	RuleGroupList               []RuleGroup            `json:"ruleGroupList,omitempty" parquet:"name=rule_group_list, type=JSON"`
 	TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty" parquet:"name=terminating_rule_id"`
-	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=terminating_rule_match_details, type=JSON"`
+	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=c, type=JSON"`
 	TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty" parquet:"name=terminating_rule_type"`
 	Timestamp                   *time.Time             `json:"timestamp"`
 	WebAclId                    *string                `json:"webAclId" parquet:"name=web_acl_id"`
@@ -104,6 +105,7 @@ type WafTrafficLog struct {
 func (c *WafTrafficLog) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"action":                         "The terminating action that AWS WAF applied to the request. This indicates either allow, block, CAPTCHA, or challenge. The CAPTCHA and Challenge actions are terminating when the web request doesn't contain a valid token.",
+		"captcha_response":               "The CAPTCHA action status for the request, populated when a CAPTCHA action is applied to the request. This field is populated for any CAPTCHA action, whether terminating or non-terminating. If a request has the CAPTCHA action applied multiple times, this field is populated from the last time the action was applied.",
 		"format_version":                 "The format version for the log.",
 		"http_request":                   "The metadata about the request.",
 		"http_source_id":                 "The ID of the associated resource.",
