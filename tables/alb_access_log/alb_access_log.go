@@ -32,22 +32,22 @@ type AlbAccessLog struct {
 	RedirectURL            *string   `json:"redirect_url,omitempty"`
 	Request                string    `json:"request"`
 	RequestCreationTime    time.Time `json:"request_creation_time"`
-	RequestProcessingTime  float64   `json:"request_processing_time"`
-	ResponseProcessingTime float64   `json:"response_processing_time"`
+	RequestProcessingTime  float64   `json:"request_processing_time,omitempty"`
+	ResponseProcessingTime float64   `json:"response_processing_time,omitempty"`
 	SentBytes              *int64    `json:"sent_bytes"`
 	SslCipher              string    `json:"ssl_cipher,omitempty"`
 	SslProtocol            string    `json:"ssl_protocol,omitempty"`
-	TargetGroupArn         string    `json:"target_group_arn"`
+	TargetGroupArn         *string   `json:"target_group_arn,omitempty"`
 	TargetIP               *string   `json:"target_ip,omitempty"`
 	TargetList             *string   `json:"target_list,omitempty"`
 	TargetPort             int       `json:"target_port,omitempty"`
-	TargetProcessingTime   float64   `json:"target_processing_time"`
+	TargetProcessingTime   float64   `json:"target_processing_time,omitempty"`
 	TargetStatusCode       *int      `json:"target_status_code,omitempty"`
 	TargetStatusList       *string   `json:"target_status_list,omitempty"`
 	Timestamp              time.Time `json:"timestamp"`
-	TraceID                string    `json:"trace_id"`
+	TraceID                string    `json:"trace_id,omitempty"`
 	Type                   string    `json:"type"`
-	UserAgent              string    `json:"user_agent"`
+	UserAgent              string    `json:"user_agent,omitempty"`
 }
 
 // InitialiseFromMap - initialise the struct from a map
@@ -89,19 +89,25 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				}
 			}
 		case "request_processing_time":
-			l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return fmt.Errorf("error parsing request_processing_time: %w", err)
+			if value != "-1" { // -1 if the load balancer can't dispatch the request to a target
+				l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing request_processing_time: %w", err)
+				}
 			}
 		case "target_processing_time":
-			l.TargetProcessingTime, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return fmt.Errorf("error parsing target_processing_time: %w", err)
+			if value != "-1" { // -1 if the load balancer can't dispatch the request to a target
+				l.TargetProcessingTime, err = strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing target_processing_time: %w", err)
+				}
 			}
 		case "response_processing_time":
-			l.ResponseProcessingTime, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return fmt.Errorf("error parsing response_processing_time: %w", err)
+			if value != "-1" { // -1 if the load balancer doesn't receive a response from a target.
+				l.ResponseProcessingTime, err = strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing response_processing_time: %w", err)
+				}
 			}
 		case "elb_status_code":
 			esc, err := strconv.Atoi(value)
@@ -136,7 +142,7 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "ssl_protocol":
 			l.SslProtocol = value
 		case "target_group_arn":
-			l.TargetGroupArn = value
+			l.TargetGroupArn = &value
 		case "trace_id":
 			l.TraceID = value
 		case "domain_name":

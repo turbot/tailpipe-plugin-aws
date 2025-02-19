@@ -71,8 +71,8 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 	var accountID string
 	// arn:aws:elasticloadbalancing:us-east-1:882222555555:targetgroup/test-waf/9b994342d9d8d5cd
-	if row.TargetGroupArn != "" {
-		accountID = strings.Split(row.TargetGroupArn, ":")[4] // Account ID is the first part
+	if row.TargetGroupArn != nil {
+		accountID = strings.Split(*row.TargetGroupArn, ":")[4] // Account ID is the first part
 	} else {
 		// Extract account ID from tp_source_location
 		accountID = extractAccountID(*row.TpSourceLocation)
@@ -91,8 +91,8 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 		row.TpDomains = append(row.TpDomains, row.DomainName)
 	}
 
-	if row.TargetGroupArn != "" {
-		row.TpAkas = append(row.TpAkas, row.TargetGroupArn)
+	if row.TargetGroupArn != nil {
+		row.TpAkas = append(row.TpAkas, *row.TargetGroupArn)
 	}
 
 	return row, nil

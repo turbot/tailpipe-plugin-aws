@@ -252,9 +252,9 @@ group by listener_type
 order by request_count desc;
 ```
 
-### Authenticated requests with an invalid Id Token
+### Requests with Invalid Cookies
 
-Identify requests with an invalid ID token.
+Identify requests with invalid cookies.
 
 ```sql
 select
@@ -265,7 +265,7 @@ select
 from
   aws_alb_access_log
 where
-  error_reason = 'AuthInvalidIdToken'
+  error_reason = 'AuthInvalidCookie'
 order by
   timestamp desc;
 ```
@@ -289,7 +289,7 @@ order by
   timestamp desc;
 ```
 
-### Requests with WAF Failure
+<!-- ### Requests with WAF Failure
 
 Identify requests that failed due to WAF rules.
 
@@ -305,7 +305,7 @@ where
   error_reason in ('WAFConnectionError', 'WAFConnectionTimeout', 'WAFResponseReadTimeout', 'WAFServiceError', 'WAFUnhandledException')
 order by
   timestamp desc;
-```
+``` -->
 
 ### Requests Exceeding Maximum Allowed Body Size for Lambda
 
@@ -325,4 +325,22 @@ where
   error_reason = 'LambdaResponseTooLarge'
 order by
   sent_bytes desc;
+```
+
+### Requests with Unhandled Lambda Response
+
+Identify requests with an unhandled Lambda response.
+
+```sql
+select
+  timestamp,
+  client_ip,
+  request,
+  error_reason
+from
+  aws_alb_access_log
+where
+  error_reason = 'LambdaUnhandled'
+order by 
+  timestamp desc;
 ```
