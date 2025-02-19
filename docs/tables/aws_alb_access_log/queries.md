@@ -289,9 +289,9 @@ order by
   timestamp desc;
 ```
 
-<!-- ### Requests with WAF Failure
+### Requests blocked by WAF rules
 
-Identify requests that failed due to WAF rules.
+Identify requests blocked by WAF rules.
 
 ```sql
 select
@@ -302,10 +302,11 @@ select
 from
   aws_alb_access_log
 where
-  error_reason in ('WAFConnectionError', 'WAFConnectionTimeout', 'WAFResponseReadTimeout', 'WAFServiceError', 'WAFUnhandledException')
+  actions_executed = 'waf'
+  and elb_status_code = 403
 order by
   timestamp desc;
-``` -->
+```
 
 ### Requests Exceeding Maximum Allowed Body Size for Lambda
 
