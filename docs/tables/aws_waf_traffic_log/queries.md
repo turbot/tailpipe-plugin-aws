@@ -61,6 +61,36 @@ order by
 
 ## Operational Examples
 
+### Retrieve terminating rule matched data of requests
+
+This query extracts details of requests that were terminated by AWS WAF, showing the specific rule that matched and took action (ALLOW or BLOCK). It helps in understanding why a request was blocked or allowed, identifying false positives, and optimizing WAF rule configurations for better security and performance.
+
+```sql
+with terminating_rule_match_details as (
+  select
+    timestamp,
+    http_request.clientIp as client_ip,
+    http_request.uri as request_uri,
+    action,
+    unnest(from_json(terminating_rule_match_details, '["JSON"]')) as match_details
+  from
+    aws_waf_traffic_log
+  where
+    json_array_length(terminating_rule_match_details) > 0
+)
+select
+  timestamp,
+  client_ip,
+  request_uri,
+  action,
+  match_details ->> 'conditionType' as condition_type,
+  match_details ->> 'sensitivityLevel' as sensitivity_level,
+  match_details ->> 'location' as location,
+  match_details ->> 'matchedData' as matched_data
+from
+  terminating_rule_match_details;
+```
+
 ### Requests without labels
 
 Labels in AWS WAF are metadata tags applied to web requests that match specific rules within a Web ACL. These labels provide context on why a request was flagged, blocked, or allowed.
@@ -131,11 +161,9 @@ order by
 limit 10;
 ```
 
-## Detection Examples
+### List requests triggered rules groups
 
-### XSS (Cross-Site Scripting) attack attempts
-
-Finds requests blocked due to Cross-Site Scripting (XSS) attempts. These attacks try to inject malicious scripts into your web pages.
+This query retrieves requests that matched multiple rule groups within a single WAF rule group. It helps in identifying complex attack patterns where a single request violates multiple security rules.
 
 ```sql
 with blocked_rule as (
@@ -144,14 +172,12 @@ with blocked_rule as (
     http_source_name,
     http_source_id,
     action,
-    unnest(
-    from_json(rule_group_list, '["JSON"]')
-    ) as rule_group,
+    unnest(from_json(rule_group_list, '["JSON"]')) as rule_group,
     http_request
   from
     aws_waf_traffic_log
   where
-    action = 'BLOCK'
+    json_array_length(rule_group_list) > 1
 )
 select
   timestamp,
@@ -160,10 +186,34 @@ select
   http_request.clientIp as client_ip,
   http_request.httpMethod as http_method,
   http_request.uri,
+  (rule_group ->> 'ruleGroupId') as rule_group_id,
+  (rule_group ->> 'terminatingRule') as terminating_rule,
+  (rule_group ->> 'nonTerminatingMatchingRules') as non_terminating_matching_rules,
+  (rule_group ->> 'excludedRules') as excluded_rules
 from
-  blocked_rule
+  blocked_rule;
+```
+
+## Detection Examples
+
+### Detect requests with captcha failures
+
+This query retrieves requests where CAPTCHA validation failed, indicating that a user or bot did not complete the CAPTCHA challenge successfully.
+
+```sql
+select
+  timestamp,
+  http_request.clientIp as client_ip,
+  http_request.uri as request_uri,
+  action,
+  captcha_response.responseCode as response_code,
+  captcha_response.solveTimestamp as solve_timestamp,
+  captcha_response.failureReason as failure_reason
+from
+  aws_waf_traffic_log
 where
-  (rule_group -> 'terminatingRule' ->> 'ruleId') ilike '%XSS%';
+  response_code > 0
+  and failure_reason is not null;
 ```
 
 ### Detect high volume of blocked requests
@@ -232,12 +282,12 @@ select
   http_request.clientIp as client_ip,
   action,
   request_headers_inserted
-from 
+from
   aws_waf_traffic_log
-where 
+where
   (request_headers_inserted ->> 'name') in ('X-Forwarded-For', 'Client-IP', 'True-Client-IP', 'X-Real-IP')
   and (request_headers_inserted ->> 'value') is not null
-order by 
+order by
   timestamp desc;
 ```
 
@@ -248,24 +298,24 @@ order by
 Analyze high-volume blocked requests and provide statistics on blocked traffic trends.
 
 ```sql
-select 
+select
   date_trunc('hour', timestamp) as request_hour,
   http_request.clientIp as client_ip,
   http_source_name,
   http_request.uri as request_uri,
   count(*) as block_count
-from 
+from
   aws_waf_traffic_log
-where 
+where
   action = 'BLOCK'
-group by 
-  request_hour, 
+group by
+  request_hour,
   client_ip,
   http_source_name,
   request_uri
-having 
+having
   count(*) > 100
-order by 
+order by
   block_count desc;
 ```
 
@@ -280,10 +330,10 @@ select
   count(*) as rule_trigger_count
 from
   aws_waf_traffic_log
-group by 
+group by
   terminating_rule_id,
   terminating_rule_type
-having 
+having
   count(*) > 100
 order by
   rule_trigger_count desc;
@@ -291,24 +341,71 @@ order by
 
 ## Baseline Examples
 
-### Requests triggering multiple rules
+### Get non-terminating rule that detect SQL injection
 
-Find requests that matched more than one rule.
+Analyzing non-terminating matching rules helps in evaluating rule effectiveness, detecting potential threats, and refining WAF policies before enforcing stricter rules.
 
 ```sql
-select 
-  http_request.clientIp as client_ip,
-  json_array_length(non_terminating_matching_rules) as matched_rules,
-  count(*) as request_count
-from 
-  aws_waf_traffic_log
-where 
-  json_array_length(non_terminating_matching_rules) > 1
-group by 
+with not_terminating_rule as (
+  select
+    timestamp,
+    http_request.clientIp as client_ip,
+    action,
+    unnest(from_json(non_terminating_matching_rules, '["JSON"]')) as rules
+  from
+    aws_waf_traffic_log
+  where
+    json_array_length(non_terminating_matching_rules) > 1
+),
+rule_match as (
+  select
+    timestamp,
+    client_ip,
+    action,
+    unnest(from_json(rules, '["JSON"]')) as matching_rule
+  from
+    not_terminating_rule
+)
+select
+  timestamp,
   client_ip,
-  matched_rules
-order by 
-  request_count desc;
+  action,
+  (rule_match ->> 'conditionType') as condition_type,
+  (rule_match ->> 'sensitivityLevel') as sensitivity_level,
+  (rule_match ->> 'location') as location,
+  (rule_match -> 'matchedData') as matched_data
+from
+  rule_match
+where
+  condition_type = 'SQL_INJECTION';
+```
+
+### Get header information of requests
+
+Retrieves HTTP header details from AWS WAF logs, providing insights into client request metadata, including User-Agent, Referer, and X-Forwarded-For headers for traffic analysis and security monitoring.
+
+```sql
+with headers as (
+  select
+    timestamp,
+    action,
+    http_request.clientIp as client_ip,
+    http_request.uri as uri,
+    http_request.httpMethod as httpMethod,
+    unnest(from_json(http_request.headers, '["JSON"]')) as header
+  from
+    aws_waf_traffic_log
+)
+select
+  timestamp,
+  action,
+  client_ip,
+  uri,
+  httpMethod,
+  (header ->> 'name') as header_name,
+  (header ->> 'value') as header_value
+from
+ headers;
 ```
 
 ### Top requests by country
@@ -316,15 +413,15 @@ order by
 Find the top countries where WAF rules are being triggered.
 
 ```sql
-select 
+select
   http_request.country as country,
   count(*) as request_count
-from 
+from
   aws_waf_traffic_log
-where 
+where
   terminating_rule_id is not null
-group by 
+group by
   country
-order by 
+order by
   request_count desc;
 ```
