@@ -1,7 +1,6 @@
 package alb_access_log
 
 import (
-	"regexp"
 	"strings"
 	"time"
 
@@ -69,16 +68,7 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-	var accountID string
-	// arn:aws:elasticloadbalancing:us-east-1:882222555555:targetgroup/test-waf/9b994342d9d8d5cd
-	if row.TargetGroupArn != nil {
-		accountID = strings.Split(*row.TargetGroupArn, ":")[4] // Account ID is the first part
-	} else {
-		// Extract account ID from tp_source_location
-		accountID = extractAccountID(*row.TpSourceLocation)
-	}
-
-	row.TpIndex = accountID // Use the account ID as the index
+	row.TpIndex = strings.TrimPrefix(row.Elb, "app/")
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
@@ -96,16 +86,6 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 	}
 
 	return row, nil
-}
-
-// Extracts the AWS account ID from tp_source_location using regex
-func extractAccountID(tpSourceLocation string) string {
-	re := regexp.MustCompile(`AWSLogs/(\d{12})/elasticloadbalancing`)
-	matches := re.FindStringSubmatch(tpSourceLocation)
-	if len(matches) > 1 {
-		return matches[1] // Return the extracted AWS account ID
-	}
-	return "unknown"
 }
 
 func (c *AlbAccessLogTable) GetDescription() string {
