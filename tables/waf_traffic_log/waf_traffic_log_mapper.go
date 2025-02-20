@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/table"
+	helper "github.com/turbot/tailpipe-plugin-aws/tables"
 )
 
 type WafMapper struct {
@@ -79,12 +80,8 @@ func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	log.CaptchaResponse = temp.CaptchaResponse
 
 	// For a rule that triggered on SQLi detection(terminating/non-terminating) will not have HttpSourceName and HttpSourceId.
-	if *temp.HttpSourceName == "-" {
-		log.HttpSourceName = nil
-	}
-	if *temp.HttpSourceId == "-" {
-		log.HttpSourceId = nil
-	}
+	log.HttpSourceName = helper.NilIfDash(temp.HttpSourceName)
+	log.HttpSourceId = helper.NilIfDash(temp.HttpSourceId)
 
 	// Convert timestamp (if exists) to *time.Time
 	if temp.Timestamp != nil {

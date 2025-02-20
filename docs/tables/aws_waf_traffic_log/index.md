@@ -23,7 +23,7 @@ connection "aws" "security_account" {
 partition "aws_waf_traffic_log" "my_logs" {
   source "aws_s3_bucket" {
     connection = connection.aws.security_account
-    bucket     = "aws-waf-traffic-logs-bucket"
+    bucket     = "aws-waf-logs-bucket"
   }
 }
 ```
@@ -119,7 +119,7 @@ connection "aws" "security_account" {
 partition "aws_waf_traffic_log" "my_logs" {
   source "aws_s3_bucket" {
     connection = connection.aws.security_account
-    bucket     = "aws-waf-traffic-logs-bucket"
+    bucket     = "aws-waf-logs-bucket"
   }
 }
 ```
@@ -132,7 +132,7 @@ Collect WAF logs stored in an S3 bucket using a prefix.
 partition "aws_waf_traffic_log" "my_logs_prefix" {
   source "aws_s3_bucket" {
     connection = connection.aws.security_account
-    bucket     = "aws-waf-traffic-logs-bucket"
+    bucket     = "aws-waf-logs-bucket"
     prefix     = "my/prefix/"
   }
 }
