@@ -2,7 +2,7 @@
 
 ### Daily request trends
 
-Count events per day to identify request trends over time.
+Count the number of requests per day to analyze traffic trends over time.
 
 ```sql
 select
@@ -16,9 +16,9 @@ order by
   access_date asc;
 ```
 
-### Top 10 WAF traffics
+### Top 10 frequently accessed URIs
 
-This would analyze the top talker client IP are accessing certain URIs for a large number of times and if its being ALLOW / BLOCK / CHALLENGE / CAPTCHA. 
+Identify the most accessed URIs along with the top client IPs, grouped by the action taken (ALLOW, BLOCK, CHALLENGE, CAPTCHA).
 
 ```sql
 select
@@ -37,28 +37,28 @@ order by
 limit 10;
 ```
 
-### Analyze CAPTCHA & CHALLENGE failures
+### Analyze CAPTCHA and CHALLENGE failures
 
-The query replicates the functionality of your requests, ensuring it counts the total requests and categorizes CAPTCHA and CHALLENGE failures by different reasons.
+Analyze the total requests and categorize failures based on CAPTCHA and CHALLENGE response reasons.
 
 ```sql
 select
   http_request.clientIp as client_ip,
   count(*) as total_requests,
-  
+
   -- Count of CHALLENGE & CAPTCHA actions
   sum(case when action = 'CHALLENGE' then 1 else 0 end) as challenge_count,
   sum(case when action = 'CAPTCHA' then 1 else 0 end) as captcha_count,
 
   -- CAPTCHA & CHALLENGE Failure Reasons
-  sum(case when captcha_response.failureReason = 'TOKEN_INVALID' then 1 else 0 end) challenge_token_invalid,
-  sum(case when captcha_response.failureReason = 'TOKEN_INVALID' then 1 else 0 end) captcha_token_invalid,
-  sum(case when captcha_response.failureReason = 'TOKEN_DOMAIN_MISMATCH' then 1 else 0 end) challenge_token_domain_mismatch,
-  sum(case when captcha_response.failureReason = 'TOKEN_DOMAIN_MISMATCH' then 1 else 0 end) captcha_token_domain_mismatch,
-  sum(case when captcha_response.failureReason = 'TOKEN_EXPIRED' then 1 else 0 end) challenge_token_expired,
-  sum(case when captcha_response.failureReason = 'TOKEN_EXPIRED' then 1 else 0 end) captcha_token_expired,
-  sum(case when captcha_response.failureReason = 'TOKEN_MISSING' then 1 else 0 end) challenge_token_missing,
-  sum(case when captcha_response.failureReason = 'TOKEN_MISSING' then 1 else 0 end) captcha_token_missing
+  sum(case when captcha_response.failureReason = 'TOKEN_INVALID' then 1 else 0 end) as challenge_token_invalid,
+  sum(case when captcha_response.failureReason = 'TOKEN_INVALID' then 1 else 0 end) as captcha_token_invalid,
+  sum(case when captcha_response.failureReason = 'TOKEN_DOMAIN_MISMATCH' then 1 else 0 end) as challenge_token_domain_mismatch,
+  sum(case when captcha_response.failureReason = 'TOKEN_DOMAIN_MISMATCH' then 1 else 0 end) as captcha_token_domain_mismatch,
+  sum(case when captcha_response.failureReason = 'TOKEN_EXPIRED' then 1 else 0 end) as challenge_token_expired,
+  sum(case when captcha_response.failureReason = 'TOKEN_EXPIRED' then 1 else 0 end) as captcha_token_expired,
+  sum(case when captcha_response.failureReason = 'TOKEN_MISSING' then 1 else 0 end) as challenge_token_missing,
+  sum(case when captcha_response.failureReason = 'TOKEN_MISSING' then 1 else 0 end) as captcha_token_missing
 from 
   aws_waf_traffic_log
 group by 
@@ -69,9 +69,8 @@ order by
 
 ## Operational Examples
 
-### Retrieve terminating rule matched data of requests
-
-This query extracts details of requests that were terminated by AWS WAF, showing the specific rule that matched and took action (ALLOW or BLOCK). It helps in understanding why a request was blocked or allowed, identifying false positives, and optimizing WAF rule configurations for better security and performance.
+### Retrieve terminating rule matched data for requests
+Extract details of requests that were terminated due to rule matches, helping analyze why a request was blocked or allowed.
 
 ```sql
 with terminating_rule_match_details as (
@@ -99,9 +98,9 @@ from
   terminating_rule_match_details;
 ```
 
-### Requests without labels
+### Identify requests missing labels
 
-Labels in AWS WAF are metadata tags applied to web requests that match specific rules within a Web ACL. These labels provide context on why a request was flagged, blocked, or allowed.
+Retrieve requests that do not contain labels, which help in categorizing and identifying the reason for request handling.
 
 ```sql
 select
@@ -110,16 +109,16 @@ select
   http_request.clientIp as client_ip,
   request_headers_inserted
 from
-  aws_waf_traffic_log,
+  aws_waf_traffic_log
 where
   labels is null
 order by
   timestamp;
 ```
 
-### Requests blocked by specific WAF rules
+### Analyze blocked requests by rule
 
-This query retrieves the number of requests blocked by each WAF rule. It groups the blocked requests by WAF rule name and action type, providing insights into which rules are most actively blocking traffic. This helps in fine-tuning security policies, identifying potential threats, and optimizing WAF rules.
+Retrieve the number of requests blocked by each rule, providing insights into which rules are most frequently triggered.
 
 ```sql
 with blocked_rule as (
@@ -146,9 +145,9 @@ from
   blocked_rule;
 ```
 
-### Most targeted URLs
+### Identify the most targeted URLs
 
-Finds which URLs or endpoints are most frequently targeted URL. This helps identify high-risk areas in your application.
+Find which URLs or endpoints are most frequently accessed, helping detect high-risk areas in the application.
 
 ```sql
 select
@@ -169,44 +168,11 @@ order by
 limit 10;
 ```
 
-### List requests triggered rules groups
-
-This query retrieves requests that matched multiple rule groups within a single WAF rule group. It helps in identifying complex attack patterns where a single request violates multiple security rules.
-
-```sql
-with blocked_rule as (
-  select
-    timestamp,
-    http_source_name,
-    http_source_id,
-    action,
-    unnest(from_json(rule_group_list, '["JSON"]')) as rule_group,
-    http_request
-  from
-    aws_waf_traffic_log
-  where
-    json_array_length(rule_group_list) > 1
-)
-select
-  timestamp,
-  http_source_name,
-  http_source_id,
-  http_request.clientIp as client_ip,
-  http_request.httpMethod as http_method,
-  http_request.uri,
-  (rule_group ->> 'ruleGroupId') as rule_group_id,
-  (rule_group ->> 'terminatingRule') as terminating_rule,
-  (rule_group ->> 'nonTerminatingMatchingRules') as non_terminating_matching_rules,
-  (rule_group ->> 'excludedRules') as excluded_rules
-from
-  blocked_rule;
-```
-
 ## Detection Examples
 
-### Detect requests with captcha failures
+### Detect requests with CAPTCHA failures
 
-This query retrieves requests where CAPTCHA validation failed, indicating that a user or bot did not complete the CAPTCHA challenge successfully.
+Retrieve requests where CAPTCHA validation failed, indicating unsuccessful user verification.
 
 ```sql
 select
@@ -226,7 +192,7 @@ where
 
 ### Detect high volume of blocked requests
 
-Identify IPs generating a high volume of blocked requests.
+Identify IP addresses generating a high volume of blocked requests.
 
 ```sql
 select
@@ -243,9 +209,9 @@ order by
 limit 10;
 ```
 
-### Detect requests triggering multiple WAF rules
+### Detect requests triggering multiple rules
 
-Find requests that matched multiple non-terminating WAF rules.
+Find requests that matched multiple non-terminating rules within a single evaluation.
 
 ```sql
 select
@@ -253,7 +219,7 @@ select
   http_request.clientIp as client_ip,
   http_source_name,
   http_source_id,
-  json_array_length(non_terminating_matching_rules) as matched_rules,
+  json_array_length(non_terminating_matching_rules) as matched_rules
 from
   aws_waf_traffic_log
 where
@@ -283,9 +249,9 @@ order by
 
 ## Volume Examples
 
-### High volume of blocked request
+### Analyze high volume of blocked requests
 
-Analyze high-volume blocked requests and provide statistics on blocked traffic trends.
+Identify patterns in blocked traffic over time.
 
 ```sql
 select
@@ -309,9 +275,9 @@ order by
   block_count desc;
 ```
 
-### Most frequently triggered WAF rules
+### Identify the most frequently triggered rules
 
-Identify which WAF rules are blocking/allowing the most traffic.
+Analyze rules that are most frequently triggered to assess their effectiveness.
 
 ```sql
 select
@@ -331,9 +297,9 @@ order by
 
 ## Baseline Examples
 
-### Get non-terminating rule that detect SQL injection
+### Get non-terminating rules that detected SQL injection
 
-Analyzing non-terminating matching rules helps in evaluating rule effectiveness, detecting potential threats, and refining WAF policies before enforcing stricter rules.
+Evaluate rule effectiveness in detecting SQL injection before enforcing stricter rules.
 
 ```sql
 with not_terminating_rule as (
@@ -345,73 +311,15 @@ with not_terminating_rule as (
   from
     aws_waf_traffic_log
   where
-    json_array_length(non_terminating_matching_rules) > 1
-),
-rule_match as (
-  select
-    timestamp,
-    client_ip,
-    action,
-    unnest(from_json(rules, '["JSON"]')) as matching_rule
-  from
-    not_terminating_rule
+    json_array_length(non_terminating_matching_rules) > 0
 )
 select
   timestamp,
   client_ip,
   action,
-  (rule_match ->> 'conditionType') as condition_type,
-  (rule_match ->> 'sensitivityLevel') as sensitivity_level,
-  (rule_match ->> 'location') as location,
-  (rule_match -> 'matchedData') as matched_data
+  (rules ->> 'ruleMatchDetails') as rule_match_details
 from
-  rule_match
+  not_terminating_rule
 where
-  condition_type = 'SQL_INJECTION';
-```
-
-### Get header information of requests
-
-Retrieves HTTP header details from AWS WAF logs, providing insights into client request metadata, including User-Agent, Referer, and X-Forwarded-For headers for traffic analysis and security monitoring.
-
-```sql
-with headers as (
-  select
-    timestamp,
-    action,
-    http_request.clientIp as client_ip,
-    http_request.uri as uri,
-    http_request.httpMethod as httpMethod,
-    unnest(from_json(http_request.headers, '["JSON"]')) as header
-  from
-    aws_waf_traffic_log
-)
-select
-  timestamp,
-  action,
-  client_ip,
-  uri,
-  httpMethod,
-  (header ->> 'name') as header_name,
-  (header ->> 'value') as header_value
-from
- headers;
-```
-
-### Top requests by country
-
-Find the top countries where WAF rules are being triggered.
-
-```sql
-select
-  http_request.country as country,
-  count(*) as request_count
-from
-  aws_waf_traffic_log
-where
-  terminating_rule_id is not null
-group by
-  country
-order by
-  request_count desc;
+  json_contains(rule_match_details, '{"conditionType": "SQL_INJECTION"}');
 ```
