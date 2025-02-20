@@ -135,9 +135,9 @@ require (
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
-	github.com/turbot/pipes-sdk-go v0.9.1 // indirect
-	github.com/turbot/steampipe-plugin-code v0.7.0 // indirect
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.8.0 // indirect
+	github.com/turbot/pipes-sdk-go v0.12.0 // indirect
+	github.com/turbot/steampipe-plugin-code v1.0.1-alpha.1 // indirect
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.4 // indirect
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -186,7 +186,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.6.0
-	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings/v2 v2.0.0
+	github.com/turbot/go-kit v1.0.0
+	github.com/turbot/pipe-fittings/v2 v2.1.1
 	golang.org/x/sync v0.11.0
 )
