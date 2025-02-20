@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -63,7 +62,7 @@ func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	if err := json.Unmarshal(data, &temp); err != nil {
 		return err
 	}
-	// w := &WafTrafficLog{}
+
 	// Assign values from temp struct
 	log.FormatVersion = temp.FormatVersion
 	log.WebAclId = temp.WebAclId
@@ -91,9 +90,6 @@ func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	if temp.Timestamp != nil {
 		parsedTime := time.UnixMilli(*temp.Timestamp).UTC()
 		log.Timestamp = &parsedTime
-	} else {
-		slog.Error("Getting the timestamp value as null")
-		log.Timestamp = nil
 	}
 
 	return nil
