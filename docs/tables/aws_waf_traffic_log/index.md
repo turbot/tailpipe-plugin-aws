@@ -44,7 +44,7 @@ tailpipe collect aws_waf_traffic_log.my_logs
 
 ## Query
 
-**[Explore 15+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_waf_traffic_log)**
+**[Explore 18+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_waf_traffic_log)**
 
 ### Blocked Requests by WAF
 

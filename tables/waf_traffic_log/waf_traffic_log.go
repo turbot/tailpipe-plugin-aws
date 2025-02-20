@@ -59,7 +59,7 @@ type Rule struct {
 	RuleID           *string           `json:"ruleId"`
 	Action           *string           `json:"action"`
 	RuleMatchDetails []RuleMatchDetail `json:"ruleMatchDetails,omitempty"`
-	CaptchaResponse  CaptchaResponse `json:"captchaResponse,omitempty"`
+	CaptchaResponse  CaptchaResponse   `json:"captchaResponse,omitempty"`
 }
 
 type CaptchaResponse struct {
@@ -96,7 +96,7 @@ type WafTrafficLog struct {
 	RequestHeadersInserted      []Header               `json:"requestHeadersInserted,omitempty" parquet:"name=request_headers_inserted, type=JSON"`
 	RuleGroupList               []RuleGroup            `json:"ruleGroupList,omitempty" parquet:"name=rule_group_list, type=JSON"`
 	TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty" parquet:"name=terminating_rule_id"`
-	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=c, type=JSON"`
+	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=terminating_rule_match_details, type=JSON"`
 	TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty" parquet:"name=terminating_rule_type"`
 	Timestamp                   *time.Time             `json:"timestamp"`
 	WebAclId                    *string                `json:"webAclId" parquet:"name=web_acl_id"`

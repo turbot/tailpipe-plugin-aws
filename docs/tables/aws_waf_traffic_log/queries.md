@@ -16,23 +16,21 @@ order by
   access_date asc;
 ```
 
-### Top 10 client IPs blocked by AWS WAF
+### Top 10 WAF traffics
 
-Identify the top 10 client IP addresses that were blocked by AWS WAF, helping to detect high-volume attack sources or suspicious traffic patterns.
+This would analyze the top talker client IP are accessing certain URIs for a large number of times and if its being ALLOW / BLOCK / CHALLENGE / CAPTCHA. 
 
 ```sql
 select
-  http_source_name,
-  http_source_id,
+  terminating_rule_id,
   http_request.clientIp as client_ip,
+  http_request.uri as request_uri,
   count(*) as request_count
 from
   aws_waf_traffic_log
-where
-  action = 'BLOCK'
 group by
-  http_source_name,
-  http_source_id,
+  terminating_rule_id,
+  request_uri,
   client_ip
 order by
   request_count desc
@@ -57,6 +55,36 @@ group by
   http_request.httpMethod
 order by
   request_count desc;
+```
+
+### Analyze CAPTCHA & CHALLENGE failures
+
+The query replicates the functionality of your requests, ensuring it counts the total requests and categorizes CAPTCHA and CHALLENGE failures by different reasons.
+
+```sql
+select
+  http_request.clientIp as client_ip,
+  count(*) as total_requests,
+  
+  -- Count of CHALLENGE & CAPTCHA actions
+  sum(case when action = 'CHALLENGE' then 1 else 0 end) as challenge_count,
+  sum(case when action = 'CAPTCHA' then 1 else 0 end) as captcha_count,
+
+  -- CAPTCHA & CHALLENGE Failure Reasons
+  sum(case when captcha_response.failureReason = 'TOKEN_INVALID' then 1 else 0 end) challenge_token_invalid,
+  sum(case when captcha_response.failureReason = 'TOKEN_INVALID' then 1 else 0 end) captcha_token_invalid,
+  sum(case when captcha_response.failureReason = 'TOKEN_DOMAIN_MISMATCH' then 1 else 0 end) challenge_token_domain_mismatch,
+  sum(case when captcha_response.failureReason = 'TOKEN_DOMAIN_MISMATCH' then 1 else 0 end) captcha_token_domain_mismatch,
+  sum(case when captcha_response.failureReason = 'TOKEN_EXPIRED' then 1 else 0 end) challenge_token_expired,
+  sum(case when captcha_response.failureReason = 'TOKEN_EXPIRED' then 1 else 0 end) captcha_token_expired,
+  sum(case when captcha_response.failureReason = 'TOKEN_MISSING' then 1 else 0 end) challenge_token_missing,
+  sum(case when captcha_response.failureReason = 'TOKEN_MISSING' then 1 else 0 end) captcha_token_missing
+from 
+  aws_waf_traffic_log
+group by 
+  client_ip
+order by 
+  total_requests desc;
 ```
 
 ## Operational Examples
