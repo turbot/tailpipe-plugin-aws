@@ -254,24 +254,6 @@ order by
   matched_rules desc;
 ```
 
-### Detect IPs bypassing CAPTCHA challenges
-
-Find IPs that repeatedly triggered CAPTCHA but continued making requests.
-
-```sql
-select
-  http_request.clientIp as client_ip,
-  count(*) as captcha_challenges
-from
-  aws_waf_traffic_log
-where
- terminating_rule_type = 'CAPTCHA'
-group by
-  client_ip
-order by
-  captcha_challenges desc;
-```
-
 ### Detect IP addresses in request headers
 
 Identify web requests where the client IP is present in HTTP headers such as X-Forwarded-For, Client-IP, True-Client-IP, or X-Real-IP. This helps track proxied traffic, potential IP spoofing, or forwarded requests passing through CDN, load balancers, or proxies.

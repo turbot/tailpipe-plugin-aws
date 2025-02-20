@@ -59,12 +59,12 @@ type Rule struct {
 	RuleID           *string           `json:"ruleId"`
 	Action           *string           `json:"action"`
 	RuleMatchDetails []RuleMatchDetail `json:"ruleMatchDetails,omitempty"`
-	CaptchaResponse  []CaptchaResponse `json:"captchaResponse,omitempty"`
+	CaptchaResponse  CaptchaResponse `json:"captchaResponse,omitempty"`
 }
 
 type CaptchaResponse struct {
-	ResponseCode   *int    `json:"responseCode"`
-	SolveTimestamp *int64  `json:"solveTimestamp"`
+	ResponseCode   *int    `json:"responseCode,omitempty"`
+	SolveTimestamp *int64  `json:"solveTimestamp,omitempty"`
 	FailureReason  *string `json:"failureReason,omitempty"`
 }
 
