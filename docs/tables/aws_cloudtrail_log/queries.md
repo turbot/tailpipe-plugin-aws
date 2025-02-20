@@ -435,6 +435,7 @@ where
   or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   event_time desc;
+```
 
 ```yaml
 folder: Account
