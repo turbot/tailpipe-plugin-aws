@@ -37,26 +37,6 @@ order by
 limit 10;
 ```
 
-### Top HTTP methods by source
-
-Analyzes the AWS WAF traffic logs to identify the most frequently used HTTP methods (GET, POST, PUT, DELETE, etc.) across different sources.
-
-```sql
-select
-  http_source_name,
-  http_source_id,
-  http_request.httpMethod,
-  count(*) as request_count
-from
-  aws_waf_traffic_log
-group by
-  http_source_name,
-  http_source_id,
-  http_request.httpMethod
-order by
-  request_count desc;
-```
-
 ### Analyze CAPTCHA & CHALLENGE failures
 
 The query replicates the functionality of your requests, ensuring it counts the total requests and categorizes CAPTCHA and CHALLENGE failures by different reasons.
