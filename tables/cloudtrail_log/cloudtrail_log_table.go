@@ -22,7 +22,7 @@ const CloudTrailLogTableIdentifier = "aws_cloudtrail_log"
 // CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct{}
 
-func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*CloudTrailLog] {
+func (t *CloudTrailLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*CloudTrailLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"),
 	}
@@ -43,7 +43,7 @@ func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*CloudT
 				artifact_source.WithArtifactExtractor(NewCloudTrailLogExtractor()),
 			},
 		},
-	}
+	}, nil
 }
 
 // Identifier implements table.Table
