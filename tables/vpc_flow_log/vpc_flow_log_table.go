@@ -1,7 +1,6 @@
 package vpc_flow_log
 
 import (
-	"log/slog"
 	"time"
 
 	"github.com/rs/xid"
@@ -17,12 +16,12 @@ import (
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 
 // VpcFlowLogTable - table for VPC Flow Logs
-type VpcFlowLogTable struct {}
+type VpcFlowLogTable struct{}
 
 func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*VpcFlowLog] {
 
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		// TODO: Handle the case when Partition logs by time selected to: 
+		// TODO: Handle the case when Partition logs by time selected to:
 		// "Every 24 hours(default)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}
 		// "Every 1 hour(60 minutes)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:hour}
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:hour}/%{DATA}.log.gz"),
@@ -70,24 +69,21 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpIndex = "default"
 	}
 
-	// TODO: How to handle if the log don't have timestamp value 
+	// TODO: How to handle if the log don't have timestamp value
 	// populate the year, month, day from start time
 	if row.Timestamp != nil {
 		// convert to date in format yy-mm-dd
-		slog.Error("Timestamp taken form the field ===>>", "rows.Timestamp", "Ok")
 		row.TpDate = row.Timestamp.In(time.UTC).Truncate(24 * time.Hour)
 		row.TpTimestamp = *row.Timestamp
 	} else if row.Start != nil {
 		// convert to date in format yy-mm-dd
 		// TODO is Start unix millis?? if so why do we convert it for TpTimestamp
-		slog.Error("Timestamp taken form the field ===>>", "rows.Start", "Ok")
 		row.TpDate = time.UnixMilli(*row.Start).Truncate(24 * time.Hour)
 
 		//convert from unis seconds to milliseconds
 		row.TpTimestamp = time.Unix(0, int64(*row.Start*1000)*int64(time.Millisecond))
 	} else {
 		// TODO: is it correct to fallback to the current time
-		slog.Error("Timestamp taken form the field ===>>", "rows.NOT-AVAILABLE", "Ok")
 		t := time.Now()
 		row.TpDate = time.UnixMilli(t.UnixMilli()).Truncate(24 * time.Hour)
 		row.TpTimestamp = t

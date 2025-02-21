@@ -1,46 +1,44 @@
 package vpc_flow_log
 
 var DefaultFlowLogFields = []string{
-	"version",
 	"account-id",
-	"interface-id",
-	"srcaddr",
-	"dstaddr",
-	"srcport",
-	"dstport",
-	"protocol",
-	"packets",
-	"bytes",
-	"start",
-	"end",
 	"action",
-	"log-status",
-	"ecs-cluster-name",
+	"az-id",
+	"bytes",
+	"dstaddr",
+	"dstport",
 	"ecs-cluster-arn",
-	"ecs-container-instance-id",
+	"ecs-cluster-name",
+	"ecs-container-id",
 	"ecs-container-instance-arn",
+	"ecs-container-instance-id",
+	"ecs-second-container-id",
 	"ecs-service-name",
+	"ecs-task-arn",
 	"ecs-task-definition-arn",
 	"ecs-task-id",
-	"ecs-task-arn",
-	"ecs-container-id",
-	"ecs-second-container-id",
-}
-
-type VpcFlowLogTableFormat struct {
-	// the fields to extract from the flow log
-	Fields []string `hcl:"fields,optional"`
-}
-
-func (c *VpcFlowLogTableFormat) Validate() error {
-	// set default fields if none are specified
-	if len(c.Fields) == 0 {
-		c.Fields = DefaultFlowLogFields
-	}
-
-	return nil
-}
-
-func (*VpcFlowLogTableFormat) Identifier() string {
-	return VpcFlowLogTableIdentifier
+	"end",
+	"flow-direction",
+	"instance-id",
+	"interface-id",
+	"log-status",
+	"packets",
+	"pkt-dst-aws-service",
+	"pkt-dstaddr",
+	"pkt-src-aws-service",
+	"pkt-srcaddr",
+	"protocol",
+	"region",
+	"reject-reason",
+	"srcaddr",
+	"srcport",
+	"start",
+	"sublocation-id",
+	"sublocation-type",
+	"subnet-id",
+	"tcp-flags",
+	"traffic-path",
+	"type",
+	"version",
+	"vpc-id",
 }
