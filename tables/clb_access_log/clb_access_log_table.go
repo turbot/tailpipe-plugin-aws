@@ -22,7 +22,7 @@ func init() {
 	table.RegisterTable[*ClbAccessLog, *ClbAccessLogTable]()
 }
 
-const clbLogFormat = `$timestamp $elb $client $backend $request_processing_time $backend_processing_time $response_processing_time $elb_status_code $backend_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol`
+const clbLogFormat = `$timestamp $elb $client $backend $request_processing_time $backend_processing_time $response_processing_time $elb_status_code $backend_status_code $received_bytes $sent_bytes "$method $path $http_version" "$user_agent" $ssl_cipher $ssl_protocol`
 
 type ClbAccessLogTable struct{}
 
