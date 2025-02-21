@@ -49,6 +49,8 @@ type AlbAccessLog struct {
 // InitialiseFromMap - initialise the struct from a map
 func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error
+	var method, path, httpVersion string
+
 	for key, value := range m {
 		if value == "-" {
 			continue
@@ -129,8 +131,12 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing sent_bytes: %w", err)
 			}
 			l.SentBytes = &sb
-		case "request":
-			l.Request = value
+		case "method":
+			method = value
+		case "path":
+			path = value
+		case "http_version":
+			httpVersion = value
 		case "user_agent":
 			l.UserAgent = value
 		case "ssl_cipher":
@@ -173,6 +179,12 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.ConnTraceID = &value
 		}
 	}
+
+	// Construct request string in the correct order
+	if method != "" && path != "" && httpVersion != "" {
+		l.Request = fmt.Sprintf("%s %s %s", method, path, httpVersion)
+	}
+
 	return nil
 }
 func (c *AlbAccessLog) GetColumnDescriptions() map[string]string {
