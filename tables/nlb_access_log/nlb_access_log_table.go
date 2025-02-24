@@ -18,10 +18,6 @@ import (
 
 const NlbAccessLogTableIdentifier = "aws_nlb_access_log"
 
-func init() {
-	table.RegisterTable[*NlbAccessLog, *NlbAccessLogTable]()
-}
-
 const nlbLogFormat = `$type $version $time $elb $listener $client_port $destination_port $connection_time $tls_handshake_time $received_bytes $sent_bytes "$incoming_tls_alert" "$chosen_cert_arn" "$chosen_cert_serial" "$tls_cipher" "$tls_protocol_version" "$tls_named_group" "$domain_name" "$alpn_fe_protocol" "$alpn_be_protocol" "$alpn_client_preference_list" $tls_connection_creation_time`
 
 type NlbAccessLogTable struct{}
@@ -32,7 +28,7 @@ func (c *NlbAccessLogTable) Identifier() string {
 
 func (c *NlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*NlbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log"),
 	}
 
 	return []*table.SourceMetadata[*NlbAccessLog]{

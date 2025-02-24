@@ -9,10 +9,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
-type NlbAccessLogBatch struct {
-	Records []NlbAccessLog `json:"Records"`
-}
-
 type NlbAccessLog struct {
 	schema.CommonFields
 
