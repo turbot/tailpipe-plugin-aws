@@ -54,19 +54,48 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 
 	// Record standardization
 	row.TpID = xid.New().String()
-
-	// TODO is source type actually the source, i.e compressed file source etc>
-	// should these all be filled in by the source???
-	row.TpSourceType = c.Identifier()
-	//row.TpSourceName = ???
-	//row.TpSourceLocation = ???
 	row.TpIngestTimestamp = time.Now()
 
-	// Hive fields
+	// ips
+	if row.SrcAddr != nil {
+		row.TpSourceIP = row.SrcAddr
+		row.TpIps = append(row.TpIps, *row.SrcAddr)
+	}
+	if row.PktSrcAddr != nil {
+		row.TpIps = append(row.TpIps, *row.PktSrcAddr)
+	}
+	if row.DstAddr != nil {
+		row.TpDestinationIP = row.DstAddr
+		row.TpIps = append(row.TpIps, *row.DstAddr)
+	}
+	if row.PktDstAddr != nil {
+		row.TpIps = append(row.TpIps, *row.PktDstAddr)
+	}
+
+	// TODO: Is it correct?
 	if row.AccountID != nil {
 		row.TpIndex = *row.AccountID
 	} else {
 		row.TpIndex = "default"
+	}
+
+	// TpSourceLocation
+	if row.SublocationID != nil {
+		row.TpSourceLocation = row.SublocationID
+	}
+
+	// TpAkas
+	if row.ECSClusterARN != nil {
+		row.TpAkas = append(row.TpAkas, *row.ECSClusterARN)
+	}
+	if row.ECSContainerInstanceARN != nil {
+		row.TpAkas = append(row.TpAkas, *row.ECSContainerInstanceARN)
+	}
+	if row.ECSTaskARN != nil {
+		row.TpAkas = append(row.TpAkas, *row.ECSTaskARN)
+	}
+	if row.ECSTaskDefinitionARN != nil {
+		row.TpAkas = append(row.TpAkas, *row.ECSTaskDefinitionARN)
 	}
 
 	// TODO: How to handle if the log don't have timestamp value
@@ -87,22 +116,6 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		t := time.Now()
 		row.TpDate = time.UnixMilli(t.UnixMilli()).Truncate(24 * time.Hour)
 		row.TpTimestamp = t
-	}
-
-	//row.TpAkas = ???
-	//row.TpTags = ???
-	//row.TpDomains = ???
-	//row.TpEmails = ???
-	//row.TpUsernames = ???
-
-	// ips
-	if row.SrcAddr != nil {
-		row.TpSourceIP = row.SrcAddr
-		row.TpIps = append(row.TpIps, *row.SrcAddr)
-	}
-	if row.DstAddr != nil {
-		row.TpDestinationIP = row.DstAddr
-		row.TpIps = append(row.TpIps, *row.DstAddr)
 	}
 
 	return row, nil
