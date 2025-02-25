@@ -3,7 +3,6 @@ package vpc_flow_log
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -38,7 +37,6 @@ func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
 		return nil, fmt.Errorf("error in mapping the results in the form of []map[string]string")
 	}
 
-	slog.Debug("VPCFlowLogExtractor", "record count", len(mappedData))
 	var res = make([]any, len(mappedData))
 	for i, record := range mappedData {
 
@@ -163,15 +161,17 @@ func (flowLog *VpcFlowLog) MapValues(input map[string]string) error {
 		case "start":
 			start, err := strconv.ParseInt(field, 10, 64)
 			if err != nil {
-				return fmt.Errorf("invalid start: %s", field)
+				return fmt.Errorf("invalid start value: %s", field)
 			}
-			flowLog.Start = &start
+			t := time.Unix(start, 0)
+			flowLog.Start = &t
 		case "end":
 			end, err := strconv.ParseInt(field, 10, 64)
 			if err != nil {
-				return fmt.Errorf("invalid end: %s", field)
+				return fmt.Errorf("invalid end value: %s", field)
 			}
-			flowLog.End = &end
+			t := time.Unix(end, 0)
+			flowLog.End = &t
 		case "action":
 			flowLog.Action = &field
 		case "log-status":
