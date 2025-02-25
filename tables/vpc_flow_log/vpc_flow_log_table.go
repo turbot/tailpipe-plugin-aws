@@ -71,6 +71,8 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpIndex = *row.InterfaceID
 	} else if row.VPCID != nil {
 		row.TpIndex = *row.VPCID
+	} else if row.SubnetID != nil {
+		row.TpIndex = *row.SubnetID
 	} else {
 		row.TpIndex = "default"
 	}
