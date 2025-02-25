@@ -12,30 +12,30 @@ import (
 type NlbAccessLog struct {
 	schema.CommonFields
 
-	Type                      string    `json:"type,omitempty"`
-	Version                   string    `json:"version,omitempty"`
-	Timestamp                 time.Time `json:"timestamp,omitempty"`
-	Elb                       string    `json:"elb,omitempty"`
-	Listener                  string    `json:"listener,omitempty"`
-	ClientIP                  string    `json:"client_ip,omitempty"`
-	ClientPort                int       `json:"client_port,omitempty"`
-	DestinationIP             string    `json:"destination_ip,omitempty"`
-	DestinationPort           int       `json:"destination_port,omitempty"`
-	ConnectionTime            int       `json:"connection_time,omitempty"`
-	TLSHandshakeTime          int       `json:"tls_handshake_time,omitempty"`
-	ReceivedBytes             int64     `json:"received_bytes,omitempty"`
-	SentBytes                 int64     `json:"sent_bytes,omitempty"`
-	IncomingTLSAlert          string    `json:"incoming_tls_alert,omitempty"`
-	ChosenCertArn             string    `json:"chosen_cert_arn,omitempty"`
-	ChosenCertSerial          string    `json:"chosen_cert_serial,omitempty"`
-	TLSCipher                 string    `json:"tls_cipher,omitempty"`
-	TLSProtocolVersion        string    `json:"tls_protocol_version,omitempty"`
-	TLSNamedGroup             string    `json:"tls_named_group,omitempty"`
-	DomainName                string    `json:"domain_name,omitempty"`
-	ALPNFEProtocol            string    `json:"alpn_fe_protocol,omitempty"`
 	ALPNBEProtocol            string    `json:"alpn_be_protocol,omitempty"`
 	ALPNClientPreferenceList  string    `json:"alpn_client_preference_list,omitempty"`
-	TLSConnectionCreationTime time.Time `json:"tls_connection_creation_time,omitempty"`
+	ALPNFEProtocol            string    `json:"alpn_fe_protocol,omitempty"`
+	ChosenCertArn             string    `json:"chosen_cert_arn,omitempty"`
+	ChosenCertSerial          string    `json:"chosen_cert_serial,omitempty"`
+	ClientIP                  string    `json:"client_ip,omitempty"`
+	ClientPort                int       `json:"client_port,omitempty"`
+	ConnectionTime            int       `json:"connection_time,omitempty"`
+	DestinationIP             string    `json:"destination_ip,omitempty"`
+	DestinationPort           int       `json:"destination_port,omitempty"`
+	DomainName                string    `json:"domain_name,omitempty"`
+	Elb                       string    `json:"elb"`
+	IncomingTLSAlert          string    `json:"incoming_tls_alert,omitempty"`
+	Listener                  string    `json:"listener,omitempty"`
+	ReceivedBytes             int64     `json:"received_bytes,omitempty"`
+	SentBytes                 int64     `json:"sent_bytes,omitempty"`
+	TLSCipher                 string    `json:"tls_cipher,omitempty"`
+	TLSConnectionCreationTime time.Time `json:"tls_connection_creation_time"`
+	TLSHandshakeTime          int       `json:"tls_handshake_time,omitempty"`
+	TLSNamedGroup             string    `json:"tls_named_group,omitempty"`
+	TLSProtocolVersion        string    `json:"tls_protocol_version,omitempty"`
+	Timestamp                 time.Time `json:"timestamp"`
+	Type                      string    `json:"type"`
+	Version                   string    `json:"version"`
 }
 
 // InitialiseFromMap - initialise the struct from a map
