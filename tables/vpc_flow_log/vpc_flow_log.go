@@ -26,7 +26,7 @@ type VpcFlowLog struct {
 	ECSTaskARN              *string    `json:"ecs_task_arn,omitempty"`
 	ECSTaskDefinitionARN    *string    `json:"ecs_task_definition_arn,omitempty"`
 	ECSTaskID               *string    `json:"ecs_task_id,omitempty"`
-	End                     *int64     `json:"end_time,omitempty"`
+	End                     *time.Time     `json:"end_time,omitempty"`
 	FlowDirection           *string    `json:"flow_direction,omitempty"`
 	InstanceID              *string    `json:"instance_id,omitempty"`
 	InterfaceID             *string    `json:"interface_id,omitempty"`
@@ -40,7 +40,7 @@ type VpcFlowLog struct {
 	Region                  *string    `json:"region,omitempty"`
 	SrcAddr                 *string    `json:"src_addr,omitempty"`
 	SrcPort                 *int32     `json:"src_port,omitempty"`
-	Start                   *int64     `json:"start_time,omitempty"`
+	Start                   *time.Time     `json:"start_time,omitempty"`
 	SublocationID           *string    `json:"sublocation_id,omitempty"`
 	SublocationType         *string    `json:"sublocation_type,omitempty"`
 	SubnetID                *string    `json:"subnet_id,omitempty"`

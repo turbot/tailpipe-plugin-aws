@@ -107,10 +107,10 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 	} else if row.Start != nil {
 		// convert to date in format yy-mm-dd
 		// TODO is Start unix millis?? if so why do we convert it for TpTimestamp
-		row.TpDate = time.UnixMilli(*row.Start).Truncate(24 * time.Hour)
+		row.TpDate = row.Start.Truncate(24 * time.Hour)
 
 		//convert from unis seconds to milliseconds
-		row.TpTimestamp = time.Unix(0, int64(*row.Start*1000)*int64(time.Millisecond))
+		row.TpTimestamp = *row.Start
 	} else {
 		// TODO: is it correct to fallback to the current time
 		t := time.Now()
