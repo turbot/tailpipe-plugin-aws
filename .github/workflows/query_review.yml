@@ -58,8 +58,8 @@ jobs:
             echo "No SQL query found in modified files."
           fi
 
-          # Escape query properly
-          echo "$QUERY" > query.txt  # Save query to a file for safe handling
+          # Save query to a file to maintain formatting
+          echo "$QUERY" > query.txt
           ESCAPED_QUERY=$(jq -Rs '.' query.txt)
           echo "query=$ESCAPED_QUERY" >> $GITHUB_ENV
 
@@ -78,7 +78,7 @@ jobs:
           PAYLOAD=$(jq -n \
             --arg model "gpt-4o-mini" \
             --arg sys_content "You are an SQL query reviewer specializing in DuckDB." \
-            --arg user_content "Please provide suggestions for improving the following SQL query, including title clarity, query structure, and optimizations, in 3-5 sentences:\n\n$(cat query.txt)" \
+            --arg user_content "Please provide suggestions for improving the following SQL query, including title clarity, query structure, and optimizations, in a structured markdown format. Format your response as a markdown list with bullet points:\n\n$(cat query.txt)" \
             '{
               model: $model,
               messages: [
@@ -95,11 +95,13 @@ jobs:
             -d "$PAYLOAD")
 
           RESPONSE=$(echo "$RESPONSE_RAW" | jq -r '.choices[0].message.content // "Error: No response received."')
+
+          # Save AI response to a file to maintain markdown formatting
           echo "$RESPONSE" > response.txt
           ESCAPED_RESPONSE=$(jq -Rs '.' response.txt)
           echo "response=$ESCAPED_RESPONSE" >> $GITHUB_ENV
 
-      - name: Comment on PR
+      - name: Comment on PR (Formatted)
         run: |
           RESPONSE_LENGTH=$(wc -c < response.txt)
 
@@ -108,8 +110,12 @@ jobs:
             exit 0
           fi
 
-          COMMENT="### 🤖 Query Review Bot\n\n**Suggestions:**\n$(cat response.txt)"
-          echo "$COMMENT" > pr_comment.txt  # Save as a file to avoid multi-line issues
+          COMMENT="### 🤖 Query Review Bot\n\n"
+          COMMENT+="#### Extracted SQL Query\n"
+          COMMENT+="\`\`\`sql\n$(cat query.txt)\n\`\`\`\n\n"
+          COMMENT+="#### 💡 AI Suggestions\n\n$(cat response.txt)"
+
+          echo "$COMMENT" > pr_comment.txt  # Save to file to maintain formatting
 
           gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
         env:
