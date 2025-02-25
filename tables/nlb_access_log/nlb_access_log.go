@@ -125,3 +125,38 @@ func (l *NlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	}
 	return nil
 }
+
+func (l *NlbAccessLog) GetColumnDescriptions() map[string]string {
+	return map[string]string{
+		"type":                         "The type of listener. The supported value is tls.",
+		"version":                      "The version of the log entry. The current version is 2.0.",
+		"timestamp":                    "The time recorded at the end of the TLS connection, in ISO 8601 format.",
+		"elb":                          "The resource ID of the load balancer.",
+		"listener":                     "The resource ID of the TLS listener for the connection.",
+		"client_ip":                    "The IP address of the client initiating the connection.",
+		"client_port":                  "The port number used by the client to establish the connection.",
+		"destination_ip":               "The IP address of the destination, which could be the listener or VPC endpoint.",
+		"destination_port":             "The port on the destination receiving the connection.",
+		"connection_time":              "The total time for the connection to complete, from start to closure, in milliseconds.",
+		"tls_handshake_time":           "The total time for the TLS handshake to complete after the TCP connection is established, including client-side delays, in milliseconds.",
+		"received_bytes":               "The count of bytes received by the load balancer from the client, after decryption.",
+		"sent_bytes":                   "The count of bytes sent by the load balancer to the client, before encryption.",
+		"incoming_tls_alert":           "The integer value of TLS alerts received by the load balancer from the client, if present.",
+		"chosen_cert_arn":              "The ARN of the certificate served to the client.",
+		"chosen_cert_serial":           "Reserved for future use. This value is always set to -.",
+		"tls_cipher":                   "The cipher suite negotiated with the client, in OpenSSL format.",
+		"tls_protocol_version":         "The TLS protocol negotiated with the client. Possible values: tlsv10, tlsv11, tlsv12, tlsv13.",
+		"tls_named_group":              "Reserved for future use. This value is always set to -.",
+		"domain_name":                  "The value of the server_name extension in the client hello message, URL-encoded.",
+		"alpn_fe_protocol":             "The application protocol negotiated with the client. Possible values: h2, http/1.1, http/1.0.",
+		"alpn_be_protocol":             "The application protocol negotiated with the target. Possible values: h2, http/1.1, http/1.0.",
+		"alpn_client_preference_list":  "The value of the application_layer_protocol_negotiation extension in the client hello message, URL-encoded.",
+		"tls_connection_creation_time": "The time recorded at the beginning of the TLS connection, in ISO 8601 format.",
+
+		// Tailpipe-specific metadata fields
+		"tp_index":     "The resource ID of the load balancer handling the request.",
+		"tp_ips":       "All IP addresses associated with the request, including the client IP and destination IP.",
+		"tp_source_ip": "The IP address of the client initiating the connection.",
+		"tp_akas":      "The ARN of the certificate served to the client.",
+	}
+}
