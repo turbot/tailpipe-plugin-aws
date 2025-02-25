@@ -21,13 +21,10 @@ type VpcFlowLogTable struct{}
 func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*VpcFlowLog] {
 
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		// TODO: Handle the case when Partition logs by time selected to:
+		// Handle the case when Partition logs by time selected to:
 		// "Every 24 hours(default)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}
 		// "Every 1 hour(60 minutes)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:hour}
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:hour}/%{DATA}.log.gz"),
-
-		// s3://delete-me-35/AWSLogs/xxxxxxxxxxxx/vpcflowlogs/us-east-1/2025/02/12/10/xxxxxxxxxxxx_vpcflowlogs_us-east-1_fl-05f57cebeaa68cbdb_20250212T1050Z_884a1fb8.log.gz
-
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*VpcFlowLog]{
