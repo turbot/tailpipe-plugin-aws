@@ -40,9 +40,6 @@ func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
 	var res = make([]any, len(mappedData))
 	for i, record := range mappedData {
 
-		if len(GetKeys(record)) > len(DefaultFlowLogFields) {
-			return nil, fmt.Errorf("row has more fields than c.schema allows")
-		}
 		flowLog := &VpcFlowLog{}
 		err := flowLog.MapValues(record)
 		if err != nil {
@@ -85,15 +82,6 @@ func ConvertToMapSlice(data string) ([]map[string]string, error) {
 	return result, nil
 }
 
-// GetKeys extracts the keys from a map[string]string and returns a slice of keys.
-func GetKeys(m map[string]string) []string {
-	keys := make([]string, 0, len(m)) // Preallocate slice capacity
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
 // MapValues splits the input string and assigns each word to a corresponding key in the slice
 func (flowLog *VpcFlowLog) MapValues(input map[string]string) error {
 
@@ -104,12 +92,6 @@ func (flowLog *VpcFlowLog) MapValues(input map[string]string) error {
 			continue
 		}
 		switch i {
-		case "timestamp":
-			timestamp, err := time.Parse(time.RFC3339, field)
-			if err != nil {
-				return fmt.Errorf("invalid timestamp: %s", field)
-			}
-			flowLog.Timestamp = &timestamp
 		case "version":
 			version, err := strconv.ParseInt(field, 10, 32)
 			if err != nil {

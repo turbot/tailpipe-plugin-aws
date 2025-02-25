@@ -45,7 +45,6 @@ type VpcFlowLog struct {
 	SublocationType         *string    `json:"sublocation_type,omitempty"`
 	SubnetID                *string    `json:"subnet_id,omitempty"`
 	TCPFlags                *int32     `json:"tcp_flags,omitempty"`
-	Timestamp               *time.Time `json:"timestamp,omitempty"`
 	TrafficPath             *int32     `json:"traffic_path,omitempty"`
 	Type                    *string    `json:"type,omitempty"`
 	Version                 *int32     `json:"version,omitempty"`
@@ -90,7 +89,6 @@ func (c *VpcFlowLog) GetColumnDescriptions() map[string]string {
 		"sublocation_type":           "The type of sublocation that contains the network interface (e.g., wavelength, outpost, localzone).",
 		"subnet_id":                  "The ID of the subnet that contains the network interface for which traffic is recorded.",
 		"tcp_flags":                  "The bitmask value for TCP flags recorded during the flow.",
-		"timestamp":                  "The timestamp when the request was received.",
 		"traffic_path":               "The path that egress traffic takes to the destination.",
 		"type":                       "The type of traffic (IPv4, IPv6, or EFA).",
 		"version":                    "The VPC Flow Logs version. The version depends on the fields included in the log.",

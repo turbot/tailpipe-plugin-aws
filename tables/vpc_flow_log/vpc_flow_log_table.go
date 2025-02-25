@@ -21,14 +21,7 @@ type VpcFlowLogTable struct{}
 func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*VpcFlowLog] {
 
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		// Handle the case when Partition logs by time selected to:
-		// "Every 24 hours(default)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}
-		// "Every 1 hour(60 minutes)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:hour}
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz"),
-
-		// The exported logs from AWS CloudWatch Log Group will follow a path format like:
-		// `s3://test-vpc-flow-log-from-log-group/exportedlogs/453054b5-4448-4504-b2b4-15b6aa675a59/eni-0416a1c81c87ab9c9-all/000000.gz`.
-		// Additionally, the logs do not include a header value, and it's unclear how to handle this scenario effectively.
 	}
 
 	return []*table.SourceMetadata[*VpcFlowLog]{
@@ -73,9 +66,11 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpIps = append(row.TpIps, *row.PktDstAddr)
 	}
 
-	// TODO: Is it correct?
-	if row.AccountID != nil {
-		row.TpIndex = *row.AccountID
+	// TpIndex
+	if row.InterfaceID != nil {
+		row.TpIndex = *row.InterfaceID
+	} else if row.VPCID != nil {
+		row.TpIndex = *row.VPCID
 	} else {
 		row.TpIndex = "default"
 	}
@@ -99,24 +94,15 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpAkas = append(row.TpAkas, *row.ECSTaskDefinitionARN)
 	}
 
-	// TODO: How to handle if the log don't have timestamp value
-	// populate the year, month, day from start time
-	if row.Timestamp != nil {
+	// We should not handle the case where the start/end time is not available
+	if row.Start != nil {
 		// convert to date in format yy-mm-dd
-		row.TpDate = row.Timestamp.In(time.UTC).Truncate(24 * time.Hour)
-		row.TpTimestamp = *row.Timestamp
-	} else if row.Start != nil {
-		// convert to date in format yy-mm-dd
-		// TODO is Start unix millis?? if so why do we convert it for TpTimestamp
 		row.TpDate = row.Start.Truncate(24 * time.Hour)
-
-		//convert from unis seconds to milliseconds
 		row.TpTimestamp = *row.Start
-	} else {
-		// TODO: is it correct to fallback to the current time
-		t := time.Now()
-		row.TpDate = time.UnixMilli(t.UnixMilli()).Truncate(24 * time.Hour)
-		row.TpTimestamp = t
+	} else if row.End != nil {
+		// convert to date in format yy-mm-dd
+		row.TpDate = row.End.Truncate(24 * time.Hour)
+		row.TpTimestamp = *row.End
 	}
 
 	return row, nil
