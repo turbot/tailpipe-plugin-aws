@@ -12,19 +12,19 @@ import (
 type NlbAccessLog struct {
 	schema.CommonFields
 
-	Type                      string    `json:"type"`
-	Version                   string    `json:"version"`
-	Time                      time.Time `json:"time"`
-	Elb                       string    `json:"elb"`
-	Listener                  string    `json:"listener"`
-	ClientIP                  string    `json:"client_ip"`
-	ClientPort                int       `json:"client_port"`
-	DestinationIP             string    `json:"destination_ip"`
-	DestinationPort           int       `json:"destination_port"`
-	ConnectionTime            int       `json:"connection_time"`
-	TLSHandshakeTime          int       `json:"tls_handshake_time"`
-	ReceivedBytes             int64     `json:"received_bytes"`
-	SentBytes                 int64     `json:"sent_bytes"`
+	Type                      string    `json:"type,omitempty"`
+	Version                   string    `json:"version,omitempty"`
+	Timestamp                 time.Time `json:"timestamp,omitempty"`
+	Elb                       string    `json:"elb,omitempty"`
+	Listener                  string    `json:"listener,omitempty"`
+	ClientIP                  string    `json:"client_ip,omitempty"`
+	ClientPort                int       `json:"client_port,omitempty"`
+	DestinationIP             string    `json:"destination_ip,omitempty"`
+	DestinationPort           int       `json:"destination_port,omitempty"`
+	ConnectionTime            int       `json:"connection_time,omitempty"`
+	TLSHandshakeTime          int       `json:"tls_handshake_time,omitempty"`
+	ReceivedBytes             int64     `json:"received_bytes,omitempty"`
+	SentBytes                 int64     `json:"sent_bytes,omitempty"`
 	IncomingTLSAlert          string    `json:"incoming_tls_alert,omitempty"`
 	ChosenCertArn             string    `json:"chosen_cert_arn,omitempty"`
 	ChosenCertSerial          string    `json:"chosen_cert_serial,omitempty"`
@@ -35,22 +35,24 @@ type NlbAccessLog struct {
 	ALPNFEProtocol            string    `json:"alpn_fe_protocol,omitempty"`
 	ALPNBEProtocol            string    `json:"alpn_be_protocol,omitempty"`
 	ALPNClientPreferenceList  string    `json:"alpn_client_preference_list,omitempty"`
-	TLSConnectionCreationTime time.Time `json:"tls_connection_creation_time"`
+	TLSConnectionCreationTime time.Time `json:"tls_connection_creation_time,omitempty"`
 }
 
 // InitialiseFromMap - initialise the struct from a map
 func (l *NlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error
+	ISO8601 := "2006-01-02T15:04:05"
 	for key, value := range m {
 		if value == "-" {
 			continue
 		}
 		switch key {
-		case "time":
-			l.Time, err = time.Parse(time.RFC3339, value)
+		case "timestamp":
+			ts, err := time.Parse(ISO8601, value)
 			if err != nil {
-				return fmt.Errorf("error parsing time: %w", err)
+				return fmt.Errorf("error parsing timestamp: %w", err)
 			}
+			l.Timestamp = ts
 		case "type":
 			l.Type = value
 		case "version":
@@ -99,13 +101,22 @@ func (l *NlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.TLSCipher = value
 		case "tls_protocol_version":
 			l.TLSProtocolVersion = value
+		case "tls_named_group":
+			l.TLSNamedGroup = value
 		case "domain_name":
 			l.DomainName = value
+		case "alpn_fe_protocol":
+			l.ALPNFEProtocol = value
+		case "alpn_be_protocol":
+			l.ALPNBEProtocol = value
+		case "alpn_client_preference_list":
+			l.ALPNClientPreferenceList = value
 		case "tls_connection_creation_time":
-			l.TLSConnectionCreationTime, err = time.Parse(time.RFC3339, value)
+			ts, err := time.Parse(ISO8601, value)
 			if err != nil {
-				return fmt.Errorf("error parsing tls_connection_creation_time: %w", err)
+				return fmt.Errorf("error parsing timestamp: %w", err)
 			}
+			l.TLSConnectionCreationTime = ts
 		}
 	}
 	return nil

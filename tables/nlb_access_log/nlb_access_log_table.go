@@ -18,8 +18,7 @@ import (
 
 const NlbAccessLogTableIdentifier = "aws_nlb_access_log"
 
-const nlbLogFormat = `$type $version $time $elb $listener $client_port $destination_port $connection_time $tls_handshake_time $received_bytes $sent_bytes "$incoming_tls_alert" "$chosen_cert_arn" "$chosen_cert_serial" "$tls_cipher" "$tls_protocol_version" "$tls_named_group" "$domain_name" "$alpn_fe_protocol" "$alpn_be_protocol" "$alpn_client_preference_list" $tls_connection_creation_time`
-
+const nlbLogFormat = `$type $version $timestamp $elb $listener $client_port $destination_port $connection_time $tls_handshake_time $received_bytes $sent_bytes $incoming_tls_alert $chosen_cert_arn $chosen_cert_serial $tls_cipher $tls_protocol_version $tls_named_group $domain_name $alpn_fe_protocol $alpn_be_protocol $alpn_client_preference_list $tls_connection_creation_time`
 type NlbAccessLogTable struct{}
 
 func (c *NlbAccessLogTable) Identifier() string {
@@ -55,8 +54,8 @@ func (c *NlbAccessLogTable) EnrichRow(row *NlbAccessLog, sourceEnrichmentFields 
 
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
-	row.TpTimestamp = row.Time
-	row.TpDate = row.Time.Truncate(24 * time.Hour)
+	row.TpTimestamp = row.Timestamp
+	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 	row.TpIndex = strings.TrimPrefix(row.Elb, "net/")
 
 	row.TpSourceIP = &row.ClientIP
