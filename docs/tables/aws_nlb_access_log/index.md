@@ -104,7 +104,7 @@ select
 from
   aws_nlb_access_log
 where
-  tls_protocol_version in ('TLSv1.1', 'TLSv1', 'SSLv3', 'SSLv2') -- Insecure protocols
+  tls_protocol_version in ('tlsv1.1', 'tlsv1', 'sslv3', 'sslv2') -- Insecure protocols
 group by
   tls_protocol_version,
   tls_cipher
