@@ -9,25 +9,21 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
-type ClbAccessLogBatch struct {
-	Records []ClbAccessLog `json:"Records"`
-}
-
 type ClbAccessLog struct {
 	schema.CommonFields
 
+	BackendIP              *string   `json:"backend_ip,omitempty"`
+	BackendProcessingTime  float64   `json:"backend_processing_time,omitempty"`
+	BackendStatusCode      *int      `json:"backend_status_code,omitempty"`
 	ClientIP               string    `json:"client_ip,omitempty"`
 	ClientPort             int       `json:"client_port,omitempty"`
 	Elb                    string    `json:"elb,omitempty"`
 	ElbStatusCode          *int      `json:"elb_status_code,omitempty"`
-	BackendStatusCode      *int      `json:"backend_status_code,omitempty"`
 	ReceivedBytes          *int64    `json:"received_bytes,omitempty"`
-	SentBytes              *int64    `json:"sent_bytes,omitempty"`
-	BackendIP              *string   `json:"backend_ip,omitempty"`
 	Request                string    `json:"request,omitempty"`
 	RequestProcessingTime  float64   `json:"request_processing_time,omitempty"`
-	BackendProcessingTime  float64   `json:"backend_processing_time,omitempty"`
 	ResponseProcessingTime float64   `json:"response_processing_time,omitempty"`
+	SentBytes              *int64    `json:"sent_bytes,omitempty"`
 	SslCipher              string    `json:"ssl_cipher,omitempty"`
 	SslProtocol            string    `json:"ssl_protocol,omitempty"`
 	Timestamp              time.Time `json:"timestamp,omitempty"`
@@ -125,21 +121,27 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 
 func (c *ClbAccessLog) GetColumnDescriptions() map[string]string {
 	return map[string]string{
-		"timestamp":                 "The time when the load balancer received the request from the client, in ISO 8601 format.",
-		"elb":                       "The name of the load balancer.",
+		"backend_ip":                "The IP address of the registered instance that processed the request.",
+		"backend_processing_time":   "The time elapsed from the load balancer sending the request to the registered instance until the instance starts sending response headers.",
+		"backend_status_code":       "The HTTP status code returned by the registered instance.",
 		"client_ip":                 "The IP address of the requesting client.",
 		"client_port":               "The source port used by the client for the connection.",
-		"backend_ip":                "The IP address of the registered instance that processed the request.",
+		"elb":                       "The name of the load balancer.",
+		"elb_status_code":           "The HTTP status code returned by the load balancer.",
+		"received_bytes":            "The size of the request in bytes received from the client.",
 		"request":                   "The full request line from the client, including method, protocol, and URI.",
 		"request_processing_time":   "The time elapsed from receiving the request to sending it to a registered instance, in seconds.",
-		"backend_processing_time":   "The time elapsed from the load balancer sending the request to the registered instance until the instance starts sending response headers.",
 		"response_processing_time":  "The time elapsed from the load balancer receiving the response headers to sending the response to the client.",
-		"elb_status_code":           "The HTTP status code returned by the load balancer.",
-		"backend_status_code":       "The HTTP status code returned by the registered instance.",
-		"received_bytes":            "The size of the request in bytes received from the client.",
 		"sent_bytes":                "The size of the response in bytes sent to the client.",
-		"user_agent":                "A User-Agent string that identifies the client that originated the request.",
 		"ssl_cipher":                "The SSL cipher used for encrypting the connection.",
 		"ssl_protocol":              "The SSL/TLS version used for the connection.",
+		"timestamp":                 "The time when the load balancer received the request from the client, in ISO 8601 format.",
+		"user_agent":                "A User-Agent string that identifies the client that originated the request.",
+
+		// Tailpipe-specific metadata fields
+		"tp_index": "The name of the load balancer.",
+		"tp_source_ip": "The IP address of the requesting client.",
+		"tp_ips": "The IP addresses of the requesting client and the registered instance that processed the request.",
+		"tp_destination_ip": "The IP address of the registered instance that processed the request.",
 	}
 }
