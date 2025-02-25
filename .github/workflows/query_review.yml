@@ -17,36 +17,64 @@ jobs:
       - name: Checkout PR Code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 2  # Ensures we have at least one previous commit for diffs
 
       - name: Get Modified queries.md Files
         id: get_files
         run: |
+          echo "Fetching latest base branch..."
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
+
+          # Check for modified queries.md files
           MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | grep 'queries.md' || echo "")
+
+          # Fallback: If no files found, check last commit's changes
+          if [[ -z "$MODIFIED_FILES" ]]; then
+            MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | grep 'queries.md' || echo "")
+          fi
+
+          echo "Modified files: $MODIFIED_FILES"
           echo "files=$MODIFIED_FILES" >> $GITHUB_ENV
 
       - name: Extract First SQL Query
         id: extract_query
         run: |
+          echo "Files found: ${{ env.files }}"
+
+          if [[ -z "${{ env.files }}" ]]; then
+            echo "No queries.md files were modified."
+            echo "query=" >> $GITHUB_ENV
+            exit 0
+          fi
+
           QUERY=""
           for FILE in ${{ env.files }}; do
+            echo "Processing file: $FILE"
             QUERY=$(awk '/^### / {if (found) exit; found=1; next} found && NF' "$FILE" | sed '/^```sql/,/^```/!d;//d')
             if [[ ! -z "$QUERY" ]]; then
               break
             fi
           done
-          echo "query=$(echo "$QUERY" | jq -sRr @json)" >> $GITHUB_ENV
+
+          if [[ -z "$QUERY" ]]; then
+            echo "No SQL query found in modified files."
+          fi
+
+          # Ensure proper escaping
+          ESCAPED_QUERY=$(echo "$QUERY" | jq -sRr @json)
+          echo "query=$ESCAPED_QUERY" >> $GITHUB_ENV
 
       - name: Generate AI Suggestions with OpenAI
         id: ai_suggestions
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [[ -z "${{ env.query }}" ]]; then
+          if [[ -z "${{ env.query }}" || "${{ env.query }}" == "\"\"" ]]; then
             echo "response=No SQL query found in modified files." >> $GITHUB_ENV
             exit 0
           fi
 
+          # Construct JSON payload correctly
           PAYLOAD=$(jq -n \
             --arg model "gpt-4o-mini" \
             --arg sys_content "You are an SQL query reviewer specializing in DuckDB." \
@@ -65,17 +93,21 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
+          # Extract and clean up AI response
           RESPONSE=$(echo "$RESPONSE_RAW" | jq -r '.choices[0].message.content // "Error: No response received."')
-          echo "response=$(echo "$RESPONSE" | jq -sRr @json)" >> $GITHUB_ENV
+          ESCAPED_RESPONSE=$(echo "$RESPONSE" | jq -sRr @json)
+          echo "response=$ESCAPED_RESPONSE" >> $GITHUB_ENV
 
       - name: Comment on PR
         run: |
-          if [[ -z "${{ env.response }}" || "${{ env.response }}" == "Error: No response received." ]]; then
+          if [[ -z "${{ env.response }}" || "${{ env.response }}" == "\"\"" || "${{ env.response }}" == "Error: No response received." ]]; then
             echo "No AI suggestions to post."
             exit 0
           fi
 
           COMMENT="### 🤖 Query Review Bot\n\n**Suggestions:**\n${{ env.response }}"
-          gh pr comment ${{ github.event.pull_request.html_url }} --body "$COMMENT"
+          echo "$COMMENT" > pr_comment.txt  # Save as a file to avoid multi-line issues
+
+          gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
