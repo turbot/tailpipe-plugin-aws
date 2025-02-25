@@ -61,6 +61,10 @@ func (l *NlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.Elb = value
 		case "listener":
 			l.Listener = value
+		case "incoming_tls_alert":
+			l.IncomingTLSAlert = value
+		case "chosen_cert_serial":
+			l.ChosenCertSerial = value
 		case "client":
 			parts := strings.Split(value, ":")
 			l.ClientIP = parts[0]
