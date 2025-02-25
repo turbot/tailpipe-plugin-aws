@@ -25,6 +25,10 @@ func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*VpcFlowLo
 		// "Every 24 hours(default)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}
 		// "Every 1 hour(60 minutes)" - %{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:hour}
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz"),
+
+		// The exported logs from AWS CloudWatch Log Group will follow a path format like:
+		// `s3://test-vpc-flow-log-from-log-group/exportedlogs/453054b5-4448-4504-b2b4-15b6aa675a59/eni-0416a1c81c87ab9c9-all/000000.gz`.
+		// Additionally, the logs do not include a header value, and it's unclear how to handle this scenario effectively.
 	}
 
 	return []*table.SourceMetadata[*VpcFlowLog]{
