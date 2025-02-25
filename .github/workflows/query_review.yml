@@ -17,7 +17,7 @@ jobs:
       - name: Checkout PR Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Ensures we have at least one previous commit for diffs
+          fetch-depth: 2  # Ensures at least one previous commit for diffs
 
       - name: Get Modified queries.md Files
         id: get_files
@@ -25,10 +25,8 @@ jobs:
           echo "Fetching latest base branch..."
           git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
 
-          # Check for modified queries.md files
           MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | grep 'queries.md' || echo "")
 
-          # Fallback: If no files found, check last commit's changes
           if [[ -z "$MODIFIED_FILES" ]]; then
             MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | grep 'queries.md' || echo "")
           fi
@@ -60,8 +58,9 @@ jobs:
             echo "No SQL query found in modified files."
           fi
 
-          # Ensure proper escaping
-          ESCAPED_QUERY=$(echo "$QUERY" | jq -sRr @json)
+          # Escape query properly
+          echo "$QUERY" > query.txt  # Save query to a file for safe handling
+          ESCAPED_QUERY=$(jq -Rs '.' query.txt)
           echo "query=$ESCAPED_QUERY" >> $GITHUB_ENV
 
       - name: Generate AI Suggestions with OpenAI
@@ -69,16 +68,17 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [[ -z "${{ env.query }}" || "${{ env.query }}" == "\"\"" ]]; then
+          QUERY_LENGTH=$(wc -c < query.txt)
+
+          if [[ $QUERY_LENGTH -le 1 ]]; then
             echo "response=No SQL query found in modified files." >> $GITHUB_ENV
             exit 0
           fi
 
-          # Construct JSON payload correctly
           PAYLOAD=$(jq -n \
             --arg model "gpt-4o-mini" \
             --arg sys_content "You are an SQL query reviewer specializing in DuckDB." \
-            --arg user_content "Please provide suggestions for improving the following SQL query, including title clarity, query structure, and optimizations, in 3-5 sentences:\n\n${{ env.query }}" \
+            --arg user_content "Please provide suggestions for improving the following SQL query, including title clarity, query structure, and optimizations, in 3-5 sentences:\n\n$(cat query.txt)" \
             '{
               model: $model,
               messages: [
@@ -88,24 +88,27 @@ jobs:
               temperature: 0.7
             }')
 
+          echo "Sending request to OpenAI..."
           RESPONSE_RAW=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
-          # Extract and clean up AI response
           RESPONSE=$(echo "$RESPONSE_RAW" | jq -r '.choices[0].message.content // "Error: No response received."')
-          ESCAPED_RESPONSE=$(echo "$RESPONSE" | jq -sRr @json)
+          echo "$RESPONSE" > response.txt
+          ESCAPED_RESPONSE=$(jq -Rs '.' response.txt)
           echo "response=$ESCAPED_RESPONSE" >> $GITHUB_ENV
 
       - name: Comment on PR
         run: |
-          if [[ -z "${{ env.response }}" || "${{ env.response }}" == "\"\"" || "${{ env.response }}" == "Error: No response received." ]]; then
+          RESPONSE_LENGTH=$(wc -c < response.txt)
+
+          if [[ $RESPONSE_LENGTH -le 1 ]]; then
             echo "No AI suggestions to post."
             exit 0
           fi
 
-          COMMENT="### 🤖 Query Review Bot\n\n**Suggestions:**\n${{ env.response }}"
+          COMMENT="### 🤖 Query Review Bot\n\n**Suggestions:**\n$(cat response.txt)"
           echo "$COMMENT" > pr_comment.txt  # Save as a file to avoid multi-line issues
 
           gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
