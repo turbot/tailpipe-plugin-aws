@@ -3,7 +3,7 @@ name: Query Review Bot
 on:
   pull_request:
     types:
-      - labeled  # Triggers when the 'question' label is added
+      - labeled  # Runs when the 'question' label is added
   workflow_dispatch:  # Allows manual execution from GitHub UI
 
 permissions:
@@ -17,7 +17,12 @@ jobs:
       - name: Checkout PR Branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch
+          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch, NOT main
+
+      - name: Print Debug Info
+        run: |
+          echo "Running on branch: ${{ github.head_ref }}"
+          echo "Base branch: ${{ github.base_ref }}"
 
       - name: Set up Python
         uses: actions/setup-python@v4
