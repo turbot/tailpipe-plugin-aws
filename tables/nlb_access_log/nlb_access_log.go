@@ -13,7 +13,7 @@ type NlbAccessLog struct {
 	schema.CommonFields
 
 	ALPNBEProtocol            string    `json:"alpn_be_protocol,omitempty"`
-	ALPNClientPreferenceList  string    `json:"alpn_client_preference_list,omitempty"`
+	ALPNClientPreferenceList  []string  `json:"alpn_client_preference_list,omitempty"`
 	ALPNFEProtocol            string    `json:"alpn_fe_protocol,omitempty"`
 	ChosenCertArn             string    `json:"chosen_cert_arn,omitempty"`
 	ChosenCertSerial          string    `json:"chosen_cert_serial,omitempty"`
@@ -114,7 +114,7 @@ func (l *NlbAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "alpn_be_protocol":
 			l.ALPNBEProtocol = value
 		case "alpn_client_preference_list":
-			l.ALPNClientPreferenceList = value
+			l.ALPNClientPreferenceList = strings.Split(value, ",")
 		case "tls_connection_creation_time":
 			ts, err := time.Parse(ISO8601, value)
 			if err != nil {
