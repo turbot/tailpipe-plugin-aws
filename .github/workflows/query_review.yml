@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - labeled
+  workflow_dispatch: # Allows manual triggering from GitHub UI
 
 permissions:
   pull-requests: write
@@ -11,20 +12,29 @@ permissions:
 
 jobs:
   review-query:
-    if: github.event.label.name == 'question'
+    if: |
+      github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test-github-actions'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Ensures at least one previous commit for diffs
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install duckdb
 
       - name: Get Modified queries.md Files
         id: get_files
         run: |
-          echo "Fetching latest base branch..."
           git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
-
           MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | grep 'queries.md' || echo "")
 
           if [[ -z "$MODIFIED_FILES" ]]; then
@@ -34,88 +44,33 @@ jobs:
           echo "Modified files: $MODIFIED_FILES"
           echo "files=$MODIFIED_FILES" >> $GITHUB_ENV
 
-      - name: Extract First SQL Query
-        id: extract_query
+      - name: Evaluate Queries
+        id: evaluate_queries
         run: |
-          echo "Files found: ${{ env.files }}"
-
           if [[ -z "${{ env.files }}" ]]; then
-            echo "No queries.md files were modified."
-            echo "query=" >> $GITHUB_ENV
+            echo "No queries.md files found."
             exit 0
           fi
 
-          QUERY=""
+          OUTPUT=""
           for FILE in ${{ env.files }}; do
             echo "Processing file: $FILE"
-            QUERY=$(awk '/^### / {if (found) exit; found=1; next} found && NF' "$FILE" | sed '/^```sql/,/^```/!d;//d')
-            if [[ ! -z "$QUERY" ]]; then
-              break
-            fi
+            RESULT=$(python scripts/evaluate_sql.py "$FILE")
+            OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
           done
 
-          if [[ -z "$QUERY" ]]; then
-            echo "No SQL query found in modified files."
-          fi
+          echo -e "$OUTPUT" > review_output.txt
+          echo "review_output=$(cat review_output.txt)" >> $GITHUB_ENV
 
-          # Save query to a file to maintain formatting
-          echo "$QUERY" > query.txt
-          ESCAPED_QUERY=$(jq -Rs '.' query.txt)
-          echo "query=$ESCAPED_QUERY" >> $GITHUB_ENV
-
-      - name: Generate AI Suggestions with OpenAI
-        id: ai_suggestions
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Comment on PR
         run: |
-          QUERY_LENGTH=$(wc -c < query.txt)
-
-          if [[ $QUERY_LENGTH -le 1 ]]; then
-            echo "response=No SQL query found in modified files." >> $GITHUB_ENV
-            exit 0
-          fi
-
-          PAYLOAD=$(jq -n \
-            --arg model "gpt-4o-mini" \
-            --arg sys_content "You are an SQL query reviewer specializing in DuckDB." \
-            --arg user_content "Please provide suggestions for improving the following SQL query, including title clarity, query structure, and optimizations, in a structured markdown format. Format your response as a markdown list with bullet points:\n\n$(cat query.txt)" \
-            '{
-              model: $model,
-              messages: [
-                { role: "system", content: $sys_content },
-                { role: "user", content: $user_content }
-              ],
-              temperature: 0.7
-            }')
-
-          echo "Sending request to OpenAI..."
-          RESPONSE_RAW=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD")
-
-          RESPONSE=$(echo "$RESPONSE_RAW" | jq -r '.choices[0].message.content // "Error: No response received."')
-
-          # Save AI response to a file to maintain markdown formatting
-          echo "$RESPONSE" > response.txt
-          ESCAPED_RESPONSE=$(jq -Rs '.' response.txt)
-          echo "response=$ESCAPED_RESPONSE" >> $GITHUB_ENV
-
-      - name: Comment on PR (Formatted)
-        run: |
-          RESPONSE_LENGTH=$(wc -c < response.txt)
-
-          if [[ $RESPONSE_LENGTH -le 1 ]]; then
+          if [[ -z "${{ env.review_output }}" ]]; then
             echo "No AI suggestions to post."
             exit 0
           fi
 
-          COMMENT="### 🤖 Query Review Bot\n\n"
-          COMMENT+="#### Extracted SQL Query\n"
-          COMMENT+="\`\`\`sql\n$(cat query.txt)\n\`\`\`\n\n"
-          COMMENT+="#### 💡 AI Suggestions\n\n$(cat response.txt)"
-
-          echo "$COMMENT" > pr_comment.txt  # Save to file to maintain formatting
+          COMMENT="### 🤖 SQL Query Review\n${{ env.review_output }}"
+          echo "$COMMENT" > pr_comment.txt
 
           gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
         env:
