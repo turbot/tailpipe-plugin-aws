@@ -3,7 +3,8 @@ name: Query Review Bot
 on:
   pull_request:
     types:
-      - labeled
+      - labeled  # Runs when the 'question' label is added
+  workflow_dispatch:  # Allows manual execution from GitHub UI
 
 permissions:
   pull-requests: write
@@ -11,71 +12,69 @@ permissions:
 
 jobs:
   review-query:
-    if: github.event.label.name == 'question'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR Code
+      - name: Checkout PR Branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch, NOT main
+
+      - name: Print Debug Info
+        run: |
+          echo "Running on branch: ${{ github.head_ref }}"
+          echo "Base branch: ${{ github.base_ref }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install duckdb
 
       - name: Get Modified queries.md Files
         id: get_files
         run: |
-          MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | grep 'queries.md' || echo "")
+          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          MODIFIED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD | grep 'queries.md' || echo "")
+
+          if [[ -z "$MODIFIED_FILES" ]]; then
+            MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | grep 'queries.md' || echo "")
+          fi
+
+          echo "Modified files: $MODIFIED_FILES"
           echo "files=$MODIFIED_FILES" >> $GITHUB_ENV
 
-      - name: Extract First SQL Query
-        id: extract_query
+      - name: Evaluate Queries
+        id: evaluate_queries
         run: |
-          QUERY=""
-          for FILE in ${{ env.files }}; do
-            QUERY=$(awk '/^### / {if (found) exit; found=1; next} found && NF' "$FILE" | sed '/^```sql/,/^```/!d;//d')
-            if [[ ! -z "$QUERY" ]]; then
-              break
-            fi
-          done
-          echo "query=$(echo "$QUERY" | jq -sRr @json)" >> $GITHUB_ENV
-
-      - name: Generate AI Suggestions with OpenAI
-        id: ai_suggestions
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          if [[ -z "${{ env.query }}" ]]; then
-            echo "response=No SQL query found in modified files." >> $GITHUB_ENV
+          if [[ -z "${{ env.files }}" ]]; then
+            echo "No queries.md files found."
             exit 0
           fi
 
-          PAYLOAD=$(jq -n \
-            --arg model "gpt-4o-mini" \
-            --arg sys_content "You are an SQL query reviewer specializing in DuckDB." \
-            --arg user_content "Please provide suggestions for improving the following SQL query, including title clarity, query structure, and optimizations, in 3-5 sentences:\n\n${{ env.query }}" \
-            '{
-              model: $model,
-              messages: [
-                { role: "system", content: $sys_content },
-                { role: "user", content: $user_content }
-              ],
-              temperature: 0.7
-            }')
+          OUTPUT=""
+          for FILE in ${{ env.files }}; do
+            echo "Processing file: $FILE"
+            RESULT=$(python scripts/evaluate_sql.py "$FILE")
+            OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
+          done
 
-          RESPONSE_RAW=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD")
-
-          RESPONSE=$(echo "$RESPONSE_RAW" | jq -r '.choices[0].message.content // "Error: No response received."')
-          echo "response=$(echo "$RESPONSE" | jq -sRr @json)" >> $GITHUB_ENV
+          echo -e "$OUTPUT" > review_output.txt
+          echo "review_output=$(cat review_output.txt)" >> $GITHUB_ENV
 
       - name: Comment on PR
         run: |
-          if [[ -z "${{ env.response }}" || "${{ env.response }}" == "Error: No response received." ]]; then
+          if [[ -z "${{ env.review_output }}" ]]; then
             echo "No AI suggestions to post."
             exit 0
           fi
 
-          COMMENT="### 🤖 Query Review Bot\n\n**Suggestions:**\n${{ env.response }}"
-          gh pr comment ${{ github.event.pull_request.html_url }} --body "$COMMENT"
+          COMMENT="### 🤖 SQL Query Review\n${{ env.review_output }}"
+          echo "$COMMENT" > pr_comment.txt
+
+          gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
