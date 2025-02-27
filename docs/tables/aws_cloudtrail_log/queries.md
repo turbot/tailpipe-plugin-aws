@@ -1,6 +1,6 @@
 ## Activity Examples
 
-### Daily activity trends
+### Daily Activity Trends
 
 Count events per day to identify activity trends over time.
 
@@ -20,7 +20,7 @@ order by
 folder: Account
 ```
 
-### Top 10 events
+### Top 10 Events
 
 List the 10 most frequently called events.
 
@@ -43,7 +43,7 @@ limit 10;
 folder: Account
 ```
 
-### Top 10 events (exclude read-only)
+### Top 10 Events (Exclude Read-Only)
 
 List the top 10 most frequently called events, excluding read-only events.
 
@@ -68,7 +68,7 @@ limit 10;
 folder: Account
 ```
 
-### Top events by account
+### Top Events by Account
 
 Count and group events by account ID, event source, and event name to analyze activity across accounts.
 
@@ -92,7 +92,7 @@ order by
 folder: Account
 ```
 
-### Top error codes
+### Top Error Codes
 
 Identify the most frequent error codes.
 
@@ -116,7 +116,7 @@ folder: Account
 
 ## Detection Examples
 
-### Default EBS encryption disabled in a region
+### Default EBS Encryption Disabled in a Region
 
 Detect when default EBS encryption was disabled in a region.
 
@@ -143,7 +143,7 @@ order by
 folder: EBS
 ```
 
-### CloudTrail trail logging stopped
+### CloudTrail Trail Logging Stopped
 
 Detect when logging was stopped for a CloudTrail trail.
 
@@ -170,7 +170,7 @@ order by
 folder: CloudTrail
 ```
 
-### Unsuccessful AWS console login attempts
+### Unsuccessful AWS Console Login Attempts
 
 Find failed console login attempts, highlighting potential unauthorized access attempts.
 
@@ -198,7 +198,7 @@ order by
 folder: IAM
 ```
 
-### Root activity
+### Root Activity
 
 Track any actions performed by the root user.
 
@@ -222,7 +222,7 @@ order by
 folder: IAM
 ```
 
-### Activity in unapproved regions
+### Activity in Unapproved Regions
 
 Identify actions occurring in AWS regions outside an approved list.
 
@@ -247,7 +247,7 @@ order by
 folder: Account
 ```
 
-### Activity from unapproved IP addresses
+### Activity from Unapproved IP Addresses
 
 Flag activity originating from IP addresses outside an approved list.
 
@@ -274,7 +274,7 @@ folder: Account
 
 ## Operational Examples
 
-### VPC security group rule updates
+### VPC Security Group Rule Updates
 
 Track changes to VPC security group ingress and egress rules.
 
@@ -301,7 +301,7 @@ order by
 folder: VPC
 ```
 
-### IAM user permission updates
+### IAM User Permission Updates
 
 List events where an IAM user has added or removed permissions through managed policies, inline policies, or groups.
 
@@ -330,7 +330,7 @@ folder: IAM
 
 ## Volume Examples
 
-### High volume of S3 bucket access requests
+### High Volume of S3 Bucket Access Requests
 
 Detect unusually high access activity to S3 buckets and objects.
 
@@ -357,7 +357,7 @@ order by
 folder: S3
 ```
 
-### Excessive IAM role assumptions
+### Excessive IAM Role Assumptions
 
 Identify IAM roles being assumed at an unusually high frequency.
 
@@ -387,7 +387,7 @@ folder: IAM
 
 ## Baseline Examples
 
-### Unrecognized user source IP addresses
+### Unrecognized User Source IP Addresses
 
 Detect user activity from unexpected or new source IP addresses.
 
@@ -414,7 +414,7 @@ order by
 folder: Account
 ```
 
-### Activity outside of normal hours
+### Activity Outside of Normal Hours
 
 Flag activity occurring outside of standard working hours, e.g., activity bewteen 8 PM and 6 AM.
 
