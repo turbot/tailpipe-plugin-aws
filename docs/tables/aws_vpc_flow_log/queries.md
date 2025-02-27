@@ -156,7 +156,7 @@ order by
 
 ## Operational Examples
 
-### Failed network connections
+### Traffic to a specific subnet
 
 List failed (rejected) network connection attempts.
 
@@ -168,13 +168,13 @@ select
   src_port,
   dst_port,
   protocol,
-  vpc_id,
+  subnet_id,
   action
-from
+from 
   aws_vpc_flow_log
-where
-  action = 'REJECT'
-order by
+where 
+  subnet_id = 'subnet-027e9a6d4add894eb'
+order by 
   start_time desc;
 ```
 
