@@ -1,6 +1,6 @@
 ## Activity Examples
 
-### Daily access trends
+### Daily Access Trends
 
 Count access log entries per day to identify trends over time.
 
@@ -16,7 +16,11 @@ order by
   access_date asc;
 ```
 
-### Top 10 accessed objects
+```yaml
+folder: S3
+```
+
+### Top 10 Accessed Objects
 
 List the 10 most frequently accessed S3 objects.
 
@@ -37,7 +41,11 @@ order by
 limit 10;
 ```
 
-### Top 10 requester IP addresses
+```yaml
+folder: S3
+```
+
+### Top 10 Requester IP Addresses
 
 List the top 10 requester IP addresses.
 
@@ -54,7 +62,11 @@ order by
 limit 10;
 ```
 
-### Top error codes
+```yaml
+folder: S3
+```
+
+### Top Error Codes
 
 Identify the most frequent error codes.
 
@@ -74,9 +86,13 @@ order by
   error_count desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ## Detection Examples
 
-### Unusually large file downloads
+### Unusually Large File Downloads
 
 Detect unusually large downloads based on file size.
 
@@ -100,7 +116,11 @@ order by
   bytes_sent desc;
 ```
 
-### Requests from unapproved IAM roles and users
+```yaml
+folder: S3
+```
+
+### Requests from Unapproved IAM Roles and Users
 
 Flag requests from IAM roles and users outside an approved list (by AWS account ID in this example).
 
@@ -121,9 +141,13 @@ order by
   timestamp desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ## Operational Examples
 
-### Failed object upload requests
+### Failed Object Upload Requests
 
 List failed object upload requests along with the error codes.
 
@@ -145,7 +169,11 @@ order by
   timestamp desc;
 ```
 
-### Unauthenticated requests
+```yaml
+folder: S3
+```
+
+### Unauthenticated Requests
 
 List all unauthenticated requests.
 
@@ -165,9 +193,13 @@ order by
   timestamp desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ## Volume Examples
 
-### High volume of requests
+### High Volume of Requests
 
 Detect unusually high number of requests by remote IP address.
 
@@ -189,7 +221,11 @@ order by
   request_count desc;
 ```
 
-### High volume of failed requests
+```yaml
+folder: S3
+```
+
+### High Volume of Failed Requests
 
 Identify remote IPs with a high number of failed requests.
 
@@ -211,9 +247,13 @@ order by
   failed_requests desc;
 ```
 
+```yaml
+folder: S3
+```
+
 ## Baseline Examples
 
-### Requests outside of normal hours
+### Requests Outside of Normal Hours
 
 Flag requests occurring outside of standard working hours, e.g., between 8 PM and 6 AM.
 
@@ -232,4 +272,8 @@ where
   or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   timestamp desc;
+```
+
+```yaml
+folder: S3
 ```

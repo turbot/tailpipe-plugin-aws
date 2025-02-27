@@ -3,7 +3,7 @@ organization: Turbot
 category: ["public cloud"]
 icon_url: "/images/plugins/turbot/aws.svg"
 brand_color: "#FF9900"
-display_name: "Amazon Web Services"
+display_name: "AWS"
 description: "Tailpipe plugin for collecting and querying various logs from AWS."
 og_description: "Collect AWS logs and query them instantly with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/turbot/aws-social-graphic.png"
