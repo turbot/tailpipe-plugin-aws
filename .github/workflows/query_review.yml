@@ -21,12 +21,14 @@ jobs:
 
       - name: Debug Git Info
         run: |
-          echo "Base branch: ${{ github.base_ref }}"
-          echo "Current branch: ${{ github.head_ref }}"
           BASE_BRANCH=${{ github.base_ref }}
           if [[ -z "$BASE_BRANCH" ]]; then
-            BASE_BRANCH="main"  # Change this if your default branch is different
+            BASE_BRANCH="main"  # Fallback to main if GitHub doesn't provide a base branch
           fi
+
+          echo "Base branch: $BASE_BRANCH"
+          echo "Current branch: ${{ github.head_ref }}"
+
           git fetch --no-tags --depth=1 origin $BASE_BRANCH
           echo "Git diff output:"
           git diff --name-only origin/$BASE_BRANCH HEAD || echo "❌ No changes detected"
@@ -68,26 +70,27 @@ jobs:
             echo "❌ No queries.md files found."
             exit 0
           fi
-      
+
           OUTPUT=""
           for FILE in ${{ env.files }}; do
             echo "🔍 Processing file: $FILE"
-      
+
             # Run the evaluation script and handle errors
             RESULT=$(python scripts/evaluate_sql.py "$FILE" || echo "⚠️ Error processing file: $FILE")
-      
+
             # Ensure result is not empty
             if [[ -z "$RESULT" ]]; then
               RESULT="⚠️ No output generated for $FILE"
             fi
-      
+
             OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
           done
-      
-          # Escape output to avoid formatting errors in GitHub Actions
+
+          # Escape multi-line output before storing it
           echo -e "$OUTPUT" > review_output.txt
-          echo "review_output=$(jq -sRr @json < review_output.txt)" >> $GITHUB_ENV
-        
+          echo "review_output<<EOF" >> $GITHUB_ENV
+          cat review_output.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Comment on PR
         run: |
@@ -97,7 +100,7 @@ jobs:
           fi
 
           COMMENT="### 🤖 SQL Query Review\n${{ env.review_output }}"
-          echo "$COMMENT" > pr_comment.txt
+          echo -e "$COMMENT" > pr_comment.txt
 
           gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
         env:
