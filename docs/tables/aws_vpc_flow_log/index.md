@@ -44,7 +44,7 @@ tailpipe collect aws_vpc_flow_log.my_logs
 
 ## Query
 
-**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_vpc_flow_log)**
+**[Explore 13+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_vpc_flow_log)**
 
 ### High-volume network traffic
 
