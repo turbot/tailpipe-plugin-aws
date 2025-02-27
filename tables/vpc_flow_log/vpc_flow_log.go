@@ -96,8 +96,8 @@ func (c *VpcFlowLog) GetColumnDescriptions() map[string]string {
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "Resource ARNs related to the event. Possible values include ECSClusterARN, ECSContainerInstanceARN, ECSTaskARN, and/or ECSTaskDefinitionARN.",
-		"tp_index":     "The AWS account ID that received the request. The default value is default.",
+		"tp_index":     "The network interface ID, VPC ID, or subnet ID that received the request. The default value is 'default'.",
 		"tp_ips":       "IP addresses associated with the event, including the source and destination IP addresses, private IPv4 or IPv6 addresses of the network interface for outgoing traffic, packet-level source and destination addresses to distinguish between intermediate and original or final destinations, and addresses affected by NAT gateways or Amazon EKS pod communications within a VPC.",
-		"tp_timestamp": "The date and time the event occurred, in ISO 8601 format; if the timestamp is not available, the current timestamp is used.",
+		"tp_timestamp": "The date and time the event occurred, in ISO 8601 format",
 	}
 }
