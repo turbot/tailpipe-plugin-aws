@@ -43,31 +43,6 @@ limit 10;
 folder: Account
 ```
 
-### Top 10 Events (Exclude Read-Only)
-
-List the top 10 most frequently called events, excluding read-only events.
-
-```sql
-select
-  event_source,
-  event_name,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-where
-  not read_only
-group by
-  event_source,
-  event_name,
-order by
-  event_count desc
-limit 10;
-```
-
-```yaml
-folder: Account
-```
-
 ### Top Events by Account
 
 Count and group events by account ID, event source, and event name to analyze activity across accounts.
