@@ -112,15 +112,22 @@ select
   action,
   protocol,
   region,
-  vpc_id
-from
+  vpc_id,
+  action
+from 
   aws_vpc_flow_log
-where
+where 
   flow_direction = 'ingress'
-  and src_addr not like '10.%' -- Exclude private IP range
-  and src_addr not like '192.168.%'
-  and src_addr not like '172.16.%'
-order by
+  and (
+    src_addr not like '10.%'  -- Exclude all 10.0.0.0/8
+    and src_addr not like '192.168.%' -- Exclude all 192.168.0.0/16
+    and (
+      src_addr < '172.16.0.0' or src_addr > '172.31.255.255' -- Exclude full 172.16.0.0/12 range
+    )
+    and src_addr not like '169.254.%' -- Exclude link-local 169.254.0.0/16
+    and src_addr not like '127.%' -- Exclude localhost 127.0.0.0/8
+  )
+order by 
   start_time desc;
 ```
 
