@@ -70,27 +70,30 @@ jobs:
             echo "❌ No queries.md files found."
             exit 0
           fi
-
+      
           OUTPUT=""
           for FILE in ${{ env.files }}; do
             echo "🔍 Processing file: $FILE"
-
-            # Run the evaluation script and handle errors
+      
+            # Run the evaluation script and capture output
             RESULT=$(python scripts/evaluate_sql.py "$FILE" || echo "⚠️ Error processing file: $FILE")
-
+      
             # Ensure result is not empty
             if [[ -z "$RESULT" ]]; then
               RESULT="⚠️ No output generated for $FILE"
             fi
-
+      
             OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
           done
-
-          # Escape multi-line output before storing it
+      
+          # Store multi-line output in a file and append to GITHUB_ENV safely
           echo -e "$OUTPUT" > review_output.txt
-          echo "review_output<<EOF" >> $GITHUB_ENV
-          cat review_output.txt >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          {
+            echo "review_output<<EOF"
+            cat review_output.txt
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+        
 
       - name: Comment on PR
         run: |
@@ -98,10 +101,12 @@ jobs:
             echo "ℹ️ No AI suggestions to post."
             exit 0
           fi
-
-          COMMENT="### 🤖 SQL Query Review\n${{ env.review_output }}"
-          echo -e "$COMMENT" > pr_comment.txt
-
+      
+          echo "### 🤖 SQL Query Review" > pr_comment.txt
+          echo "${{ env.review_output }}" >> pr_comment.txt
+      
           gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+
