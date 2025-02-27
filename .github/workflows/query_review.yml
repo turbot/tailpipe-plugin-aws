@@ -68,16 +68,26 @@ jobs:
             echo "❌ No queries.md files found."
             exit 0
           fi
-
+      
           OUTPUT=""
           for FILE in ${{ env.files }}; do
             echo "🔍 Processing file: $FILE"
-            RESULT=$(python scripts/evaluate_sql.py "$FILE")
+      
+            # Run the evaluation script and handle errors
+            RESULT=$(python scripts/evaluate_sql.py "$FILE" || echo "⚠️ Error processing file: $FILE")
+      
+            # Ensure result is not empty
+            if [[ -z "$RESULT" ]]; then
+              RESULT="⚠️ No output generated for $FILE"
+            fi
+      
             OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
           done
-
+      
+          # Escape output to avoid formatting errors in GitHub Actions
           echo -e "$OUTPUT" > review_output.txt
-          echo "review_output=$(cat review_output.txt)" >> $GITHUB_ENV
+          echo "review_output=$(jq -sRr @json < review_output.txt)" >> $GITHUB_ENV
+        
 
       - name: Comment on PR
         run: |
