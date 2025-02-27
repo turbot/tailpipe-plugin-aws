@@ -33,21 +33,26 @@ order by
 limit 10;
 ```
 
-### Top 10 destination IP addresses receiving traffic
+### Identify traffic from a suspicious IP
 
-Identify the top 10 destination IP addresses that received the most network traffic.
+Check if a specific IP is sending or receiving traffic.
 
 ```sql
 select
+  start_time,
+  src_addr,
   dst_addr,
-  count(*) as request_count
-from
+  src_port,
+  dst_port,
+  protocol,
+  action
+from 
   aws_vpc_flow_log
-group by
-  dst_addr
+where 
+  src_addr = '192.0.2.100'
+  or dst_addr = '192.0.2.100'
 order by
-  request_count desc
-limit 10;
+  start_time desc;
 ```
 
 ### Top rejected connections
@@ -252,5 +257,27 @@ where
   extract('hour' from start_time) >= 20 -- 8 PM
   or extract('hour' from start_time) < 6 -- 6 AM
 order by
+  start_time desc;
+```
+
+### Track traffic to a specific instance
+
+Find all traffic related to a particular EC2 instance.
+
+```sql
+select
+  start_time,
+  src_addr,
+  dst_addr,
+  src_port,
+  dst_port,
+  protocol,
+  instance_id,
+  action
+from 
+  aws_vpc_flow_log
+where
+  instance_id = 'i-085c7a43a498c2f5d'
+order by 
   start_time desc;
 ```
