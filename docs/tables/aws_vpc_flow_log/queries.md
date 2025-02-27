@@ -55,50 +55,8 @@ order by
   start_time desc;
 ```
 
-### Top rejected connections
-
-Identify the most frequent rejected network connections.
-
-```sql
-select
-  start_time,
-  src_addr,
-  dst_addr,
-  src_port,
-  dst_port,
-  protocol,
-  vpc_id,
-  action
-from
-  aws_vpc_flow_log
-where
-  action = 'REJECT'
-order by
-  start_time desc;
-```
 
 ## Detection Examples
-
-### Unusually large data transfers
-
-Detect unusually large outbound traffic based on bytes transferred.
-
-```sql
-select
-  start_time,
-  src_addr,
-  dst_addr,
-  bytes,
-  packets,
-  protocol,
-  vpc_id
-from
-  aws_vpc_flow_log
-where
-  bytes > 500000000 -- 500MB
-order by
-  bytes desc;
-```
 
 ### Suspicious traffic from external IPs
 
@@ -201,6 +159,27 @@ order by
 ```
 
 ## Volume Examples
+
+### Unusually large data transfers
+
+Detect unusually large outbound traffic based on bytes transferred.
+
+```sql
+select
+  start_time,
+  src_addr,
+  dst_addr,
+  bytes,
+  packets,
+  protocol,
+  vpc_id
+from
+  aws_vpc_flow_log
+where
+  bytes > 500000000 -- 500MB
+order by
+  bytes desc;
+```
 
 ### High-volume network traffic
 
