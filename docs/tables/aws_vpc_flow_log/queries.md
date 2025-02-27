@@ -33,6 +33,8 @@ order by
 limit 10;
 ```
 
+## Detection Examples
+
 ### Identify traffic from a suspicious IP
 
 Check if a specific IP is sending or receiving traffic.
@@ -54,9 +56,6 @@ where
 order by
   start_time desc;
 ```
-
-
-## Detection Examples
 
 ### Suspicious traffic from external IPs
 
