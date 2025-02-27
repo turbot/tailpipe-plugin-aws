@@ -17,12 +17,15 @@ jobs:
       - name: Checkout PR Branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch, NOT main
+          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch, not main
 
-      - name: Print Debug Info
+      - name: Debug Git Info
         run: |
-          echo "Running on branch: ${{ github.head_ref }}"
           echo "Base branch: ${{ github.base_ref }}"
+          echo "Current branch: ${{ github.head_ref }}"
+          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          echo "Git diff output:"
+          git diff --name-only origin/${{ github.base_ref }} HEAD
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -38,26 +41,31 @@ jobs:
         id: get_files
         run: |
           git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
-          MODIFIED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD | grep 'queries.md' || echo "")
+
+          # Detect modified queries.md files
+          MODIFIED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep 'queries.md' || echo "")
+
+          # Debug output
+          echo "Modified files detected: $MODIFIED_FILES"
 
           if [[ -z "$MODIFIED_FILES" ]]; then
-            MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | grep 'queries.md' || echo "")
+            echo "❌ No queries.md files found."
+            exit 0
           fi
 
-          echo "Modified files: $MODIFIED_FILES"
           echo "files=$MODIFIED_FILES" >> $GITHUB_ENV
 
       - name: Evaluate Queries
         id: evaluate_queries
         run: |
           if [[ -z "${{ env.files }}" ]]; then
-            echo "No queries.md files found."
+            echo "❌ No queries.md files found."
             exit 0
           fi
 
           OUTPUT=""
           for FILE in ${{ env.files }}; do
-            echo "Processing file: $FILE"
+            echo "🔍 Processing file: $FILE"
             RESULT=$(python scripts/evaluate_sql.py "$FILE")
             OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
           done
@@ -68,7 +76,7 @@ jobs:
       - name: Comment on PR
         run: |
           if [[ -z "${{ env.review_output }}" ]]; then
-            echo "No AI suggestions to post."
+            echo "ℹ️ No AI suggestions to post."
             exit 0
           fi
 
