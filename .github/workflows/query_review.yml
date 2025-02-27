@@ -17,15 +17,19 @@ jobs:
       - name: Checkout PR Branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch, not main
+          ref: ${{ github.head_ref }}  # Ensures workflow runs from the PR branch
 
       - name: Debug Git Info
         run: |
           echo "Base branch: ${{ github.base_ref }}"
           echo "Current branch: ${{ github.head_ref }}"
-          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          BASE_BRANCH=${{ github.base_ref }}
+          if [[ -z "$BASE_BRANCH" ]]; then
+            BASE_BRANCH="main"  # Change this if your default branch is different
+          fi
+          git fetch --no-tags --depth=1 origin $BASE_BRANCH
           echo "Git diff output:"
-          git diff --name-only origin/${{ github.base_ref }} HEAD
+          git diff --name-only origin/$BASE_BRANCH HEAD || echo "❌ No changes detected"
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -40,12 +44,14 @@ jobs:
       - name: Get Modified queries.md Files
         id: get_files
         run: |
-          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          BASE_BRANCH=${{ github.base_ref }}
+          if [[ -z "$BASE_BRANCH" ]]; then
+            BASE_BRANCH="main"
+          fi
+          git fetch --no-tags --depth=1 origin $BASE_BRANCH
 
-          # Detect modified queries.md files
-          MODIFIED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD | grep 'queries.md' || echo "")
+          MODIFIED_FILES=$(git diff --name-only origin/$BASE_BRANCH HEAD | grep 'queries.md' || echo "")
 
-          # Debug output
           echo "Modified files detected: $MODIFIED_FILES"
 
           if [[ -z "$MODIFIED_FILES" ]]; then
