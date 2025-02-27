@@ -60,6 +60,8 @@ select
   round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentage
 from
   aws_alb_connection_log
+where
+  tls_protocol is not null
 group by
   tls_protocol
 order by
@@ -109,25 +111,6 @@ order by
   connection_count desc;
 ```
 
-### Suspicious client connections
-
-Identify potentially suspicious connection patterns from specific clients.
-
-```sql
-select
-  client_ip,
-  count(*) as connection_count,
-  count(distinct listener_port) as distinct_ports
-from
-  aws_alb_connection_log
-group by
-  client_ip
-having
-  count(*) > 100 and count(distinct listener_port) > 5
-order by
-  connection_count desc;
-```
-
 ## Operational Examples
 
 ### Slow TLS handshakes
@@ -152,45 +135,7 @@ order by
 limit 10;
 ```
 
-### Client certificate issues
-
-Identify connections with client certificate verification problems.
-
-```sql
-select
-  timestamp,
-  tp_index as conn_trace_id,
-  client_ip,
-  leaf_client_cert_subject,
-  leaf_client_cert_validity,
-  tls_verify_status
-from
-  aws_alb_connection_log
-where
-  tls_verify_status like 'Failed:CERT%'
-order by
-  timestamp desc;
-```
-
 ## Volume Examples
-
-### High connection periods
-
-Detect periods of unusually high connection volume.
-
-```sql
-select
-  date_trunc('minute', timestamp) as connection_minute,
-  count(*) as connection_count
-from
-  aws_alb_connection_log
-group by
-  connection_minute
-having
-  count(*) > 1000
-order by
-  connection_count desc;
-```
 
 ### TLS cipher usage
 
@@ -229,46 +174,6 @@ order by
   hour desc;
 ```
 
-### Average TLS handshake latency by protocol
-
-Analyze average handshake latency for different TLS protocols.
-
-```sql
-select
-  tls_protocol,
-  avg(tls_handshake_latency) as avg_handshake_latency,
-  min(tls_handshake_latency) as min_handshake_latency,
-  max(tls_handshake_latency) as max_handshake_latency,
-  count(*) as connection_count
-from
-  aws_alb_connection_log
-where
-  tls_handshake_latency is not null
-group by
-  tls_protocol
-order by
-  avg_handshake_latency desc;
-```
-
-### Clients with expired certificates
-
-Identify clients attempting to connect with expired certificates.
-
-```sql
-select
-  timestamp,
-  client_ip,
-  leaf_client_cert_subject,
-  leaf_client_cert_validity,
-  tls_verify_status
-from
-  aws_alb_connection_log
-where
-  tls_verify_status like 'Failed:CERT_EXPIRED'
-order by
-  timestamp desc;
-```
-
 ### Connection trace correlation
 
 Link connection logs to access logs using the connection trace ID.
@@ -288,7 +193,7 @@ from
 join
   aws_alb_access_log a
 on
-  c.tp_index = a.tp_index
+  c.tp_index = a.conn_trace_id
 order by
   c.timestamp desc
 limit 10;

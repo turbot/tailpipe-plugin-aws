@@ -15,15 +15,15 @@ type AlbConnectionLog struct {
 
 	ClientIP                   string    `json:"client_ip"`
 	ClientPort                 int       `json:"client_port"`
-	ConnTraceID                *string   `json:"conn_trace_id,omitempty"`
+	ConnTraceID                *string   `json:"conn_trace_id"`
 	LeafClientCertSerialNumber string    `json:"leaf_client_cert_serial_number,omitempty"`
 	LeafClientCertSubject      string    `json:"leaf_client_cert_subject,omitempty"`
 	LeafClientCertValidity     string    `json:"leaf_client_cert_validity,omitempty"`
-	ListenerPort               int       `json:"listener_port"`
-	TLSCipher                  string    `json:"tls_cipher"`
+	ListenerPort               int       `json:"listener_port,omitempty"`
+	TLSCipher                  string    `json:"tls_cipher,omitempty"`
 	TLSHandshakeLatency        float64   `json:"tls_handshake_latency,omitempty"`
-	TLSProtocol                string    `json:"tls_protocol"`
-	TLSVerifyStatus            string    `json:"tls_verify_status"`
+	TLSProtocol                string    `json:"tls_protocol,omitempty"`
+	TLSVerifyStatus            string    `json:"tls_verify_status,omitempty"`
 	Timestamp                  time.Time `json:"timestamp"`
 }
 
