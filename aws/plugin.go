@@ -4,6 +4,7 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/tables/alb_connection_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/cloudtrail_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
@@ -21,6 +22,7 @@ func init() {
 	// 2. table implementation
 	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
+	table.RegisterTable[*alb_connection_log.AlbConnectionLog, *alb_connection_log.AlbConnectionLogTable]()
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
