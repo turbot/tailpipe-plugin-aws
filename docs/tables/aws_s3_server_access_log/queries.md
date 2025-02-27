@@ -34,7 +34,7 @@ group by
   key
 order by
   requests desc
-limit 10;
+limit 20;
 ```
 
 ### Top 10 requester IP addresses
