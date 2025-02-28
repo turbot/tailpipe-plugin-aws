@@ -1,77 +1,170 @@
-import re
+import os
 import sys
-import duckdb
+import re
+import openai
+import time
 
-# Define the schema columns for aws_s3_server_access_log
-S3_LOG_COLUMNS = {
-    "bucket_owner", "bucket", "requester", "request_time", "operation", "key",
-    "request_uri", "http_status", "error_code", "bytes_sent", "object_size",
-    "total_time", "turn_around_time", "referrer", "user_agent", "version_id",
-    "host_id", "signature_version"
-}
+# Ensure OpenAI API key is set as an environment variable
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    print("❌ OpenAI API key is missing. Set the OPENAI_API_KEY environment variable.")
+    sys.exit(1)
 
-# SQL Query Evaluation Criteria
-EVALUATION_CRITERIA = [
-    ("2-space indentation", lambda q: all(line.startswith('  ') or line == '' for line in q.split('\n'))),
-    ("Ends with semicolon", lambda q: q.strip().endswith(";")),
-    ("Keywords in uppercase", lambda q: not any(kw.lower() in q for kw in ["select", "from", "group by", "order by"])),
-    ("Each clause on a new line", lambda q: all(re.search(rf"\b{kw}\b", q, re.IGNORECASE) for kw in ["SELECT", "FROM", "GROUP BY", "ORDER BY"])),
-    ("Valid column names", lambda q: all(col in S3_LOG_COLUMNS for col in re.findall(r"\b\w+\b", q))),
-    ("DuckDB syntax valid", lambda q: is_valid_duckdb(q))
-]
+client = openai.Client(api_key=OPENAI_API_KEY)  # Corrected API client initialization
 
-def is_valid_duckdb(query):
-    """Run the SQL query in DuckDB to check syntax validity."""
-    try:
-        duckdb.sql(query)
-        return True
-    except Exception:
-        return False
+# OpenAI Model
+MODEL = "gpt-4o-mini"
 
-def evaluate_query(query):
-    """Run the evaluation and return a formatted review."""
-    results = []
-    total_criteria = len(EVALUATION_CRITERIA)
-    passed_criteria = 0
+# SQL Query Evaluation Prompt Template
+PROMPT_TEMPLATE = """For the Tailpipe table `{table_name}`, with the schema:
 
-    for name, check in EVALUATION_CRITERIA:
-        passed = check(query)
-        if passed:
-            passed_criteria += 1
-        results.append(f"- **{name}**: {'✅ Pass' if passed else '❌ Fail'}")
+```go
+{schema}
+```
 
-    final_score = f"**Final Score: {passed_criteria}/{total_criteria} ({(passed_criteria/total_criteria)*100:.0f}%)**"
+Can you please evaluate this SQL query:
+
+```sql
+{query}
+```
+
+Using these exact evaluation criteria and output format:
+
+# Query Reviews
+
+## {query_title} ✅/❌
+
+  <details><summary>Query</summary>
+  ### {query_title}
+
+  {query_description}
+
+  ```sql
+  {query}
+  ```
+  </details>
+
+  <details><summary>SQL syntax checks ✅/❌</summary>
+
+  | Criteria      | Pass/Fail | Suggestions |
+  |---------------|-----------|-------------|
+  | Use 2 space indentation | ✅/❌ |             |
+  | Query should end with a semicolon | ✅/❌ |             |
+  | Keywords should be in lowercase | ✅/❌ |             |
+  | Each clause is on its own line | ✅/❌ |             |
+  | All columns exist in the schema | ✅/❌ |             |
+  | STRUCT type columns use dot notation | ✅/❌ |             |
+  | JSON type columns use `->` and `->>` operators | ✅/❌ |             |
+  | JSON type columns are wrapped in parenthesis | ✅/❌ |             |
+  | SQL query syntax uses valid DuckDB syntax | ✅/❌ |             |
+
+  </details>
+
+  <details><summary>Query title and description checks ✅/❌</summary>
+
+  | Criteria | Pass/Fail | Suggestions |
+  |---------------|-----------|-------------|
+  | Title uses title case | ✅/❌ | Suggestion |
+  | Title accurately describes the query | ✅/❌ | Suggestion |
+  | Description explains what the query does | ✅/❌ | Suggestion |
+  | Description explains why a user would run the query | ✅/❌ | Suggestion |
+  | Description is concise | ✅/❌ | Suggestion |
+
+  </details>
+"""
+
+# S3 Server Access Log Schema
+SCHEMA = """type S3ServerAccessLog struct {
+    schema.CommonFields
+    AccessPointArn     *string   `json:"access_point_arn,omitempty"`
+    AclRequired        *bool     `json:"acl_required,omitempty"`
+    AuthenticationType *string   `json:"authentication_type,omitempty"`
+    Bucket             string    `json:"bucket"`
+    BucketOwner        string    `json:"bucket_owner"`
+    BytesSent          *int64    `json:"bytes_sent,omitempty"`
+    CipherSuite        *string   `json:"cipher_suite,omitempty"`
+    ErrorCode          *string   `json:"error_code,omitempty"`
+    HTTPStatus         *int      `json:"http_status"`
+    HostHeader         *string   `json:"host_header,omitempty"`
+    HostID             *string   `json:"host_id,omitempty"`
+    Key                *string   `json:"key,omitempty"`
+    ObjectSize         *int64    `json:"object_size,omitempty"`
+    Operation          string    `json:"operation"`
+    Referer            *string   `json:"referer,omitempty"`
+    RemoteIP           string    `json:"remote_ip"`
+    RequestID          string    `json:"request_id"`
+    RequestURI         *string   `json:"request_uri"`
+    Requester          string    `json:"requester,omitempty"`
+    SignatureVersion   *string   `json:"signature_version,omitempty"`
+    TLSVersion         *string   `json:"tls_version,omitempty"`
+    Timestamp          time.Time `json:"timestamp"`
+    TotalTime          *int      `json:"total_time"`
+    TurnAroundTime     *int      `json:"turn_around_time,omitempty"`
+    UserAgent          *string   `json:"user_agent,omitempty"`
+    VersionID          *string   `json:"version_id,omitempty"`
+}"""
+
+def extract_queries(file_path):
+    """Extract SQL queries along with their descriptions from a queries.md file."""
+    with open(file_path, "r") as f:
+        content = f.read()
     
-    # Return formatted evaluation
-    return "\n".join(results) + "\n\n" + final_score
+    queries = re.findall(r"###\s*(.*?)\s*\n(.*?)\n+```sql\n(.*?)\n```", content, re.DOTALL)
+    return [{"title": title.strip().title(), "description": desc.strip(), "query": query.strip()} for title, desc, query in queries]
 
-def extract_queries(md_file):
-    """Extract SQL queries from a queries.md file."""
-    with open(md_file, "r") as file:
-        content = file.read()
+def evaluate_query(query_data):
+    """Calls OpenAI's GPT API to evaluate the SQL query."""
+    table_name = "aws_s3_server_access_log"
+    prompt = PROMPT_TEMPLATE.format(
+        table_name=table_name,
+        schema=SCHEMA,
+        query=query_data["query"],
+        query_title=query_data["title"],
+        query_description=query_data["description"]
+    )
 
-    queries = re.findall(r"```sql\n(.*?)\n```", content, re.DOTALL)
-    return queries
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are an expert in SQL query validation and DuckDB."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5
+        )
+
+        if response.choices:
+            evaluation_result = response.choices[0].message.content.strip()
+        else:
+            return "❌ OpenAI response was empty or malformed. No insights generated."
+
+        return evaluation_result
+    except Exception as e:
+        return f"❌ Error evaluating query: {str(e)}"
+
 
 def main():
-    """Main function to process queries and evaluate them."""
     if len(sys.argv) < 2:
-        print("Usage: python evaluate_sql.py <queries.md>")
+        print("❌ No file provided for evaluation.")
         sys.exit(1)
 
-    md_file = sys.argv[1]
-    queries = extract_queries(md_file)
+    file_path = sys.argv[1]
+    queries = extract_queries(file_path)
 
     if not queries:
-        print("No SQL queries found in the provided file.")
-        sys.exit(0)
+        print("❌ No SQL queries found in the provided file.")
+        sys.exit(1)
 
-    output = []
-    for i, query in enumerate(queries, 1):
-        output.append(f"### Query {i} Review\n```sql\n{query.strip()}\n```\n")
-        output.append(evaluate_query(query.strip()))
+    reviews = []
+    for query in queries:
+        print(f"🔍 Evaluating: {query['title']} ...")
+        review = evaluate_query(query)
+        reviews.append(review)
 
-    print("\n".join(output))
+    with open("review_output.md", "w") as f:
+        f.write("\n".join(reviews))
+    
+    print("✅ Query evaluation complete. Results saved in `review_output.md`.")
 
 if __name__ == "__main__":
     main()
