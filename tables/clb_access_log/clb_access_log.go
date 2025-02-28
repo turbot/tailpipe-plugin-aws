@@ -13,6 +13,7 @@ type ClbAccessLog struct {
 	schema.CommonFields
 
 	BackendIP              *string   `json:"backend_ip,omitempty"`
+	BackendPort            int       `json:"backend_port,omitempty"`
 	BackendProcessingTime  float64   `json:"backend_processing_time,omitempty"`
 	BackendStatusCode      *int      `json:"backend_status_code,omitempty"`
 	ClientIP               string    `json:"client_ip,omitempty"`
@@ -55,6 +56,16 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 				l.ClientPort, err = strconv.Atoi(parts[1])
 				if err != nil {
 					return fmt.Errorf("error parsing client_port: %w", err)
+				}
+			}
+		case "backend":
+			if strings.Contains(value, ":") {
+				parts := strings.Split(value, ":")
+				ip := parts[0]
+				l.BackendIP = &ip
+				l.BackendPort, err = strconv.Atoi(parts[1])
+				if err != nil {
+					return fmt.Errorf("error parsing backend_port: %w", err)
 				}
 			}
 		case "request_processing_time":
@@ -122,6 +133,7 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 func (c *ClbAccessLog) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"backend_ip":               "The IP address of the registered instance that processed the request.",
+		"backend_port":             "The port on the registered instance that processed the request.",
 		"backend_processing_time":  "The time elapsed from the load balancer sending the request to the registered instance until the instance starts sending response headers.",
 		"backend_status_code":      "The HTTP status code returned by the registered instance.",
 		"client_ip":                "The IP address of the requesting client.",
