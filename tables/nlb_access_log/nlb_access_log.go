@@ -17,11 +17,11 @@ type NlbAccessLog struct {
 	ALPNFEProtocol            string    `json:"alpn_fe_protocol,omitempty"`
 	ChosenCertArn             string    `json:"chosen_cert_arn,omitempty"`
 	ChosenCertSerial          string    `json:"chosen_cert_serial,omitempty"`
-	ClientIP                  string    `json:"client_ip,omitempty"`
-	ClientPort                int       `json:"client_port,omitempty"`
+	ClientIP                  string    `json:"client_ip"`
+	ClientPort                int       `json:"client_port"`
 	ConnectionTime            int       `json:"connection_time,omitempty"`
-	DestinationIP             string    `json:"destination_ip,omitempty"`
-	DestinationPort           int       `json:"destination_port,omitempty"`
+	DestinationIP             string    `json:"destination_ip"`
+	DestinationPort           int       `json:"destination_port"`
 	DomainName                string    `json:"domain_name,omitempty"`
 	Elb                       string    `json:"elb"`
 	IncomingTLSAlert          string    `json:"incoming_tls_alert,omitempty"`
@@ -65,17 +65,17 @@ func (l *NlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.IncomingTLSAlert = value
 		case "chosen_cert_serial":
 			l.ChosenCertSerial = value
-		case "client":
-			parts := strings.Split(value, ":")
-			l.ClientIP = parts[0]
-			l.ClientPort, err = strconv.Atoi(parts[1])
+		case "client_ip":
+			l.ClientIP = value
+		case "client_port":
+			l.ClientPort, err = strconv.Atoi(value)
 			if err != nil {
 				return fmt.Errorf("error parsing client_port: %w", err)
 			}
-		case "destination":
-			parts := strings.Split(value, ":")
-			l.DestinationIP = parts[0]
-			l.DestinationPort, err = strconv.Atoi(parts[1])
+		case "destination_ip":
+			l.DestinationIP = value
+		case "destination_port":
+			l.DestinationPort, err = strconv.Atoi(value)
 			if err != nil {
 				return fmt.Errorf("error parsing destination_port: %w", err)
 			}
