@@ -1,0 +1,77 @@
+name: Query Review Bot
+
+on:
+  pull_request:
+    types:
+      - labeled
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review-query:
+    if: |
+      github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test-github-actions'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install duckdb
+
+      - name: Get Modified queries.md Files
+        id: get_files
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
+          MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | grep 'queries.md' || echo "")
+
+          if [[ -z "$MODIFIED_FILES" ]]; then
+            MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | grep 'queries.md' || echo "")
+          fi
+
+          echo "Modified files: $MODIFIED_FILES"
+          echo "files=$MODIFIED_FILES" >> $GITHUB_ENV
+
+      - name: Evaluate Queries
+        id: evaluate_queries
+        run: |
+          if [[ -z "${{ env.files }}" ]]; then
+            echo "No queries.md files found."
+            exit 0
+          fi
+
+          OUTPUT=""
+          for FILE in ${{ env.files }}; do
+            echo "Processing file: $FILE"
+            RESULT=$(python scripts/evaluate_sql.py "$FILE")
+            OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
+          done
+
+          echo -e "$OUTPUT" > review_output.txt
+          echo "review_output=$(cat review_output.txt)" >> $GITHUB_ENV
+
+      - name: Comment on PR
+        run: |
+          if [[ -z "${{ env.review_output }}" ]]; then
+            echo "No AI suggestions to post."
+            exit 0
+          fi
+
+          COMMENT="### 🤖 SQL Query Review\n${{ env.review_output }}"
+          echo "$COMMENT" > pr_comment.txt
+
+          gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

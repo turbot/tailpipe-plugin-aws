@@ -1,3 +1,14 @@
+## v0.5.0 [2025-03-03]
+
+_Enhancements_
+
+- Standardized all example query titles to use `Title Case` for consistency. ([#109](https://github.com/turbot/tailpipe-plugin-aws/pull/109))
+- Added `folder` front matter to all queries for improved organization and discoverability in the Hub. ([#109](https://github.com/turbot/tailpipe-plugin-aws/pull/109))
+
+_Bug fixes_
+
+- Fixed the `display_name` in `docs/index.md` from `Amazon Web Services` to `AWS` for consistency with standard naming conventions. ([#109](https://github.com/turbot/tailpipe-plugin-aws/pull/109))
+
 ## v0.4.0 [2025-02-14]
 
 _Breaking changes_
