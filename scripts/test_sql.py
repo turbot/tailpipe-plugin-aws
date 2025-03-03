@@ -1,14 +1,11 @@
 import os
-import sys
-import re
 import openai
-import time
 
 # Ensure OpenAI API key is set as an environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     print("❌ OpenAI API key is missing. Set the OPENAI_API_KEY environment variable.")
-    sys.exit(1)
+    exit(1)
 
 client = openai.Client(api_key=OPENAI_API_KEY)  # Corrected API client initialization
 
@@ -16,9 +13,7 @@ client = openai.Client(api_key=OPENAI_API_KEY)  # Corrected API client initializ
 MODEL = "gpt-4o-mini"
 
 # SQL Query Evaluation Prompt Template
-PROMPT_TEMPLATE = """# Query Reviews
-
-For the Tailpipe table `{table_name}`, with the schema:
+PROMPT_TEMPLATE = """For the Tailpipe table `{table_name}`, with the schema:
 
 ```go
 {schema}
@@ -31,6 +26,8 @@ Can you please evaluate this SQL query:
 ```
 
 Using these exact evaluation criteria and output format:
+
+# Query Reviews
 
 ## {query_title} ✅/❌
 
@@ -104,25 +101,21 @@ SCHEMA = """type S3ServerAccessLog struct {
     VersionID          *string   `json:"version_id,omitempty"`
 }"""
 
-def extract_queries(file_path):
-    """Extract SQL queries along with their descriptions from a queries.md file."""
-    with open(file_path, "r") as f:
-        content = f.read()
-    
-    queries = re.findall(r"###\s*(.*?)\s*\n(.*?)\n+```sql\n(.*?)\n```", content, re.DOTALL)
-    return [{"title": title.strip().title(), "description": desc.strip(), "query": query.strip()} for title, desc, query in queries]
-
-def evaluate_query(query_data):
+def evaluate_query(query, title, description):
     """Calls OpenAI's GPT API to evaluate the SQL query."""
     table_name = "aws_s3_server_access_log"
     prompt = PROMPT_TEMPLATE.format(
         table_name=table_name,
         schema=SCHEMA,
-        query=query_data["query"],
-        query_title=query_data["title"],
-        query_description=query_data["description"]
+        query=query,
+        query_title=title,
+        query_description=description
     )
-
+    
+    # Print full API request input for debugging
+    # print("🔍 Full API Request Input:")
+    # print(prompt)
+    
     try:
         response = client.chat.completions.create(
             model=MODEL,
@@ -132,7 +125,7 @@ def evaluate_query(query_data):
             ],
             temperature=0.5
         )
-
+        
         if response.choices:
             evaluation_result = response.choices[0].message.content.strip()
         else:
@@ -142,28 +135,23 @@ def evaluate_query(query_data):
     except Exception as e:
         return f"❌ Error evaluating query: {str(e)}"
 
+# Define SQL query, title, and description
+query = """
+select
+timestamp,
+bucket,
+operation,
+request_uri,
+from
+  aws_s3_server_access_log
+where
+  requester is null
+order by
+  timestamp desc;
+"""
+title = "Unauthenticated requests"
+description = "List all users."
 
-
-def main():
-    if len(sys.argv) < 2:
-        print("❌ No file provided for evaluation.")
-        sys.exit(1)
-
-    file_path = sys.argv[1]
-    queries = extract_queries(file_path)
-
-    if not queries:
-        print("❌ No SQL queries found in the provided file.")
-        sys.exit(1)
-
-    output = "# Query Reviews\n\n"
-    for query in queries:
-        output += evaluate_query(query) + "\n\n"
-    
-    with open("review_output.md", "w") as f:
-        f.write(output)
-    
-    print("✅ Query evaluation complete. Results saved in `review_output.md`.")
-
-if __name__ == "__main__":
-    main()
+# Execute evaluation
+result = evaluate_query(query, title, description)
+print(result)

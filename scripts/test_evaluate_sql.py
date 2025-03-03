@@ -16,9 +16,7 @@ client = openai.Client(api_key=OPENAI_API_KEY)  # Corrected API client initializ
 MODEL = "gpt-4o-mini"
 
 # SQL Query Evaluation Prompt Template
-PROMPT_TEMPLATE = """# Query Reviews
-
-For the Tailpipe table `{table_name}`, with the schema:
+PROMPT_TEMPLATE = """For the Tailpipe table `{table_name}`, with the schema:
 
 ```go
 {schema}
@@ -31,6 +29,8 @@ Can you please evaluate this SQL query:
 ```
 
 Using these exact evaluation criteria and output format:
+
+# Query Reviews
 
 ## {query_title} ✅/❌
 
@@ -143,7 +143,6 @@ def evaluate_query(query_data):
         return f"❌ Error evaluating query: {str(e)}"
 
 
-
 def main():
     if len(sys.argv) < 2:
         print("❌ No file provided for evaluation.")
@@ -156,12 +155,14 @@ def main():
         print("❌ No SQL queries found in the provided file.")
         sys.exit(1)
 
-    output = "# Query Reviews\n\n"
+    reviews = []
     for query in queries:
-        output += evaluate_query(query) + "\n\n"
-    
+        print(f"🔍 Evaluating: {query['title']} ...")
+        review = evaluate_query(query)
+        reviews.append(review)
+
     with open("review_output.md", "w") as f:
-        f.write(output)
+        f.write("\n".join(reviews))
     
     print("✅ Query evaluation complete. Results saved in `review_output.md`.")
 
