@@ -179,6 +179,8 @@ func (flowLog *VpcFlowLog) MapValues(input map[string]string) error {
 			flowLog.PktDstAddr = &field
 		case "region":
 			flowLog.Region = &field
+		case "reject-reason":
+			flowLog.RejectReason = &field
 		case "az-id":
 			flowLog.AzID = &field
 		case "sublocation-type":

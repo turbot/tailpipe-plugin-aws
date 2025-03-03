@@ -77,11 +77,6 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpIndex = "default"
 	}
 
-	// TpSourceLocation
-	if row.SublocationID != nil {
-		row.TpSourceLocation = row.SublocationID
-	}
-
 	// TpAkas
 	if row.ECSClusterARN != nil {
 		row.TpAkas = append(row.TpAkas, *row.ECSClusterARN)

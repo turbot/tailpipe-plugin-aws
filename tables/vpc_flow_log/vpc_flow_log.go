@@ -38,6 +38,7 @@ type VpcFlowLog struct {
 	PktSrcAWSService        *string    `json:"pkt_src_aws_service,omitempty"`
 	Protocol                *int32     `json:"protocol,omitempty"`
 	Region                  *string    `json:"region,omitempty"`
+	RejectReason            *string    `json:"reject_reason,omitempty"`
 	SrcAddr                 *string    `json:"src_addr,omitempty"`
 	SrcPort                 *int32     `json:"src_port,omitempty"`
 	Start                   *time.Time `json:"start_time,omitempty"`
