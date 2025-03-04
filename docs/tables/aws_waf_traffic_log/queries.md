@@ -1,6 +1,6 @@
 ## Activity Examples
 
-### Daily request trends
+### Daily Request Trends
 
 Count the number of requests per day to analyze traffic trends over time.
 
@@ -16,9 +16,9 @@ order by
   access_date asc;
 ```
 
-### Top 10 frequently accessed URIs
+### Top 10 Frequently Accessed URIs
 
-Identify the most accessed URIs along with the top client IPs, grouped by the action taken (ALLOW, BLOCK, CHALLENGE, CAPTCHA).
+Identify the most accessed URIs along with the top client IPs, grouped by the action taken (ALLOW, BLOCK, CHALLENGE, CAPTCHA). This helps in analyzing web traffic and potential security threats.
 
 ```sql
 select
@@ -37,9 +37,9 @@ order by
 limit 10;
 ```
 
-### Analyze CAPTCHA and CHALLENGE failures
+### Analyzing CAPTCHA and Challenge Failures
 
-Analyze the total requests and categorize failures based on CAPTCHA and CHALLENGE response reasons.
+Analyze the total requests and categorize failures based on CAPTCHA and CHALLENGE response reasons. This helps in assessing the effectiveness of bot mitigation techniques.
 
 ```sql
 select
@@ -69,8 +69,9 @@ order by
 
 ## Operational Examples
 
-### Retrieve terminating rule matched data for requests
-Extract details of requests that were terminated due to rule matches, helping analyze why a request was blocked or allowed.
+### Retrieve Terminating Rule Matched Data for Requests
+
+Extract details of requests that were terminated due to rule matches. This helps in analyzing why a request was blocked or allowed, providing insights into security policies.
 
 ```sql
 with terminating_rule_match_details as (
@@ -98,9 +99,9 @@ from
   terminating_rule_match_details;
 ```
 
-### Identify requests missing labels
+### Identify Requests Missing Labels
 
-Retrieve requests that do not contain labels, which help in categorizing and identifying the reason for request handling.
+Retrieve requests that do not contain labels, which help in categorizing and identifying the reason for request handling. This is useful for debugging misclassified traffic.
 
 ```sql
 select
@@ -116,9 +117,9 @@ order by
   timestamp;
 ```
 
-### Analyze blocked requests by rule
+### Analyze Blocked Requests by Rule
 
-Retrieve the number of requests blocked by each rule, providing insights into which rules are most frequently triggered.
+Retrieve the number of requests blocked by each rule, providing insights into which rules are most frequently triggered. This helps fine-tune security configurations.
 
 ```sql
 with blocked_rule as (
@@ -145,9 +146,9 @@ from
   blocked_rule;
 ```
 
-### Top 10 most targeted URLs
+### Top 10 Most Targeted URLs
 
-Find which URLs or endpoints are most frequently accessed, helping detect high-risk areas in the application.
+Find the most frequently accessed URLs or endpoints, helping detect high-risk areas in the application. This is useful for mitigating attacks targeting specific endpoints.
 
 ```sql
 select
@@ -170,9 +171,9 @@ limit 10;
 
 ## Detection Examples
 
-### Detect requests with CAPTCHA failures
+### Detect Requests with CAPTCHA Failures
 
-Retrieve requests where CAPTCHA validation failed, indicating unsuccessful user verification.
+Retrieve requests where CAPTCHA validation failed, indicating unsuccessful user verification attempts. This can help detect automated bots attempting to bypass security.
 
 ```sql
 select
@@ -190,9 +191,9 @@ where
   and failure_reason is not null;
 ```
 
-### Detect high volume of blocked requests
+### Detect High Volume of Blocked Requests
 
-Identify IP addresses generating a high volume of blocked requests.
+Identify IP addresses generating a high volume of blocked requests. This can help detect potential brute-force attacks or malicious traffic sources.
 
 ```sql
 select
@@ -209,9 +210,9 @@ order by
 limit 10;
 ```
 
-### Detect requests triggering multiple rules
+### Detect Requests Triggering Multiple Rules
 
-Find requests that matched multiple non-terminating rules within a single evaluation.
+Find requests that matched multiple non-terminating rules within a single evaluation. This helps in identifying suspicious patterns of traffic.
 
 ```sql
 select
@@ -249,9 +250,9 @@ order by
 
 ## Volume Examples
 
-### Analyze high volume of blocked requests
+### Analyze High Volume of Blocked Requests
 
-Identify patterns in blocked traffic over time.
+Identify patterns in blocked traffic over time to detect unusual spikes or potential security threats.
 
 ```sql
 select
@@ -275,9 +276,9 @@ order by
   block_count desc;
 ```
 
-### Identify the most frequently triggered rules
+### Identify the Most Frequently Triggered Rules
 
-Analyze rules that are most frequently triggered to assess their effectiveness.
+Analyze rules that are most frequently triggered to assess their effectiveness. This helps in refining security rule configurations.
 
 ```sql
 select
