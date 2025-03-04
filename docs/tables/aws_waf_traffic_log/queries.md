@@ -145,7 +145,7 @@ from
   blocked_rule;
 ```
 
-### Identify the most targeted URLs
+### Top 10 most targeted URLs
 
 Find which URLs or endpoints are most frequently accessed, helping detect high-risk areas in the application.
 

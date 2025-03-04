@@ -68,12 +68,19 @@ type CaptchaResponse struct {
 	FailureReason  *string `json:"failureReason,omitempty"`
 }
 
+type NonTerminatingRuleMatch struct {
+	RuleID           *string           `json:"ruleId"`
+	Action           *string           `json:"action"`
+	RuleMatchDetails []RuleMatchDetail `json:"ruleMatchDetails,omitempty"`
+	CaptchaResponse  CaptchaResponse   `json:"captchaResponse,omitempty"`
+}
+
 // RuleGroup represents the main JSON structure
 type RuleGroup struct {
-	RuleGroupID                 string `json:"ruleGroupId"`
-	TerminatingRule             *Rule  `json:"terminatingRule,omitempty"` // Can be null
-	NonTerminatingMatchingRules []Rule `json:"nonTerminatingMatchingRules"`
-	ExcludedRules               []Rule `json:"excludedRules,omitempty"` // Can be null
+	RuleGroupID                 string                    `json:"ruleGroupId"`
+	TerminatingRule             *Rule                     `json:"terminatingRule,omitempty"` // Can be null
+	NonTerminatingMatchingRules []NonTerminatingRuleMatch `json:"nonTerminatingMatchingRules"`
+	ExcludedRules               []Rule                    `json:"excludedRules,omitempty"` // Can be null
 }
 
 type Labels struct {
@@ -84,22 +91,22 @@ type Labels struct {
 type WafTrafficLog struct {
 	schema.CommonFields
 
-	Action                      *string                `json:"action"`
-	CaptchaResponse             *CaptchaResponse       `json:"captchaResponse,omitempty" parquet:"name=captcha_response"`
-	FormatVersion               *int32                 `json:"formatVersion" parquet:"name=format_version"`
-	HttpRequest                 *HttpRequest           `json:"httpRequest,omitempty" parquet:"name=http_request"`
-	HttpSourceId                *string                `json:"httpSourceId,omitempty" parquet:"name=http_source_id"`
-	HttpSourceName              *string                `json:"httpSourceName,omitempty" parquet:"name=http_source_name"`
-	Labels                      []Labels               `json:"labels,omitempty" parquet:"type=JSON"`
-	NonTerminatingMatchingRules []Rule                 `json:"nonTerminatingMatchingRules,omitempty" parquet:"name=non_terminating_matching_rules, type=JSON"`
-	RateBasedRuleList           []RateBasedRule        `json:"rateBasedRuleList,omitempty" parquet:"name=rate_based_rule_list, type=JSON"`
-	RequestHeadersInserted      []Header               `json:"requestHeadersInserted,omitempty" parquet:"name=request_headers_inserted, type=JSON"`
-	RuleGroupList               []RuleGroup            `json:"ruleGroupList,omitempty" parquet:"name=rule_group_list, type=JSON"`
-	TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty" parquet:"name=terminating_rule_id"`
-	TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=terminating_rule_match_details, type=JSON"`
-	TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty" parquet:"name=terminating_rule_type"`
-	Timestamp                   *time.Time             `json:"timestamp"`
-	WebAclId                    *string                `json:"webAclId" parquet:"name=web_acl_id"`
+	Action                      *string                   `json:"action"`
+	CaptchaResponse             *CaptchaResponse          `json:"captchaResponse,omitempty" parquet:"name=captcha_response"`
+	FormatVersion               *int32                    `json:"formatVersion" parquet:"name=format_version"`
+	HttpRequest                 *HttpRequest              `json:"httpRequest,omitempty" parquet:"name=http_request"`
+	HttpSourceId                *string                   `json:"httpSourceId,omitempty" parquet:"name=http_source_id"`
+	HttpSourceName              *string                   `json:"httpSourceName,omitempty" parquet:"name=http_source_name"`
+	Labels                      []Labels                  `json:"labels,omitempty" parquet:"type=JSON"`
+	NonTerminatingMatchingRules []NonTerminatingRuleMatch `json:"nonTerminatingMatchingRules,omitempty" parquet:"name=non_terminating_matching_rules, type=JSON"`
+	RateBasedRuleList           []RateBasedRule           `json:"rateBasedRuleList,omitempty" parquet:"name=rate_based_rule_list, type=JSON"`
+	RequestHeadersInserted      []Header                  `json:"requestHeadersInserted,omitempty" parquet:"name=request_headers_inserted, type=JSON"`
+	RuleGroupList               []RuleGroup               `json:"ruleGroupList,omitempty" parquet:"name=rule_group_list, type=JSON"`
+	TerminatingRuleId           *string                   `json:"terminatingRuleId,omitempty" parquet:"name=terminating_rule_id"`
+	TerminatingRuleMatchDetails []TerminatingRuleMatch    `json:"terminatingRuleMatchDetails,omitempty" parquet:"name=terminating_rule_match_details, type=JSON"`
+	TerminatingRuleType         *string                   `json:"terminatingRuleType,omitempty" parquet:"name=terminating_rule_type"`
+	Timestamp                   *time.Time                `json:"timestamp"`
+	WebAclId                    *string                   `json:"webAclId" parquet:"name=web_acl_id"`
 }
 
 func (c *WafTrafficLog) GetColumnDescriptions() map[string]string {
@@ -123,7 +130,7 @@ func (c *WafTrafficLog) GetColumnDescriptions() map[string]string {
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "List of ARNs (Amazon Resource Names) associated with the event, if applicable.",
-		"tp_index":     "The AWS account ID that processed or received the request.",
+		"tp_index":     "The AWS Web ACL ID that processed or received the request.",
 		"tp_ips":       "IP addresses related to the request, including the source (client) IP and any intermediary addresses.",
 		"tp_timestamp": "The timestamp when the request was made, formatted in ISO 8601 (UTC).",
 	}

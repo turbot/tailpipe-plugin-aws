@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/table"
 	helper "github.com/turbot/tailpipe-plugin-aws/tables"
+	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
 type WafMapper struct {
@@ -41,22 +41,22 @@ func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTraff
 
 func unmarshalWafTrafficLog(data []byte, log *WafTrafficLog) error {
 	var temp struct {
-		Timestamp                   *int64                 `json:"timestamp"`
-		FormatVersion               *int32                 `json:"formatVersion"`
-		CaptchaResponse             *CaptchaResponse       `json:"captchaResponse"`
-		WebAclId                    *string                `json:"webAclId"`
-		TerminatingRuleMatchDetails []TerminatingRuleMatch `json:"terminatingRuleMatchDetails,omitempty"`
-		TerminatingRuleId           *string                `json:"terminatingRuleId,omitempty"`
-		TerminatingRuleType         *string                `json:"terminatingRuleType,omitempty"`
-		Action                      *string                `json:"action"`
-		HttpSourceName              *string                `json:"httpSourceName,omitempty"`
-		HttpSourceId                *string                `json:"httpSourceId,omitempty"`
-		RuleGroupList               []RuleGroup            `json:"ruleGroupList,omitempty"`
-		RateBasedRuleList           []RateBasedRule        `json:"rateBasedRuleList,omitempty"`
-		NonTerminatingMatchingRules []Rule                 `json:"nonTerminatingMatchingRules,omitempty"`
-		HttpRequest                 *HttpRequest           `json:"httpRequest,omitempty"`
-		RequestHeadersInserted      []Header               `json:"requestHeadersInserted,omitempty"`
-		Labels                      []Labels               `json:"labels,omitempty"`
+		Action                      *string                   `json:"action"`
+		CaptchaResponse             *CaptchaResponse          `json:"captchaResponse"`
+		FormatVersion               *int32                    `json:"formatVersion"`
+		HttpRequest                 *HttpRequest              `json:"httpRequest,omitempty"`
+		HttpSourceId                *string                   `json:"httpSourceId,omitempty"`
+		HttpSourceName              *string                   `json:"httpSourceName,omitempty"`
+		Labels                      []Labels                  `json:"labels,omitempty"`
+		NonTerminatingMatchingRules []NonTerminatingRuleMatch `json:"nonTerminatingMatchingRules,omitempty"`
+		RateBasedRuleList           []RateBasedRule           `json:"rateBasedRuleList,omitempty"`
+		RequestHeadersInserted      []Header                  `json:"requestHeadersInserted,omitempty"`
+		RuleGroupList               []RuleGroup               `json:"ruleGroupList,omitempty"`
+		TerminatingRuleId           *string                   `json:"terminatingRuleId,omitempty"`
+		TerminatingRuleMatchDetails []TerminatingRuleMatch    `json:"terminatingRuleMatchDetails,omitempty"`
+		TerminatingRuleType         *string                   `json:"terminatingRuleType,omitempty"`
+		Timestamp                   *int64                    `json:"timestamp"`
+		WebAclId                    *string                   `json:"webAclId"`
 	}
 
 	// Unmarshal JSON into temporary struct
