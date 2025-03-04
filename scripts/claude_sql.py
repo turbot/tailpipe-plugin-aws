@@ -18,7 +18,8 @@ if not CLAUDE_API_KEY:
 client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
 
 # Claude model to use
-MODEL = "claude-3-opus-20240229"
+MODEL = "claude-3-5-sonnet-20240620"
+
 
 def extract_queries(file_path):
     """Extract SQL queries along with their titles and descriptions from a queries.md file."""

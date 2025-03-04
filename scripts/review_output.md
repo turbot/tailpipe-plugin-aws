@@ -79,7 +79,7 @@ limit 30;
 
 | Criteria      | Pass/Fail | Suggestions |
 |---------------|-----------|-------------|
-| Use 2 space indentation | ❌ | Inconsistent indentation. Use 2 spaces for all lines. |
+| Use 2 space indentation | ❌ | Use consistent 2 space indentation for all lines |
 | Query should end with a semicolon | ✅ |  |
 | Keywords should be in lowercase | ✅ |  |
 | Each clause is on its own line | ✅ |  |
@@ -96,16 +96,16 @@ limit 30;
 | Criteria | Pass/Fail | Suggestions |
 |---------------|-----------|-------------|
 | Title uses title case | ✅ |  |
-| Title accurately describes the query | ❌ | The query returns the top 30 objects, not 10 as stated in the title. |
-| Description explains what the query does | ❌ | The description should mention it returns the top 30 most frequently accessed S3 objects, not IAM objects. |
-| Description explains why a user would run the query | ❌ | Add why a user would want to see the most frequently accessed objects. |
+| Title accurately describes the query | ❌ | Update title to "Top 30 Accessed Objects" to match the LIMIT in the query |
+| Description explains what the query does | ❌ | Clarify that the query lists S3 objects, not IAM objects |
+| Description explains why a user would run the query | ❌ | Add explanation of why tracking frequently accessed objects is useful |
 | Description is concise | ✅ |  |
 
 </details>
 
 # Query Reviews
 
-## Top 10 Requester IP Addresses ✅
+## Top 10 Requester IP Addresses ❌
 
 <details><summary>Query</summary>
 ### Top 10 Requester IP Addresses
@@ -138,7 +138,7 @@ limit 10;
 | STRUCT type columns use dot notation | ✅ |  |
 | JSON type columns use `->` and `->>` operators | ✅ |  |
 | JSON type columns are wrapped in parenthesis | ✅ |  |
-| SQL query syntax uses valid DuckDB syntax | ❌ | Remove the comma after `count(*) as request_count` |
+| SQL query syntax uses valid DuckDB syntax | ❌ | Remove the comma after `request_count` in the SELECT clause |
 
 </details>
 
