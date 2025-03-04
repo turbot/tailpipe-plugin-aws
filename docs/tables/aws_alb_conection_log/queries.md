@@ -1,8 +1,7 @@
 ## Activity Examples
 
-### Daily connection trends
-
-Count connections per day to identify traffic patterns over time.
+### Daily Connection Trends
+Count connections per day to identify traffic patterns over time. This query provides a comprehensive view of daily connection volume, helping you understand usage patterns, peak hours, and potential seasonal variations in network traffic.
 
 ```sql
 select
@@ -16,9 +15,12 @@ order by
   connection_date asc;
 ```
 
-### Top 10 clients by connection count
+```yaml
+folder: ELB
+```
 
-List the top 10 client IP addresses making connection attempts.
+### Top 10 Clients by Connection Count
+List the top 10 client IP addresses making connection attempts. This query helps identify the most active clients, potential sources of high traffic, and can assist in network security monitoring and capacity planning.
 
 ```sql
 select
@@ -33,9 +35,12 @@ order by
 limit 10;
 ```
 
-### Connection distribution by listener port
+```yaml
+folder: ELB
+```
 
-Analyze how connections are distributed across listener ports.
+### Connection Distribution by Listener Port
+Analyze how connections are distributed across listener ports. Understanding port-level connection patterns can help optimize network configuration, identify potential bottlenecks, and ensure balanced traffic across different services.
 
 ```sql
 select
@@ -49,9 +54,12 @@ order by
   connection_count desc;
 ```
 
-### TLS protocol distribution
+```yaml
+folder: ELB
+```
 
-Analyze the distribution of TLS protocols used by clients.
+### TLS Protocol Distribution
+Analyze the distribution of TLS protocols used by clients. This query provides insights into the security and encryption standards of incoming connections, helping identify potential security upgrades or legacy system interactions.
 
 ```sql
 select
@@ -68,11 +76,14 @@ order by
   connection_count desc;
 ```
 
+```yaml
+folder: ELB
+```
+
 ## Detection Examples
 
-### Failed TLS handshakes
-
-Identify connections with TLS handshake verification failures.
+### Failed TLS Handshakes
+Identify connections with TLS handshake verification failures. This query helps detect potential security issues, misconfigured clients, or network problems that prevent successful encrypted connections.
 
 ```sql
 select
@@ -91,9 +102,12 @@ order by
   timestamp desc;
 ```
 
-### Deprecated TLS protocols
+```yaml
+folder: ELB
+```
 
-Detect usage of deprecated or insecure TLS protocols.
+### Deprecated TLS Protocols
+Detect usage of deprecated or insecure TLS protocols. This query helps identify outdated SSL/TLS protocols that may pose security risks, allowing you to upgrade and maintain robust encryption standards.
 
 ```sql
 select
@@ -111,11 +125,14 @@ order by
   connection_count desc;
 ```
 
+```yaml
+folder: ELB
+```
+
 ## Operational Examples
 
-### Slow TLS handshakes
-
-Top 10 connections with unusually high TLS handshake latency.
+### Slow TLS Handshakes
+Top 10 connections with unusually high TLS handshake latency. This query helps identify performance bottlenecks in the TLS negotiation process, which can impact overall connection establishment times and user experience.
 
 ```sql
 select
@@ -135,18 +152,21 @@ order by
 limit 10;
 ```
 
+```yaml
+folder: ELB
+```
+
 ## Volume Examples
 
-### TLS cipher usage
-
-Analyze the distribution of TLS ciphers used by connections.
+### TLS Cipher Usage
+Analyze the distribution of TLS ciphers used by connections. This query provides detailed insights into the encryption methods clients are using, helping assess cryptographic diversity and potential security improvements.
 
 ```sql
 select
   tls_cipher,
   tls_protocol,
   count(*) as connection_count,
-  round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentage
+  round(count(*) * 100.0 / sum(count(*)) over (), 3) as percentage
 from
   aws_alb_connection_log
 group by
@@ -156,9 +176,12 @@ order by
   connection_count desc;
 ```
 
-### Connection failure rate by time period
+```yaml
+folder: ELB
+```
 
-Analyze the rate of connection failures over time.
+### Connection Failure Rate by Time Period
+Analyze the rate of connection failures over time. This query helps identify temporal patterns in connection failures, potentially revealing systemic issues, network problems, or security-related connection challenges.
 
 ```sql
 select
@@ -174,9 +197,12 @@ order by
   hour desc;
 ```
 
-### Connection trace correlation
+```yaml
+folder: ELB
+```
 
-Link connection logs to access logs using the connection trace ID.
+### Connection Trace Correlation
+Link connection logs to access logs using the connection trace ID. This query enables deep investigation of connection lifecycle by correlating low-level connection details with HTTP access information.
 
 ```sql
 select
@@ -186,7 +212,9 @@ select
   c.tls_protocol,
   c.tls_handshake_latency,
   a.timestamp as access_timestamp,
-  a.request,
+  a.request_url,
+  a.request_http_method,
+  a.request_http_version,
   a.elb_status_code
 from
   aws_alb_connection_log c
@@ -197,4 +225,8 @@ on
 order by
   c.timestamp desc
 limit 10;
+```
+
+```yaml
+folder: ELB
 ```
