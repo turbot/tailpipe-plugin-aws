@@ -21,7 +21,9 @@ type ClbAccessLog struct {
 	Elb                    string    `json:"elb"`
 	ElbStatusCode          *int      `json:"elb_status_code,omitempty"`
 	ReceivedBytes          *int64    `json:"received_bytes,omitempty"`
-	Request                string    `json:"request,omitempty"`
+	RequestHTTPVersion     string    `json:"request_http_version,omitempty"`
+	RequestHTTPMethod      string    `json:"request_http_method,omitempty"`
+	RequestUrl             string    `json:"request_url,omitempty"`
 	RequestProcessingTime  float64   `json:"request_processing_time,omitempty"`
 	ResponseProcessingTime float64   `json:"response_processing_time,omitempty"`
 	SentBytes              *int64    `json:"sent_bytes,omitempty"`
@@ -34,7 +36,6 @@ type ClbAccessLog struct {
 // InitialiseFromMap - initialise the struct from a map
 func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error
-	var method, path, httpVersion string
 
 	for key, value := range m {
 		if value == "-" {
@@ -108,11 +109,11 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 			}
 			l.SentBytes = &sb
 		case "method":
-			method = value
+			l.RequestHTTPMethod = value
 		case "path":
-			path = value
+			l.RequestUrl = value
 		case "http_version":
-			httpVersion = value
+			l.RequestHTTPVersion = value
 		case "user_agent":
 			l.UserAgent = value
 		case "ssl_cipher":
@@ -120,11 +121,6 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "ssl_protocol":
 			l.SslProtocol = value
 		}
-	}
-
-	// Construct request string in the correct order
-	if method != "" && path != "" && httpVersion != "" {
-		l.Request = fmt.Sprintf("%s %s %s", method, path, httpVersion)
 	}
 
 	return nil
@@ -141,7 +137,9 @@ func (c *ClbAccessLog) GetColumnDescriptions() map[string]string {
 		"elb":                      "The name of the load balancer.",
 		"elb_status_code":          "The HTTP status code returned by the load balancer.",
 		"received_bytes":           "The size of the request in bytes received from the client.",
-		"request":                  "The full request line from the client, including method, protocol, and URI.",
+		"request_http_version":     "The HTTP version of the request.",
+		"request_http_method":      "The HTTP method of the request.",
+		"request_url":              "The URL of the request.",
 		"request_processing_time":  "The time elapsed from receiving the request to sending it to a registered instance, in seconds.",
 		"response_processing_time": "The time elapsed from the load balancer receiving the response headers to sending the response to the client.",
 		"sent_bytes":               "The size of the response in bytes sent to the client.",
