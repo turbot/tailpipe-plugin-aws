@@ -28,7 +28,7 @@ func (c *AlbAccessLogTable) Identifier() string {
 
 func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*AlbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.[^_]+_[^_]+_[^_]+_[^.]+.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*AlbAccessLog]{
