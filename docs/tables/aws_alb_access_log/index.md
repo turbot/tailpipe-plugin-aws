@@ -46,7 +46,7 @@ tailpipe collect aws_alb_access_log.my_alb_logs
 
 **[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_alb_access_log)**
 
-### Failed requests
+### Failed Requests
 
 Find failed HTTP requests (with status codes 400 and above) to troubleshoot load balancer issues.
 
@@ -70,7 +70,7 @@ order by
   timestamp desc;
 ```
 
-### Slow response times
+### Slow Response Times
 
 Identify requests where the combined processing time (request + target + response) exceeds 1 second. This includes the time taken to process the request at the load balancer, the target's processing time, and the response processing time.
 
@@ -97,7 +97,7 @@ order by
 limit 10;
 ```
 
-### SSL cipher vulnerabilities
+### SSL Cipher Vulnerabilities
 
 Detect usage of deprecated or insecure SSL ciphers.
 

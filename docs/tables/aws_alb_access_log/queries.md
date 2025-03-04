@@ -17,7 +17,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Top 10 Clients by Request Count
@@ -38,7 +38,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Request Distribution by Target
@@ -60,7 +60,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### HTTP Status Code Distribution
@@ -81,7 +81,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ## Detection Examples
@@ -112,7 +112,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### SSL Cipher Vulnerabilities
@@ -136,7 +136,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Suspicious User Agents
@@ -160,7 +160,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ## Operational Examples
@@ -193,7 +193,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Target Health Issues
@@ -219,7 +219,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ## Volume Examples
@@ -245,7 +245,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Large Response Sizes
@@ -272,7 +272,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Count Requests by Listener Type
@@ -302,7 +302,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Count by HTTP Method
@@ -324,7 +324,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Requests with Invalid Cookies
@@ -348,7 +348,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Requests with Invalid Lambda Response
@@ -372,7 +372,7 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
 
 ### Requests Blocked by WAF Rules
@@ -423,5 +423,5 @@ order by
 ```
 
 ```yaml
-folder: Load Balancer
+folder: ELB
 ```
