@@ -7,6 +7,8 @@ description: "AWS VPC Flow Logs capture information about IP traffic going to an
 
 The `aws_vpc_flow_log` table allows you to query data from AWS VPC Flow Logs. This table provides detailed insights into network traffic within your VPC, including source and destination IP addresses, ports, protocols, and more.
 
+**Note**: For timestamp information, the `start` field will be used first, with the `end` field as a fallback. If neither field is available, then that log line will not be collected and Tailpipe will return an error.
+
 ## Configure
 
 Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_vpc_flow_log` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log#example-configurations)):

@@ -69,10 +69,10 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 	// TpIndex
 	if row.InterfaceID != nil {
 		row.TpIndex = *row.InterfaceID
-	} else if row.VPCID != nil {
-		row.TpIndex = *row.VPCID
 	} else if row.SubnetID != nil {
 		row.TpIndex = *row.SubnetID
+	} else if row.VPCID != nil {
+		row.TpIndex = *row.VPCID
 	} else {
 		row.TpIndex = "default"
 	}
@@ -91,13 +91,13 @@ func (c *VpcFlowLogTable) EnrichRow(row *VpcFlowLog, sourceEnrichmentFields sche
 		row.TpAkas = append(row.TpAkas, *row.ECSTaskDefinitionARN)
 	}
 
-	// We should not handle the case where the start/end time is not available
+	// If there is no start/end time, there is no usable log timestamp. In this case, the line will result in an error during collection.
 	if row.Start != nil {
-		// convert to date in format yy-mm-dd
+		// convert to date in format yyyy-mm-dd
 		row.TpDate = row.Start.Truncate(24 * time.Hour)
 		row.TpTimestamp = *row.Start
 	} else if row.End != nil {
-		// convert to date in format yy-mm-dd
+		// convert to date in format yyyy-mm-dd
 		row.TpDate = row.End.Truncate(24 * time.Hour)
 		row.TpTimestamp = *row.End
 	}

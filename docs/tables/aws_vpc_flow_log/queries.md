@@ -1,8 +1,8 @@
 ## Activity Examples
 
-### Daily network traffic trends
+### Daily Network Traffic Trends
 
-Count VPC flow log entries per day to identify network activity trends.
+Count VPC flow log entries per day to identify network activity trends. This helps monitor overall network behavior and detect unusual spikes in traffic.
 
 ```sql
 select
@@ -16,9 +16,9 @@ order by
   traffic_date asc;
 ```
 
-### Top 10 source IP addresses generating traffic
+### Top 10 Source IPs Generating Traffic
 
-Identify the top 10 source IP addresses that generated the most network traffic.
+Identify the top 10 source IP addresses that generated the most network traffic. This helps detect potential high-traffic sources, including misconfigured applications or malicious activities.
 
 ```sql
 select
@@ -35,9 +35,9 @@ limit 10;
 
 ## Detection Examples
 
-### Identify traffic from a suspicious IP
+### Identify Traffic from a Suspicious IP
 
-Check if a specific IP is sending or receiving traffic.
+Check if a specific IP is sending or receiving traffic. This is useful for investigating potential threats or monitoring known suspicious IPs.
 
 ```sql
 select
@@ -57,9 +57,9 @@ order by
   start_time desc;
 ```
 
-### Suspicious traffic from external IPs
+### Detect Suspicious Traffic from External IPs
 
-Detect inbound traffic from external (non-VPC) IP addresses.
+Identify inbound traffic from external (non-VPC) IP addresses. This helps detect unauthorized or unexpected external connections.
 
 ```sql
 select
@@ -88,9 +88,9 @@ order by
   start_time desc;
 ```
 
-### Unauthorized attempts to access instances
+### Detect Unauthorized Access Attempts
 
-Detect unauthorized attempts to access instances through uncommon ports.
+Identify unauthorized attempts to access instances through uncommon ports. This helps detect brute-force attempts or suspicious access patterns.
 
 ```sql
 select
@@ -113,9 +113,9 @@ order by
 
 ## Operational Examples
 
-### Traffic to a specific subnet
+### Traffic to a Specific Subnet
 
-List failed (rejected) network connection attempts.
+Retrieve failed (rejected) network connection attempts within a specific subnet. This helps analyze access control issues or misconfigurations.
 
 ```sql
 select
@@ -135,9 +135,9 @@ order by
   start_time desc;
 ```
 
-### High-latency network paths
+### Identify High-Latency Network Paths
 
-Identify network paths with high packet loss, indicating potential congestion or misconfiguration.
+Detect network paths with high packet loss, which may indicate congestion or misconfigured routes.
 
 ```sql
 select
@@ -159,9 +159,9 @@ order by
 
 ## Volume Examples
 
-### Unusually large data transfers
+### Unusually Large Data Transfers
 
-Detect unusually large outbound traffic based on bytes transferred.
+Identify unusually large outbound traffic based on bytes transferred. This helps detect data exfiltration attempts or misconfigured workloads.
 
 ```sql
 select
@@ -180,9 +180,9 @@ order by
   bytes desc;
 ```
 
-### High-volume network traffic
+### High-Volume Network Traffic
 
-Identify network sources generating a high number of requests.
+Find network sources generating a high number of requests, helping detect possible denial-of-service (DoS) attacks or heavy application usage.
 
 ```sql
 select
@@ -200,9 +200,9 @@ order by
   request_count desc;
 ```
 
-### High-volume rejected traffic
+### High-Volume Rejected Traffic
 
-Identify network sources generating a high number of rejected requests.
+Identify network sources generating a large number of rejected requests. This helps detect access control violations or attack attempts.
 
 ```sql
 select
@@ -223,9 +223,9 @@ order by
 
 ## Baseline Examples
 
-### Traffic outside of standard business hours
+### Traffic Outside Standard Business Hours
 
-Detect traffic occurring outside of standard working hours, e.g., between 8 PM and 6 AM.
+Identify network activity occurring outside standard working hours (e.g., between 8 PM and 6 AM).
 
 ```sql
 select
@@ -245,9 +245,9 @@ order by
   start_time desc;
 ```
 
-### Track traffic to a specific instance
+### Track Traffic to a Specific Instance
 
-Find all traffic related to a particular EC2 instance.
+Retrieve all network traffic related to a particular EC2 instance.
 
 ```sql
 select
