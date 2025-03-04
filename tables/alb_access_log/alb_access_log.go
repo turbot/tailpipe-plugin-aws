@@ -12,7 +12,7 @@ import (
 type AlbAccessLog struct {
 	schema.CommonFields
 
-	ActionsExecuted        string    `json:"actions_executed,omitempty"`
+	ActionsExecuted        []string  `json:"actions_executed,omitempty"`
 	ChosenCertArn          string    `json:"chosen_cert_arn,omitempty"`
 	Classification         *string   `json:"classification,omitempty"`
 	ClassificationReason   *string   `json:"classification_reason,omitempty"`
@@ -26,7 +26,9 @@ type AlbAccessLog struct {
 	MatchedRulePriority    int       `json:"matched_rule_priority,omitempty"`
 	ReceivedBytes          *int64    `json:"received_bytes"`
 	RedirectURL            *string   `json:"redirect_url,omitempty"`
-	Request                string    `json:"request"`
+	RequestHTTPVersion     string    `json:"request_http_version,omitempty"`
+	RequestHTTPMethod      string    `json:"request_http_method,omitempty"`
+	RequestUrl             string    `json:"request_url,omitempty"`
 	RequestCreationTime    time.Time `json:"request_creation_time"`
 	RequestProcessingTime  float64   `json:"request_processing_time,omitempty"`
 	ResponseProcessingTime float64   `json:"response_processing_time,omitempty"`
@@ -49,7 +51,6 @@ type AlbAccessLog struct {
 // InitialiseFromMap - initialise the struct from a map
 func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error
-	var method, path, httpVersion string
 
 	for key, value := range m {
 		if value == "-" {
@@ -132,11 +133,11 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			}
 			l.SentBytes = &sb
 		case "method":
-			method = value
+			l.RequestHTTPMethod = value
 		case "path":
-			path = value
+			l.RequestUrl = value
 		case "http_version":
-			httpVersion = value
+			l.RequestHTTPVersion = value
 		case "user_agent":
 			l.UserAgent = value
 		case "ssl_cipher":
@@ -162,7 +163,7 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing request_creation_time: %w", err)
 			}
 		case "actions_executed":
-			l.ActionsExecuted = value
+			l.ActionsExecuted = strings.Split(value, ",")
 		case "redirect_url":
 			l.RedirectURL = &value
 		case "error_reason":
@@ -178,11 +179,6 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "conn_trace_id":
 			l.ConnTraceID = &value
 		}
-	}
-
-	// Construct request string in the correct order
-	if method != "" && path != "" && httpVersion != "" {
-		l.Request = fmt.Sprintf("%s %s %s", method, path, httpVersion)
 	}
 
 	return nil

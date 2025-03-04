@@ -59,7 +59,7 @@ Analyze the distribution of HTTP status codes returned by the load balancer.
 select
   elb_status_code,
   count(*) as response_count,
-  round(count(*) * 100.0 / sum(count(*)) over (), 2) as percentage
+  round(count(*) * 100.0 / sum(count(*)) over (), 3) as percentage
 from
   aws_alb_access_log
 group by
@@ -78,10 +78,11 @@ Identify instances where the load balancer couldn't connect to the backend targe
 select
   timestamp,
   elb,
-  tp_index as account_id,
   client_ip,
   target_ip,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   elb_status_code,
   target_status_code,
   error_reason
@@ -130,8 +131,6 @@ where
   or user_agent like '%wget%'
 group by
   user_agent
-having
-  count(*) > 100
 order by
   request_count desc;
 ```
@@ -147,7 +146,9 @@ select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   client_ip,
   target_ip,
   request_processing_time,  -- Time taken by load balancer to process request
@@ -216,7 +217,9 @@ select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   client_ip,
   sent_bytes,
   received_bytes
@@ -260,7 +263,9 @@ Identify requests with invalid cookies.
 select
   timestamp,
   client_ip,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   error_reason
 from
   aws_alb_access_log
@@ -278,13 +283,14 @@ Identify requests with an invalid Lambda response.
 select
   timestamp,
   client_ip,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   error_reason
 from
   aws_alb_access_log
 where
-  elb_status_code = 502
-  and error_reason like 'LambdaInvalidResponse'
+  error_reason = 'LambdaInvalidResponse'
 order by
   timestamp desc;
 ```
@@ -297,12 +303,14 @@ Identify requests blocked by WAF rules.
 select
   timestamp,
   client_ip,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   error_reason
 from
   aws_alb_access_log
 where
-  actions_executed = 'waf'
+  actions_executed @> ['waf']
   and elb_status_code = 403
 order by
   timestamp desc;
@@ -316,7 +324,9 @@ Identify requests that exceed the maximum allowed body size for Lambda.
 select
   timestamp,
   client_ip,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   sent_bytes,
   received_bytes,
   error_reason
@@ -326,22 +336,4 @@ where
   error_reason = 'LambdaResponseTooLarge'
 order by
   sent_bytes desc;
-```
-
-### Requests with Unhandled Lambda Response
-
-Identify requests with an unhandled Lambda response.
-
-```sql
-select
-  timestamp,
-  client_ip,
-  request,
-  error_reason
-from
-  aws_alb_access_log
-where
-  error_reason = 'LambdaUnhandled'
-order by 
-  timestamp desc;
 ```
