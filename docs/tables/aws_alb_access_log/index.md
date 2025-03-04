@@ -59,7 +59,9 @@ select
   target_ip,
   elb_status_code,
   target_status_code,
-  request
+  request_url,
+  request_http_method,
+  request_http_version
 from
   aws_alb_access_log
 where
@@ -77,7 +79,9 @@ select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   client_ip,
   target_ip,
   request_processing_time,  -- Time taken by load balancer to process request

@@ -1,8 +1,8 @@
 ## Activity Examples
 
-### Daily request trends
+### Daily Request Trends
 
-Count requests per day to identify traffic patterns over time.
+Count requests per day to identify traffic patterns over time. This query helps visualize usage trends, detect potential traffic anomalies, and understand the overall load on your application load balancer across different days.
 
 ```sql
 select
@@ -16,9 +16,13 @@ order by
   request_date asc;
 ```
 
-### Top 10 clients by request count
+```yaml
+folder: Load Balancer
+```
 
-List the top 10 client IP addresses making requests.
+### Top 10 Clients by Request Count
+
+List the top 10 client IP addresses making requests. This query helps identify the most active clients, potentially revealing heavy users, bot traffic, or unusual access patterns that might require further investigation.
 
 ```sql
 select
@@ -33,9 +37,13 @@ order by
 limit 10;
 ```
 
-### Request distribution by target
+```yaml
+folder: Load Balancer
+```
 
-Analyze how requests are distributed across target instances.
+### Request Distribution by Target
+
+Analyze how requests are distributed across target instances. This query provides insights into load balancing effectiveness, helping identify potential bottlenecks or uneven traffic distribution among backend servers.
 
 ```sql
 select
@@ -51,9 +59,13 @@ order by
   request_count desc;
 ```
 
-### HTTP status code distribution
+```yaml
+folder: Load Balancer
+```
 
-Analyze the distribution of HTTP status codes returned by the load balancer.
+### HTTP Status Code Distribution
+
+Analyze the distribution of HTTP status codes returned by the load balancer. This query helps understand the overall health of your application, identifying success rates, client errors, and server errors.
 
 ```sql
 select
@@ -68,11 +80,15 @@ order by
   response_count desc;
 ```
 
+```yaml
+folder: Load Balancer
+```
+
 ## Detection Examples
 
-### Failed backend connections
+### Failed Backend Connections
 
-Identify instances where the load balancer couldn't connect to the backend targets.
+Identify instances where the load balancer couldn't connect to the backend targets. This query helps detect backend infrastructure issues, network problems, or potential service disruptions.
 
 ```sql
 select
@@ -95,9 +111,13 @@ order by
   timestamp desc;
 ```
 
-### SSL cipher vulnerabilities
+```yaml
+folder: Load Balancer
+```
 
-Detect usage of deprecated or insecure SSL ciphers.
+### SSL Cipher Vulnerabilities
+
+Detect usage of deprecated or insecure SSL ciphers. This query helps identify potential security risks by highlighting the use of outdated or vulnerable SSL protocols and ciphers.
 
 ```sql
 select
@@ -115,9 +135,13 @@ order by
   request_count desc;
 ```
 
-### Suspicious user agents
+```yaml
+folder: Load Balancer
+```
 
-Identify potentially suspicious user agents making requests.
+### Suspicious User Agents
+
+Identify potentially suspicious user agents making requests. This query helps detect potential bot traffic, web scrapers, or automated scanning tools that might be interacting with your application.
 
 ```sql
 select
@@ -135,11 +159,15 @@ order by
   request_count desc;
 ```
 
+```yaml
+folder: Load Balancer
+```
+
 ## Operational Examples
 
-### Slow response times
+### Slow Response Times
 
-Top 10 requests with unusually high processing times.
+Top 10 requests with unusually high processing times. This query helps identify performance bottlenecks, slow backend services, or potential optimization opportunities in your application infrastructure.
 
 ```sql
 select
@@ -164,9 +192,13 @@ order by
 limit 10;
 ```
 
-### Target health issues
+```yaml
+folder: Load Balancer
+```
 
-Identify targets that are returning a high number of errors.
+### Target Health Issues
+
+Identify targets that are returning a high number of errors. This query helps detect backend service problems, potential server misconfigurations, or application-level issues affecting specific targets.
 
 ```sql
 select
@@ -186,11 +218,15 @@ order by
   error_count desc;
 ```
 
+```yaml
+folder: Load Balancer
+```
+
 ## Volume Examples
 
-### High traffic periods
+### High Traffic Periods
 
-Detect periods of unusually high request volume.
+Detect periods of unusually high request volume. This query helps identify traffic peaks, potential denial-of-service scenarios, or unexpected surges in application usage.
 
 ```sql
 select
@@ -208,9 +244,13 @@ order by
   request_count desc;
 ```
 
-### Large response sizes
+```yaml
+folder: Load Balancer
+```
 
-Track requests generating unusually large responses.
+### Large Response Sizes
+
+Track requests generating unusually large responses. This query helps identify potential data exfiltration attempts, performance issues with large payloads, or unusual data transfer patterns.
 
 ```sql
 select
@@ -231,9 +271,13 @@ order by
   sent_bytes desc;
 ```
 
-### Count requests by Listener Type (HTTP, HTTPS, HTTP/2, WebSockets, etc.)
+```yaml
+folder: Load Balancer
+```
 
-Identify how many requests were received for each listener type.
+### Count Requests by Listener Type
+
+Identify how many requests were received for each listener type. This query provides insights into the types of traffic your load balancer is handling, helping understand protocol usage and potential security configurations.
 
 ```sql
 select
@@ -242,22 +286,50 @@ select
 from (
   select
     case
-      when request like 'GET http://%' then 'HTTP'
-      when request like 'GET https://%' and ssl_protocol is not null then 'HTTPS'
-      when request like 'GET https://%' and ssl_protocol is null then 'HTTP/2'
-      when request like 'GET ws://%' then 'WebSockets'
-      when request like 'GET wss://%' then 'Secured WebSockets'
+      when request_http_method = 'GET' and request_url like 'http://%' then 'HTTP'
+      when request_http_method = 'GET' and request_url like 'https://%' and request_http_version = 'HTTP/1.1' then 'HTTPS'
+      when request_http_method = 'GET' and request_url like 'https://%' and request_http_version = 'HTTP/2' then 'HTTP/2'
+      when request_http_method = 'GET' and request_url like 'ws://%' then 'WebSockets'
+      when request_http_method = 'GET' and request_url like 'wss://%' then 'Secured WebSockets'
       else 'Other'
     end as listener_type
   from aws_alb_access_log
-)
-group by listener_type
-order by request_count desc;
+) t
+group by 
+  listener_type
+order by
+  request_count desc;
+```
+
+```yaml
+folder: Load Balancer
+```
+
+### Count by HTTP Method
+
+Identify the distribution of requests by HTTP method. This query helps understand how clients interact with your application, providing insights into usage patterns and potential security risks.
+
+```sql
+select
+  request_http_method,
+  count(*) as request_count
+from
+  aws_alb_access_log
+where
+  request_http_method is not null
+group by
+  request_http_method
+order by
+  request_count desc;
+```
+
+```yaml
+folder: Load Balancer
 ```
 
 ### Requests with Invalid Cookies
 
-Identify requests with invalid cookies.
+Identify requests with invalid cookies. This query helps detect potential security issues, client-side problems, or application configuration errors related to cookie handling.
 
 ```sql
 select
@@ -275,9 +347,13 @@ order by
   timestamp desc;
 ```
 
-### Requests with Invalid Lambda response
+```yaml
+folder: Load Balancer
+```
 
-Identify requests with an invalid Lambda response.
+### Requests with Invalid Lambda Response
+
+Identify requests with an invalid Lambda response. This query helps troubleshoot issues with serverless function integrations and detect potential problems in Lambda function implementations.
 
 ```sql
 select
@@ -295,9 +371,13 @@ order by
   timestamp desc;
 ```
 
-### Requests blocked by WAF rules
+```yaml
+folder: Load Balancer
+```
 
-Identify requests blocked by WAF rules.
+### Requests Blocked by WAF Rules
+
+Identify requests blocked by WAF rules. This query helps understand potential security threats, analyze the effectiveness of web application firewall configurations, and track potential malicious traffic.
 
 ```sql
 select
@@ -316,9 +396,13 @@ order by
   timestamp desc;
 ```
 
+```yaml
+folder: WAF
+```
+
 ### Requests Exceeding Maximum Allowed Body Size for Lambda
 
-Identify requests that exceed the maximum allowed body size for Lambda.
+Identify requests that exceed the maximum allowed body size for Lambda. This query helps detect potential issues with request payload sizes and understand limitations in serverless function integrations.
 
 ```sql
 select
@@ -336,4 +420,8 @@ where
   error_reason = 'LambdaResponseTooLarge'
 order by
   sent_bytes desc;
+```
+
+```yaml
+folder: Load Balancer
 ```
