@@ -1,8 +1,7 @@
 ## Activity Examples
 
-### Daily request trends
-
-Count requests per day to identify traffic patterns over time.
+### Daily Request Trends
+Count requests per day to identify traffic patterns over time. This query helps monitor daily load balancer usage, detect potential traffic spikes, and understand overall system load across different days.
 
 ```sql
 select
@@ -16,9 +15,12 @@ order by
   request_date asc;
 ```
 
-### Top 10 clients by request count
+```yaml
+folder: ELB
+```
 
-List the top 10 client IP addresses making requests.
+### Top 10 Clients by Request Count
+List the top 10 client IP addresses making requests. This query helps identify the most active clients, potential sources of high traffic, and can assist in network security monitoring and capacity planning.
 
 ```sql
 select
@@ -33,9 +35,12 @@ order by
 limit 10;
 ```
 
-### Request distribution by backend
+```yaml
+folder: ELB
+```
 
-Analyze how requests are distributed across backend instances.
+### Request Distribution by Backend
+Analyze how requests are distributed across backend instances. Understanding backend request distribution can help optimize resource allocation, identify potential bottlenecks, and ensure balanced load across your infrastructure.
 
 ```sql
 select
@@ -51,9 +56,12 @@ order by
   request_count desc;
 ```
 
-### HTTP status code distribution
+```yaml
+folder: ELB
+```
 
-Analyze the distribution of HTTP status codes returned by the load balancer.
+### HTTP Status Code Distribution
+Analyze the distribution of HTTP status codes returned by the load balancer. This query provides insights into the overall health of your application, helping you quickly identify error rates and potential issues with your backend services.
 
 ```sql
 select
@@ -68,11 +76,14 @@ order by
   response_count desc;
 ```
 
+```yaml
+folder: ELB
+```
+
 ## Detection Examples
 
-### Failed backend connections
-
-Identify instances where the load balancer couldn't connect to the backend targets.
+### Failed Backend Connections
+Identify instances where the load balancer couldn't connect to the backend targets. This query helps detect potential backend infrastructure issues, network problems, or service disruptions that prevent successful request routing.
 
 ```sql
 select
@@ -81,7 +92,9 @@ select
   tp_index as account_id,
   client_ip,
   backend_ip,
-  request,
+  request_http_version,
+  request_http_method,
+  request_url,
   elb_status_code,
   backend_status_code
 from
@@ -93,9 +106,12 @@ order by
   timestamp desc;
 ```
 
-### SSL cipher vulnerabilities
+```yaml
+folder: ELB
+```
 
-Detect usage of deprecated or insecure SSL ciphers.
+### SSL Cipher Vulnerabilities
+Detect usage of deprecated or insecure SSL ciphers. This query helps identify outdated SSL/TLS protocols that may pose security risks, allowing you to upgrade and maintain robust encryption standards.
 
 ```sql
 select
@@ -113,9 +129,12 @@ order by
   request_count desc;
 ```
 
-### Suspicious user agents
+```yaml
+folder: ELB
+```
 
-Identify potentially suspicious user agents making requests.
+### Suspicious User Agents
+Identify potentially suspicious user agents making requests. This query helps detect potential bot traffic, automated scanning tools, or unusual client behaviors that might indicate security probing or potential threats.
 
 ```sql
 select
@@ -135,18 +154,23 @@ order by
   request_count desc;
 ```
 
+```yaml
+folder: ELB
+```
+
 ## Operational Examples
 
-### Slow response times
-
-Top 10 requests with unusually high processing times.
+### Slow Response Times
+Top 10 requests with unusually high processing times. This query helps identify performance bottlenecks by highlighting requests that take longer than expected, which can guide optimization efforts and improve overall system responsiveness.
 
 ```sql
 select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_http_version,
+  request_http_method,
+  request_url,
   client_ip,
   backend_ip,
   request_processing_time,
@@ -162,9 +186,31 @@ order by
 limit 10;
 ```
 
-### Backend health issues
+```yaml
+folder: ELB
+```
 
-Identify backend instances that are returning a high number of errors.
+### HTTP Request Method Distribution
+Analyze the distribution of HTTP request methods. This query helps understand the types of requests being made to your load balancer, which can provide insights into application usage patterns and potential areas for optimization.
+
+```sql
+select
+  request_http_method,
+  count(*) as request_count
+from
+  aws_clb_access_log
+group by
+  request_http_method
+order by
+  request_count desc;
+```
+
+```yaml
+folder: ELB
+```
+
+### Backend Health Issues
+Identify backend instances that are returning a high number of errors. This query helps pinpoint specific backend servers experiencing consistent issues, enabling targeted troubleshooting and potential infrastructure improvements.
 
 ```sql
 select
@@ -184,11 +230,14 @@ order by
   error_count desc;
 ```
 
+```yaml
+folder: ELB
+```
+
 ## Volume Examples
 
-### High traffic periods
-
-Detect periods of unusually high request volume.
+### High Traffic Periods
+Detect periods of unusually high request volume. This query helps identify peak traffic times, potential Denial of Service (DoS) attacks, or unexpected usage patterns that might require infrastructure scaling or further investigation.
 
 ```sql
 select
@@ -206,16 +255,21 @@ order by
   request_count desc;
 ```
 
-### Large response sizes
+```yaml
+folder: ELB
+```
 
-Track requests generating unusually large responses.
+### Large Response Sizes
+Track requests generating unusually large responses. This query helps identify potential data transfer bottlenecks, content delivery issues, or unusual data transfer patterns that might impact system performance.
 
 ```sql
 select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_http_version,
+  request_http_method,
+  request_url,
   client_ip,
   sent_bytes,
   received_bytes
@@ -225,4 +279,8 @@ where
   sent_bytes > 10485760
 order by
   sent_bytes desc;
+```
+
+```yaml
+folder: ELB
 ```

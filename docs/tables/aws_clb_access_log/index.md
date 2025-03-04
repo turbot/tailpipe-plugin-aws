@@ -57,7 +57,9 @@ select
   backend_ip,
   elb_status_code,
   backend_status_code,
-  request
+  request_http_version,
+  request_http_method,
+  request_url
 from
   aws_clb_access_log
 where
@@ -75,7 +77,9 @@ select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_http_version,
+  request_http_method,
+  request_url,
   client_ip,
   backend_ip,
   request_processing_time,
