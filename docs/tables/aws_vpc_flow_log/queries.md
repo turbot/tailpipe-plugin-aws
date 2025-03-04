@@ -16,6 +16,10 @@ order by
   traffic_date asc;
 ```
 
+```yaml
+folder: VPC Flow Log
+```
+
 ### Top 10 Source IPs Generating Traffic
 
 Identify the top 10 source IP addresses that generated the most network traffic. This helps detect potential high-traffic sources, including misconfigured applications or malicious activities.
@@ -31,6 +35,10 @@ group by
 order by
   request_count desc
 limit 10;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
 
 ## Detection Examples
@@ -55,6 +63,10 @@ where
   or dst_addr = '192.0.2.100'
 order by
   start_time desc;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
 
 ### Detect Suspicious Traffic from External IPs
@@ -88,6 +100,10 @@ order by
   start_time desc;
 ```
 
+```yaml
+folder: VPC Flow Log
+```
+
 ### Detect Unauthorized Access Attempts
 
 Identify unauthorized attempts to access instances through uncommon ports. This helps detect brute-force attempts or suspicious access patterns.
@@ -109,6 +125,10 @@ where
   and dst_port not in (22, 80, 443)
 order by
   start_time desc;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
 
 ## Operational Examples
@@ -135,6 +155,10 @@ order by
   start_time desc;
 ```
 
+```yaml
+folder: VPC Flow Log
+```
+
 ### Identify High-Latency Network Paths
 
 Detect network paths with high packet loss, which may indicate congestion or misconfigured routes.
@@ -155,6 +179,10 @@ where
   and bytes < 5000 -- Low bytes despite high packet count
 order by
   start_time desc;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
 
 ## Volume Examples
@@ -180,6 +208,10 @@ order by
   bytes desc;
 ```
 
+```yaml
+folder: VPC Flow Log
+```
+
 ### High-Volume Network Traffic
 
 Find network sources generating a high number of requests, helping detect possible denial-of-service (DoS) attacks or heavy application usage.
@@ -198,6 +230,10 @@ having
   count(*) > 100
 order by
   request_count desc;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
 
 ### High-Volume Rejected Traffic
@@ -219,6 +255,10 @@ having
   count(*) > 50
 order by
   rejected_requests desc;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
 
 ## Baseline Examples
@@ -245,6 +285,10 @@ order by
   start_time desc;
 ```
 
+```yaml
+folder: VPC Flow Log
+```
+
 ### Track Traffic to a Specific Instance
 
 Retrieve all network traffic related to a particular EC2 instance.
@@ -265,4 +309,8 @@ where
   instance_id = 'i-085c7a43a498c2f5d'
 order by 
   start_time desc;
+```
+
+```yaml
+folder: VPC Flow Log
 ```
