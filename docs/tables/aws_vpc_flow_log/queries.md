@@ -38,7 +38,7 @@ limit 10;
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ## Detection Examples
@@ -66,7 +66,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### Detect Suspicious Traffic from External IPs
@@ -101,7 +101,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### Detect Unauthorized Access Attempts
@@ -128,7 +128,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ## Operational Examples
@@ -156,7 +156,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### Identify High-Latency Network Paths
@@ -182,7 +182,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ## Volume Examples
@@ -209,7 +209,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### High-Volume Network Traffic
@@ -233,7 +233,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### High-Volume Rejected Traffic
@@ -258,7 +258,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ## Baseline Examples
@@ -286,7 +286,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### Track Traffic to a Specific Instance
@@ -312,5 +312,5 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
