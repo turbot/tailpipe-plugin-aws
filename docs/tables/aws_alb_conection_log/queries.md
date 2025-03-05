@@ -88,8 +88,8 @@ Identify connections with TLS handshake verification failures. This query helps 
 ```sql
 select
   timestamp,
-  tp_index as conn_trace_id,
-  client_ip,
+  tp_index as client_ip,
+  conn_trace_id,
   client_port,
   tls_protocol,
   tls_cipher,
@@ -137,8 +137,8 @@ Top 10 connections with unusually high TLS handshake latency. This query helps i
 ```sql
 select
   timestamp,
-  tp_index as conn_trace_id,
-  client_ip,
+  tp_index as client_ip,
+  conn_trace_id,
   client_port,
   tls_protocol,
   tls_cipher,
@@ -221,7 +221,7 @@ from
 join
   aws_alb_access_log a
 on
-  c.tp_index = a.conn_trace_id
+  c.conn_trace_id = a.conn_trace_id
 order by
   c.timestamp desc
 limit 10;

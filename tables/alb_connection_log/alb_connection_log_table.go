@@ -27,7 +27,7 @@ func (c *AlbConnectionLogTable) Identifier() string {
 
 func (c *AlbConnectionLogTable) GetSourceMetadata() []*table.SourceMetadata[*AlbConnectionLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/conn_log.%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.[^_]+_[^_]+_[^_]+_[^.]+.log.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/conn_log.%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*AlbConnectionLog]{
@@ -59,7 +59,7 @@ func (c *AlbConnectionLogTable) EnrichRow(row *AlbConnectionLog, sourceEnrichmen
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
-	row.TpIndex = *row.ConnTraceID
+	row.TpIndex = row.ClientIP
 	return row, nil
 }
 
