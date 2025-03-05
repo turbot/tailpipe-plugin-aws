@@ -17,7 +17,7 @@ import (
 
 const ClbAccessLogTableIdentifier = "aws_clb_access_log"
 
-const clbLogFormat = `$timestamp $elb $client $backend $request_processing_time $backend_processing_time $response_processing_time $elb_status_code $backend_status_code $received_bytes $sent_bytes "$method $path $http_version" "$user_agent" $ssl_cipher $ssl_protocol`
+const clbLogFormat = `$timestamp $elb $client_ip:$client_port $backend $request_processing_time $backend_processing_time $response_processing_time $elb_status_code $backend_status_code $received_bytes $sent_bytes "$request_http_method $request_url $request_http_version" "$user_agent" $ssl_cipher $ssl_protocol`
 
 type ClbAccessLogTable struct{}
 
@@ -27,7 +27,7 @@ func (c *ClbAccessLogTable) Identifier() string {
 
 func (c *ClbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*ClbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_[^_]+_[^_]+_[^_]+_[^.]+.log"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log"),
 	}
 
 	return []*table.SourceMetadata[*ClbAccessLog]{

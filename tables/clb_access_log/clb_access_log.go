@@ -16,8 +16,8 @@ type ClbAccessLog struct {
 	BackendPort            int       `json:"backend_port,omitempty"`
 	BackendProcessingTime  float64   `json:"backend_processing_time,omitempty"`
 	BackendStatusCode      *int      `json:"backend_status_code,omitempty"`
-	ClientIP               string    `json:"client_ip,omitempty"`
-	ClientPort             int       `json:"client_port,omitempty"`
+	ClientIP               string    `json:"client_ip"`
+	ClientPort             int       `json:"client_port"`
 	Elb                    string    `json:"elb"`
 	ElbStatusCode          *int      `json:"elb_status_code,omitempty"`
 	ReceivedBytes          *int64    `json:"received_bytes,omitempty"`
@@ -50,14 +50,12 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.Timestamp = ts
 		case "elb":
 			l.Elb = value
-		case "client":
-			if strings.Contains(value, ":") {
-				parts := strings.Split(value, ":")
-				l.ClientIP = parts[0]
-				l.ClientPort, err = strconv.Atoi(parts[1])
-				if err != nil {
-					return fmt.Errorf("error parsing client_port: %w", err)
-				}
+		case "client_ip":
+			l.ClientIP = value
+		case "client_port":
+			l.ClientPort, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing client_port: %w", err)
 			}
 		case "backend":
 			if strings.Contains(value, ":") {
@@ -108,11 +106,11 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing sent_bytes: %w", err)
 			}
 			l.SentBytes = &sb
-		case "method":
+		case "request_http_method":
 			l.RequestHTTPMethod = value
-		case "path":
+		case "request_url":
 			l.RequestUrl = value
-		case "http_version":
+		case "request_http_version":
 			l.RequestHTTPVersion = value
 		case "user_agent":
 			l.UserAgent = value
