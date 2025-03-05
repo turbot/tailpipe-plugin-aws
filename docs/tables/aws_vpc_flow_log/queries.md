@@ -17,7 +17,7 @@ order by
 ```
 
 ```yaml
-folder: VPC Flow Log
+folder: VPC
 ```
 
 ### Top 10 Source IPs Generating Traffic
