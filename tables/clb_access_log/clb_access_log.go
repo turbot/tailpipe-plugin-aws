@@ -58,7 +58,6 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing client_port: %w", err)
 			}
 		case "backend":
-			if strings.Contains(value, ":") {
 				parts := strings.Split(value, ":")
 				ip := parts[0]
 				l.BackendIP = &ip
@@ -66,7 +65,6 @@ func (l *ClbAccessLog) InitialiseFromMap(m map[string]string) error {
 				if err != nil {
 					return fmt.Errorf("error parsing backend_port: %w", err)
 				}
-			}
 		case "request_processing_time":
 			l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
 			if err != nil {
