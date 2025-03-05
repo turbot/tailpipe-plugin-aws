@@ -32,12 +32,12 @@ func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*Cost
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:timestampz}/%{DATA}.csv.zip"),
 
-// 		s3://cost-usage-report-log/report/test52/20250201-20250301/20250228T214620Z/test52-00001.csv.zip
-//report/
-// test52/
-// 20250201-20250301/
-// 20250228T214620Z/
-// test52-00001.csv.zip
+		// 		s3://cost-usage-report-log/report/test52/20250201-20250301/20250228T214620Z/test52-00001.csv.zip
+		//report/
+		// test52/
+		// 20250201-20250301/
+		// 20250228T214620Z/
+		// test52-00001.csv.zip
 	}
 
 	return []*table.SourceMetadata[*CostAndUsageLog]{
@@ -74,15 +74,15 @@ func (t *CostAndUsageLogTable) EnrichRow(row *CostAndUsageLog, sourceEnrichmentF
 	if row.BillBillingPeriodStartDate != nil {
 		row.TpTimestamp = *row.BillBillingPeriodStartDate
 
-		// convert to date in format yy-mm-dd
+		// convert to date in format yyyy-mm-dd
 		row.TpDate = row.BillBillingPeriodStartDate.Truncate(24 * time.Hour)
 	} else if row.BillBillingPeriodEndDate != nil {
 		row.TpTimestamp = *row.BillBillingPeriodEndDate
 
-		// convert to date in format yy-mm-dd
+		// convert to date in format yyyy-mm-dd
 		row.TpDate = row.BillBillingPeriodEndDate.Truncate(24 * time.Hour)
 	}
-	// row.TpDate = row.TpTimestamp.Truncate(24 * time.Hour)
+	
 
 	// if row.PayerAccountName != nil {
 	// 	row.TpSourceIP = row.PayerAccountName
@@ -92,10 +92,13 @@ func (t *CostAndUsageLogTable) EnrichRow(row *CostAndUsageLog, sourceEnrichmentF
 	// Hive fields
 	// for some rows we dont get the linked account id, so we use the payer account id as a fallback
 	// TODO - should we use the payer account id instead?
-	if identityLineItemId := typehelpers.SafeString(row.IdentityLineItemId); identityLineItemId != "" {
-		row.TpIndex = identityLineItemId
-	} else {
-		row.TpIndex = typehelpers.SafeString(row.BillInvoiceId)
+	switch {
+	case typehelpers.SafeString(row.BillPayerAccountId) != "":
+		row.TpIndex = typehelpers.SafeString(row.BillPayerAccountId)
+	case typehelpers.SafeString(row.LineItemUsageAccountId) != "":
+		row.TpIndex = typehelpers.SafeString(row.LineItemUsageAccountId)
+	default:
+		row.TpIndex = schema.DefaultIndex
 	}
 
 	return row, nil
