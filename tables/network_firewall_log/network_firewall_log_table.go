@@ -9,7 +9,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
-	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -36,7 +35,7 @@ func (c *NetworkFirewallLogTable) GetSourceMetadata() []*table.SourceMetadata[*N
 		{
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
 			// Use JSON mapping since the logs are structured as JSON.
-			Mapper: mappers.NewJSONMapper[*NetworkFirewallLog](),
+			Mapper: &NetworkFirewallMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithRowPerLine(),
@@ -44,7 +43,7 @@ func (c *NetworkFirewallLogTable) GetSourceMetadata() []*table.SourceMetadata[*N
 		},
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
-			Mapper:     mappers.NewJSONMapper[*NetworkFirewallLog](),
+			Mapper:     &NetworkFirewallMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
@@ -61,7 +60,7 @@ func (c *NetworkFirewallLogTable) EnrichRow(row *NetworkFirewallLog, sourceEnric
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 	// Convert the epoch event_timestamp (in seconds) to time.Time.
-	row.TpTimestamp = time.Unix(row.EventTimestamp, 0)
+	row.TpTimestamp = *row.EventTimestamp
 	row.TpDate = row.TpTimestamp.Truncate(24 * time.Hour)
 
 	// Use the firewall name as an index.
