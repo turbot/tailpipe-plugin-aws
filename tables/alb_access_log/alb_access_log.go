@@ -75,7 +75,6 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing client_port: %w", err)
 			}
 		case "target":
-			if strings.Contains(value, ":") {
 				parts := strings.Split(value, ":")
 				ip := parts[0]
 				l.TargetIP = &ip
@@ -83,7 +82,6 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				if err != nil {
 					return fmt.Errorf("error parsing target_port: %w", err)
 				}
-			}
 		case "request_processing_time":
 			if value != "-1" { // -1 if the load balancer can't dispatch the request to a target
 				l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
