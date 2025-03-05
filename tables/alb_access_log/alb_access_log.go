@@ -67,15 +67,12 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.Type = value
 		case "elb":
 			l.Elb = value
-		case "client":
-			if strings.Contains(value, ":") {
-				parts := strings.Split(value, ":")
-				ip := parts[0]
-				l.ClientIP = ip
-				l.ClientPort, err = strconv.Atoi(parts[1])
-				if err != nil {
-					return fmt.Errorf("error parsing client_port: %w", err)
-				}
+		case "client_ip":
+			l.ClientIP = value
+		case "client_port":
+			l.ClientPort, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing client_port: %w", err)
 			}
 		case "target":
 			if strings.Contains(value, ":") {
@@ -132,11 +129,11 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing sent_bytes: %w", err)
 			}
 			l.SentBytes = &sb
-		case "method":
+		case "request_http_method":
 			l.RequestHTTPMethod = value
-		case "path":
+		case "request_url":
 			l.RequestUrl = value
-		case "http_version":
+		case "request_http_version":
 			l.RequestHTTPVersion = value
 		case "user_agent":
 			l.UserAgent = value

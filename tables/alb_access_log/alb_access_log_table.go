@@ -18,7 +18,7 @@ import (
 
 const AlbAccessLogTableIdentifier = "aws_alb_access_log"
 
-const albLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$method $path $http_version" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
+const albLogFormat = `$type $timestamp $elb $client_ip:$client_port $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request_http_method $request_url $request_http_version" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
 
 type AlbAccessLogTable struct{}
 
@@ -28,7 +28,7 @@ func (c *AlbAccessLogTable) Identifier() string {
 
 func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*AlbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.[^_]+_[^_]+_[^_]+_[^.]+.log.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*AlbAccessLog]{
