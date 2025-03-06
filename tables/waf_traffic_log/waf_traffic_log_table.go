@@ -64,7 +64,7 @@ func (c *WafTrafficLogTable) EnrichRow(row *WafTrafficLog, sourceEnrichmentField
 
 	if row.HttpSourceId != nil {
 		// For ALB and APPService we are getting ID not ARN.
-		if strings.HasPrefix("arn:", *row.HttpSourceId) {
+		if strings.HasPrefix(*row.HttpSourceId, "arn:") {
 			newAkas := tables.AwsAkasFromArn(*row.HttpSourceId)
 			row.TpAkas = append(row.TpAkas, newAkas...)
 		}
