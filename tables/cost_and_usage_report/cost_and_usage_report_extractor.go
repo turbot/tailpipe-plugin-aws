@@ -1,4 +1,4 @@
-package cost_usage_log
+package cost_and_usage_report
 
 import (
 	"archive/zip"
@@ -27,7 +27,7 @@ func NewCostUsageLogExtractor() artifact_source.Extractor {
 }
 
 func (c *CostUsageLogExtractor) Identifier() string {
-	return "cost_usage_log_extractor"
+	return "cost_and_usage_report_extractor"
 }
 
 func (c *CostUsageLogExtractor) Extract(_ context.Context, a any) ([]any, error) {

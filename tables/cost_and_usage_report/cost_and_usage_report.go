@@ -1,4 +1,4 @@
-package cost_usage_log
+package cost_and_usage_report
 
 import (
 	"time"

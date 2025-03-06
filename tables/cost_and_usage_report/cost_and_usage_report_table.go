@@ -1,4 +1,4 @@
-package cost_usage_log
+package cost_and_usage_report
 
 import (
 	"time"
@@ -16,7 +16,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const CostUsageLogTableIdentifier = "aws_cost_usage_log"
+const CostUsageLogTableIdentifier = "aws_cost_and_usage_report"
 
 // CostAndUsageLogTable - table for CostAndUsageLogs
 type CostAndUsageLogTable struct{}
