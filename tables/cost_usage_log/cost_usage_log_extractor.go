@@ -117,7 +117,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		recordMap := make(map[string]string)
 		for i, header := range headers {
 			// Normalize header names
-			replaceStr := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(header, "/", "_"), ":", "_"), " ", "_")
+			replaceStr := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(header, "/", "_"), ":", "_"), " ", "_"), ".", "_"), "a_r_n", "arn")
 			snakeCaseKey := strcase.SnakeCase(replaceStr)
 
 			// Assign row data
@@ -228,6 +228,8 @@ func (value *CostAndUsageLog) MapValues(recordMap map[string]string) {
 				(*value.Reservation)[key] = strVal
 			} else if strings.HasPrefix(key, "resource_tags") {
 				(*value.ResourceTags)[key] = strVal
+			} else if strings.HasPrefix(key, "discount") {
+				(*value.Discount)[key] = strVal
 			}
 		}
 	}

@@ -27,24 +27,14 @@ func (t *CostAndUsageLogTable) Identifier() string {
 }
 
 func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*CostAndUsageLog] {
-
-	// TODO: Cross-check https://docs.aws.amazon.com/cur/latest/userguide/understanding-report-versions.html
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:timestampz}/%{DATA}.csv.zip"),
-
-		// 		s3://cost-usage-report-log/report/test52/20250201-20250301/20250228T214620Z/test52-00001.csv.zip
-		//report/
-		// test52/
-		// 20250201-20250301/
-		// 20250228T214620Z/
-		// test52-00001.csv.zip
+		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"),
 	}
 
 	return []*table.SourceMetadata[*CostAndUsageLog]{
 		{
 			// any artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
-			// Mapper:     &CostAndUsageLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithArtifactExtractor(NewCostUsageLogExtractor())},
@@ -52,7 +42,6 @@ func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*Cost
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
-			// Mapper:     &CostAndUsageLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithArtifactExtractor(NewCostUsageLogExtractor())},
 		},
@@ -68,10 +57,17 @@ func (t *CostAndUsageLogTable) EnrichRow(row *CostAndUsageLog, sourceEnrichmentF
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 
-	// we are using the invoice date as the tp_timestamp, but we dont always get the invoice date
-	// so we use the BillingPeriodStartDate as a fallback
-	// TODO - should we use the BillingPeriodEndDate instead?
-	if row.BillBillingPeriodStartDate != nil {
+	if row.LineItemUsageStartDate != nil {
+		row.TpTimestamp = *row.LineItemUsageStartDate
+
+		// convert to date in format yyyy-mm-dd
+		row.TpDate = row.LineItemUsageStartDate.Truncate(24 * time.Hour)
+	} else if row.LineItemUsageEndDate != nil {
+		row.TpTimestamp = *row.LineItemUsageEndDate
+
+		// convert to date in format yyyy-mm-dd
+		row.TpDate = row.LineItemUsageEndDate.Truncate(24 * time.Hour)
+	} else if row.BillBillingPeriodStartDate != nil {
 		row.TpTimestamp = *row.BillBillingPeriodStartDate
 
 		// convert to date in format yyyy-mm-dd
@@ -82,21 +78,13 @@ func (t *CostAndUsageLogTable) EnrichRow(row *CostAndUsageLog, sourceEnrichmentF
 		// convert to date in format yyyy-mm-dd
 		row.TpDate = row.BillBillingPeriodEndDate.Truncate(24 * time.Hour)
 	}
-	
 
-	// if row.PayerAccountName != nil {
-	// 	row.TpSourceIP = row.PayerAccountName
-	// 	row.TpIps = append(row.TpIps, *row.PayerAccountName)
-	// }
-
-	// Hive fields
-	// for some rows we dont get the linked account id, so we use the payer account id as a fallback
-	// TODO - should we use the payer account id instead?
+	// TpIndex
 	switch {
-	case typehelpers.SafeString(row.BillPayerAccountId) != "":
-		row.TpIndex = typehelpers.SafeString(row.BillPayerAccountId)
 	case typehelpers.SafeString(row.LineItemUsageAccountId) != "":
 		row.TpIndex = typehelpers.SafeString(row.LineItemUsageAccountId)
+	case typehelpers.SafeString(row.BillPayerAccountId) != "":
+		row.TpIndex = typehelpers.SafeString(row.BillPayerAccountId)
 	default:
 		row.TpIndex = schema.DefaultIndex
 	}
