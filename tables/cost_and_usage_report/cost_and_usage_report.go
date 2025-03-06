@@ -68,27 +68,27 @@ type CostAndUsageLog struct {
 	ProductAttachmentType                                    *string                 `json:"product_attachment_type,omitempty" parquet:"name=product_attachment_type"`
 	ProductAvailability                                      *string                 `json:"product_availability,omitempty" parquet:"name=product_availability"`
 	ProductAvailabilityZone                                  *string                 `json:"product_availability_zone,omitempty" parquet:"name=product_availability_zone"`
-	ProductBackupservice                                     *string                 `json:"product_backupservice,omitempty" parquet:"name=product_backupservice"`
+	ProductBackupservice                                     *string                 `json:"product_backupservice,omitempty" parquet:"name=product_backup_service"`
 	ProductBrokerEngine                                      *string                 `json:"product_broker_engine,omitempty" parquet:"name=product_broker_engine"`
 	ProductCacheEngine                                       *string                 `json:"product_cache_engine,omitempty" parquet:"name=product_cache_engine"`
 	ProductCacheType                                         *string                 `json:"product_cache_type,omitempty" parquet:"name=product_cache_type"`
-	ProductCapacitystatus                                    *string                 `json:"product_capacitystatus,omitempty" parquet:"name=product_capacitystatus"`
+	ProductCapacityStatus                                    *string                 `json:"product_capacitystatus,omitempty" parquet:"name=product_capacity_status"`
 	ProductCategory                                          *string                 `json:"product_category,omitempty" parquet:"name=product_category"`
 	ProductCiType                                            *string                 `json:"product_ci_type,omitempty" parquet:"name=product_ci_type"`
-	ProductClassicnetworkingsupport                          *string                 `json:"product_classicnetworkingsupport,omitempty" parquet:"name=product_classicnetworkingsupport"`
+	ProductClassicNetworkingSupport                          *string                 `json:"product_classicnetworkingsupport,omitempty" parquet:"name=product_classic_networking_support"`
 	ProductClockSpeed                                        *string                 `json:"product_clock_speed,omitempty" parquet:"name=product_clock_speed"`
-	ProductCloudformationresourceProvider                    *string                 `json:"product_cloudformationresource_provider,omitempty" parquet:"name=product_cloudformationresource_provider"`
+	ProductCloudformationResourceProvider                    *string                 `json:"product_cloudformationresource_provider,omitempty" parquet:"name=product_cloudformation_resource_provider"`
 	ProductComment                                           *string                 `json:"product_comment,omitempty" parquet:"name=product_comment"`
 	ProductComponent                                         *string                 `json:"product_component,omitempty" parquet:"name=product_component"`
 	ProductComputeFamily                                     *string                 `json:"product_compute_family,omitempty" parquet:"name=product_compute_family"`
 	ProductComputeType                                       *string                 `json:"product_compute_type,omitempty" parquet:"name=product_compute_type"`
 	ProductContentType                                       *string                 `json:"product_content_type,omitempty" parquet:"name=product_content_type"`
 	ProductCountsAgainstQuota                                *string                 `json:"product_counts_against_quota,omitempty" parquet:"name=product_counts_against_quota"`
-	ProductCputype                                           *string                 `json:"product_cputype,omitempty" parquet:"name=product_cputype"`
+	ProductCpuType                                           *string                 `json:"product_cputype,omitempty" parquet:"name=product_cpu_type"`
 	ProductCurrentGeneration                                 *string                 `json:"product_current_generation,omitempty" parquet:"name=product_current_generation"`
 	ProductDatabaseEngine                                    *string                 `json:"product_database_engine,omitempty" parquet:"name=product_database_engine"`
 	ProductDatabaseEngineType                                *string                 `json:"product_database_engine_type,omitempty" parquet:"name=product_database_engine_type"`
-	ProductDatatransferout                                   *string                 `json:"product_datatransferout,omitempty" parquet:"name=product_datatransferout"`
+	ProductDatatransferOut                                   *string                 `json:"product_datatransferout,omitempty" parquet:"name=product_datatransfer_out"`
 	ProductDataTransferQuota                                 *string                 `json:"product_data_transfer_quota,omitempty" parquet:"name=product_data_transfer_quota"`
 	ProductDedicatedEbsThroughput                            *string                 `json:"product_dedicated_ebs_throughput,omitempty" parquet:"name=product_dedicated_ebs_throughput"`
 	ProductDeploymentOption                                  *string                 `json:"product_deployment_option,omitempty" parquet:"name=product_deployment_option"`
@@ -122,16 +122,16 @@ type CostAndUsageLog struct {
 	ProductGb                                                *string                 `json:"product_gb,omitempty" parquet:"name=product_gb"`
 	ProductGpu                                               *string                 `json:"product_gpu,omitempty" parquet:"name=product_gpu"`
 	ProductGpuMemory                                         *string                 `json:"product_gpu_memory,omitempty" parquet:"name=product_gpu_memory"`
-	ProductGraphqloperation                                  *string                 `json:"product_graphqloperation,omitempty" parquet:"name=product_graphqloperation"`
+	ProductGraphqlOperation                                  *string                 `json:"product_graphqloperation,omitempty" parquet:"name=product_graphql_operation"`
 	ProductGroup                                             *string                 `json:"product_group,omitempty" parquet:"name=product_group"`
 	ProductGroupDescription                                  *string                 `json:"product_group_description,omitempty" parquet:"name=product_group_description"`
 	ProductIndexingSource                                    *string                 `json:"product_indexing_source,omitempty" parquet:"name=product_indexing_source"`
-	ProductInsightstype                                      *string                 `json:"product_insightstype,omitempty" parquet:"name=product_insightstype"`
+	ProductInsightsType                                      *string                 `json:"product_insightstype,omitempty" parquet:"name=product_insights_type"`
 	ProductInstance                                          *string                 `json:"product_instance,omitempty" parquet:"name=product_instance"`
 	ProductInstanceConfigurationType                         *string                 `json:"product_instance_configuration_type,omitempty" parquet:"name=product_instance_configuration_type"`
 	ProductInstanceFamily                                    *string                 `json:"product_instance_family,omitempty" parquet:"name=product_instance_family"`
 	ProductInstanceName                                      *string                 `json:"product_instance_name,omitempty" parquet:"name=product_instance_name"`
-	ProductInstancesku                                       *string                 `json:"product_instancesku,omitempty" parquet:"name=product_instancesku"`
+	ProductInstanceSku                                       *string                 `json:"product_instancesku,omitempty" parquet:"name=product_instance_sku"`
 	ProductInstanceType                                      *string                 `json:"product_instance_type,omitempty" parquet:"name=product_instance_type"`
 	ProductInstanceTypeFamily                                *string                 `json:"product_instance_type_family,omitempty" parquet:"name=product_instance_type_family"`
 	ProductIntelAvx2Available                                *string                 `json:"product_intel_avx2available,omitempty" parquet:"name=product_intel_avx2available"`
@@ -142,21 +142,21 @@ type CostAndUsageLog struct {
 	ProductLocation                                          *string                 `json:"product_location,omitempty" parquet:"name=product_location"`
 	ProductLocationType                                      *string                 `json:"product_location_type,omitempty" parquet:"name=product_location_type"`
 	ProductLogsDestination                                   *string                 `json:"product_logs_destination,omitempty" parquet:"name=product_logs_destination"`
-	ProductMarketoption                                      *string                 `json:"product_marketoption,omitempty" parquet:"name=product_marketoption"`
+	ProductMarketOption                                      *string                 `json:"product_marketoption,omitempty" parquet:"name=product_market_option"`
 	ProductMaximumExtendedStorage                            *string                 `json:"product_maximum_extended_storage,omitempty" parquet:"name=product_maximum_extended_storage"`
 	ProductMaxIopsBurstPerformance                           *string                 `json:"product_max_iops_burst_performance,omitempty" parquet:"name=product_max_iops_burst_performance"`
-	ProductMaxIopsvolume                                     *string                 `json:"product_max_iopsvolume,omitempty" parquet:"name=product_max_iopsvolume"`
-	ProductMaxThroughputvolume                               *string                 `json:"product_max_throughputvolume,omitempty" parquet:"name=product_max_throughputvolume"`
+	ProductMaxIopsVolume                                     *string                 `json:"product_max_iopsvolume,omitempty" parquet:"name=product_max_iops_volume"`
+	ProductMaxThroughputVolume                               *string                 `json:"product_max_throughputvolume,omitempty" parquet:"name=product_max_throughput_volume"`
 	ProductMaxVolumeSize                                     *string                 `json:"product_max_volume_size,omitempty" parquet:"name=product_max_volume_size"`
 	ProductMemory                                            *string                 `json:"product_memory,omitempty" parquet:"name=product_memory"`
 	ProductMemoryGib                                         *string                 `json:"product_memory_gib,omitempty" parquet:"name=product_memory_gib"`
-	ProductMemorytype                                        *string                 `json:"product_memorytype,omitempty" parquet:"name=product_memorytype"`
+	ProductMemoryType                                        *string                 `json:"product_memorytype,omitempty" parquet:"name=product_memory_type"`
 	ProductMessageDeliveryFrequency                          *string                 `json:"product_message_delivery_frequency,omitempty" parquet:"name=product_message_delivery_frequency"`
 	ProductMessageDeliveryOrder                              *string                 `json:"product_message_delivery_order,omitempty" parquet:"name=product_message_delivery_order"`
 	ProductMeteringType                                      *string                 `json:"product_metering_type,omitempty" parquet:"name=product_metering_type"`
 	ProductMinVolumeSize                                     *string                 `json:"product_min_volume_size,omitempty" parquet:"name=product_min_volume_size"`
 	ProductNetworkPerformance                                *string                 `json:"product_network_performance,omitempty" parquet:"name=product_network_performance"`
-	ProductNewcode                                           *string                 `json:"product_newcode,omitempty" parquet:"name=product_newcode"`
+	ProductNewCode                                           *string                 `json:"product_newcode,omitempty" parquet:"name=product_new_code"`
 	ProductNormalizationSizeFactor                           *string                 `json:"product_normalization_size_factor,omitempty" parquet:"name=product_normalization_size_factor"`
 	ProductOperatingSystem                                   *string                 `json:"product_operating_system,omitempty" parquet:"name=product_operating_system"`
 	ProductOperation                                         *string                 `json:"product_operation,omitempty" parquet:"name=product_operation"`
@@ -168,12 +168,12 @@ type CostAndUsageLog struct {
 	ProductPhysicalCpu                                       *string                 `json:"product_physical_cpu,omitempty" parquet:"name=product_physical_cpu"`
 	ProductPhysicalGpu                                       *string                 `json:"product_physical_gpu,omitempty" parquet:"name=product_physical_gpu"`
 	ProductPhysicalProcessor                                 *string                 `json:"product_physical_processor,omitempty" parquet:"name=product_physical_processor"`
-	ProductPlatoclassificationtype                           *string                 `json:"product_platoclassificationtype,omitempty" parquet:"name=product_platoclassificationtype"`
-	ProductPlatoinstancename                                 *string                 `json:"product_platoinstancename,omitempty" parquet:"name=product_platoinstancename"`
-	ProductPlatoinstancetype                                 *string                 `json:"product_platoinstancetype,omitempty" parquet:"name=product_platoinstancetype"`
-	ProductPlatopricingtype                                  *string                 `json:"product_platopricingtype,omitempty" parquet:"name=product_platopricingtype"`
+	ProductPlatoClassificationType                           *string                 `json:"product_platoclassificationtype,omitempty" parquet:"name=product_plato_classification_type"`
+	ProductPlatoInstanceName                                 *string                 `json:"product_platoinstancename,omitempty" parquet:"name=product_plato_instance_name"`
+	ProductPlatoInstanceType                                 *string                 `json:"product_platoinstancetype,omitempty" parquet:"name=product_plato_instance_type"`
+	ProductPlatoPricingType                                  *string                 `json:"product_platopricingtype,omitempty" parquet:"name=product_plato_pricing_type"`
 	ProductPreInstalledSw                                    *string                 `json:"product_pre_installed_sw,omitempty" parquet:"name=product_pre_installed_sw"`
-	ProductPricingplan                                       *string                 `json:"product_pricingplan,omitempty" parquet:"name=product_pricingplan"`
+	ProductPricingPlan                                       *string                 `json:"product_pricingplan,omitempty" parquet:"name=product_pricing_plan"`
 	ProductPricingUnit                                       *string                 `json:"product_pricing_unit,omitempty" parquet:"name=product_pricing_unit"`
 	ProductProcessorArchitecture                             *string                 `json:"product_processor_architecture,omitempty" parquet:"name=product_processor_architecture"`
 	ProductProcessorFeatures                                 *string                 `json:"product_processor_features,omitempty" parquet:"name=product_processor_features"`
@@ -215,7 +215,7 @@ type CostAndUsageLog struct {
 	ProductTenancy                                           *string                 `json:"product_tenancy,omitempty" parquet:"name=product_tenancy"`
 	ProductThroughput                                        *string                 `json:"product_throughput,omitempty" parquet:"name=product_throughput"`
 	ProductThroughputCapacity                                *string                 `json:"product_throughput_capacity,omitempty" parquet:"name=product_throughput_capacity"`
-	ProductTiertype                                          *string                 `json:"product_tiertype,omitempty" parquet:"name=product_tiertype"`
+	ProductTierType                                          *string                 `json:"product_tiertype,omitempty" parquet:"name=product_tier_type"`
 	ProductToLocation                                        *string                 `json:"product_to_location,omitempty" parquet:"name=product_to_location"`
 	ProductToLocationType                                    *string                 `json:"product_to_location_type,omitempty" parquet:"name=product_to_location_type"`
 	ProductToRegionCode                                      *string                 `json:"product_to_region_code,omitempty" parquet:"name=product_to_region_code"`
@@ -223,14 +223,14 @@ type CostAndUsageLog struct {
 	ProductType                                              *string                 `json:"product_type,omitempty" parquet:"name=product_type"`
 	ProductUsageFamily                                       *string                 `json:"product_usage_family,omitempty" parquet:"name=product_usage_family"`
 	ProductUsageGroup                                        *string                 `json:"product_usage_group,omitempty" parquet:"name=product_usage_group"`
-	ProductUsagetype                                         *string                 `json:"product_usagetype,omitempty" parquet:"name=product_usagetype"`
+	ProductUsageType                                         *string                 `json:"product_usagetype,omitempty" parquet:"name=product_usage_type"`
 	ProductUsageVolume                                       *string                 `json:"product_usage_volume,omitempty" parquet:"name=product_usage_volume"`
-	ProductVaulttype                                         *string                 `json:"product_vaulttype,omitempty" parquet:"name=product_vaulttype"`
+	ProductVaultType                                         *string                 `json:"product_vaulttype,omitempty" parquet:"name=product_vault_type"`
 	ProductVcpu                                              *string                 `json:"product_vcpu,omitempty" parquet:"name=product_vcpu"`
 	ProductVersion                                           *string                 `json:"product_version,omitempty" parquet:"name=product_version"`
 	ProductVolumeApiName                                     *string                 `json:"product_volume_api_name,omitempty" parquet:"name=product_volume_api_name"`
 	ProductVolumeType                                        *string                 `json:"product_volume_type,omitempty" parquet:"name=product_volume_type"`
-	ProductVpcnetworkingsupport                              *string                 `json:"product_vpcnetworkingsupport,omitempty" parquet:"name=product_vpcnetworkingsupport"`
+	ProductVpcNetworkingSupport                              *string                 `json:"product_vpcnetworkingsupport,omitempty" parquet:"name=product_vpc_networking_support"`
 	ProductWithActiveUsers                                   *string                 `json:"product_with_active_users,omitempty" parquet:"name=product_with_active_users"`
 	Reservation                                              *map[string]interface{} `json:"reservation,omitempty" parquet:"name=reservation"`
 	ReservationAmortizedUpfrontCostForUsage                  *float64                `json:"reservation_amortized_upfront_cost_for_usage,omitempty" parquet:"name=reservation_amortized_upfront_cost_for_usage"`
@@ -356,27 +356,27 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_attachment_type":                                  "Describes the type of attachment to Transit Gateway or Cloud WAN service.",
 		"product_availability":                                     "Describes the availability of your various AWS storage options.",
 		"product_availability_zone":                                "The AWS availability zone where the resource is located.",
-		"product_backupservice":                                    "The AWS backup service used (e.g., AWS Backup, RDS Snapshot).",
+		"product_backup_service":                                   "The AWS backup service used (e.g., AWS Backup, RDS Snapshot).",
 		"product_broker_engine":                                    "The underlying broker engine used (e.g., Apache ActiveMQ for Amazon MQ).",
 		"product_cache_engine":                                     "Caching engine used (e.g., Redis, Memcached for ElastiCache).",
 		"product_cache_type":                                       "Describes the provision opted by the customer on HDD-based file systems for a read-only SSD cache to improve performance for the frequently read data.",
-		"product_capacitystatus":                                   "Describes the status of your capacity reservations.",
+		"product_capacity_status":                                  "Describes the status of your capacity reservations.",
 		"product_category":                                         "The high-level category a product belongs to (e.g., Compute, Storage, Security).",
 		"product_ci_type":                                          "Type of Continuous Integration (CI) service used, if applicable (e.g., AWS CodeBuild).",
-		"product_classicnetworkingsupport":                         "Indicates support for classic networking in AWS EC2 or VPC.",
+		"product_classic_networking_support":                       "Indicates support for classic networking in AWS EC2 or VPC.",
 		"product_clock_speed":                                      "Describes the operating speed of your AWS instances.",
-		"product_cloudformationresource_provider":                  "The CloudFormation resource provider that supports the service.",
+		"product_cloudformation_resource_provider":                 "The CloudFormation resource provider that supports the service.",
 		"product_comment":                                          "A comment regarding the product.",
 		"product_component":                                        "Maps to features in SageMaker AI.",
 		"product_compute_family":                                   "The family of compute instances (e.g., T-series, M-series, C-series).",
 		"product_compute_type":                                     "Classifies compute resources (e.g., GPU, CPU, FPGAs, Bare Metal).",
 		"product_content_type":                                     "Specifies the type of content being delivered (e.g., JSON, XML, HTML).",
 		"product_counts_against_quota":                             "Indicates whether the usage counts towards a defined AWS quota.",
-		"product_cputype":                                          "Type of CPU (e.g., ARM, x86, Intel, AMD).",
+		"product_cpu_type":                                         "Type of CPU (e.g., ARM, x86, Intel, AMD).",
 		"product_current_generation":                               "Indicates whether the instance is a current-gen offering.",
 		"product_database_engine":                                  "Identifies the database system in use.",
 		"product_database_engine_type":                             "Specifies the database engine (e.g., MySQL, PostgreSQL, Aurora).",
-		"product_datatransferout":                                  "Data transfer volume leaving AWS services.",
+		"product_datatransfer_out":                                 "Data transfer volume leaving AWS services.",
 		"product_data_transfer_quota":                              "Limits on data transfer usage.",
 		"product_dedicated_ebs_throughput":                         "Describes the dedicated throughput between your instances (for example, Amazon EC2 instances and Amazon EBS volumes), with options between 500 and 10,000 megabits per second (Mbps) depending on the instance type used. The dedicated throughput minimizes contention between Amazon EBS I/O and other traffic from your EC2 instance, providing the best performance for your Amazon EBS volumes.",
 		"product_deployment_option":                                "Describes where the infrastructure for the environment is located. The deployment models for AWS cloud are public, on-premise, and hybrid.",
@@ -410,16 +410,16 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_gb":                                               "General measure of data size in gigabytes, likely related to storage or data transfer.",
 		"product_gpu":                                              "Describes the number of GPUs.",
 		"product_gpu_memory":                                       "Describes your GPU memory details.",
-		"product_graphqloperation":                                 "GraphQL operation type (query, mutation, subscription) for AWS AppSync or similar services.",
+		"product_graphql_operation":                                "GraphQL operation type (query, mutation, subscription) for AWS AppSync or similar services.",
 		"product_group":                                            "A construct of several products that are similar by definition, or grouped together. For example, the Amazon EC2 team can categorize their products into shared instances, dedicated host, and dedicated usage.",
 		"product_group_description":                                "A simplified name given to a product group.",
 		"product_indexing_source":                                  "The source of indexed data (e.g., OpenSearch, DynamoDB Streams).",
-		"product_insightstype":                                     "Indicates the type of Insight event generated.",
+		"product_insights_type":                                    "Indicates the type of Insight event generated.",
 		"product_instance":                                         "An Amazon EC2 instance is a virtual server in Amazon Elastic Compute Cloud (Amazon EC2) for running applications on the AWS infrastructure. You can choose an AMI provided by AWS, the user community, or through the AWS Marketplace.",
 		"product_instance_configuration_type":                      "Type of instance configuration (e.g., burstable, optimized).",
 		"product_instance_family":                                  "Describes your Amazon EC2 instance family. Amazon EC2 provides you with a large number of options across 10 different instance types, each with one or more size options, organized into distinct instance families optimized for different types of applications.",
 		"product_instance_name":                                    "Human-readable instance name assigned by the user.",
-		"product_instancesku":                                      "SKU identifier for a specific AWS instance type.",
+		"product_instance_sku":                                     "SKU identifier for a specific AWS instance type.",
 		"product_instance_type":                                    "Describes the instance type, size, and family, which define the CPU, networking, and storage capacity of your instance.",
 		"product_instance_type_family":                             "The instance family that is associated with the given usage.",
 		"product_intel_avx2available":                              "Describes whether your process has the Intel Advanced Vector Extension instruction set two.",
@@ -430,21 +430,21 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_location":                                         "Describes the Region that your Amazon S3 bucket resides in.",
 		"product_location_type":                                    "Describes the endpoint of your task.",
 		"product_logs_destination":                                 "The AWS::Logs::Destination resource specifies a CloudWatch logs destination. A destination includes a physical resource (for example, Amazon Kinesis data stream) and you can subscribe the resource to a stream of log events.",
-		"product_marketoption":                                     "Market option for the service (e.g., Reserved, Spot, On-Demand).",
+		"product_market_option":                                    "Market option for the service (e.g., Reserved, Spot, On-Demand).",
 		"product_maximum_extended_storage":                         "Maximum storage limit available for a service beyond standard allocation.",
 		"product_max_iops_burst_performance":                       "Describes the max IOPS burst performance of your Amazon EBS volume.",
-		"product_max_iopsvolume":                                   "Describes maximum input/output per second of your Amazon EBS volume.",
-		"product_max_throughputvolume":                             "Describes the max network throughput volume of your Amazon EBS volume.",
+		"product_max_iops_volume":                                  "Describes maximum input/output per second of your Amazon EBS volume.",
+		"product_max_throughput_volume":                            "Describes the max network throughput volume of your Amazon EBS volume.",
 		"product_max_volume_size":                                  "Maximum volume size allowed for a storage resource (e.g., EBS volume, S3 bucket).",
 		"product_memory":                                           "The placeholder electronics for instructions and data a computer needs to respond quickly. Computer bytes indicate the storage units.",
 		"product_memory_gib":                                       "Memory size allocated to an instance or service in GiB.",
-		"product_memorytype":                                       "Specifies the type of memory used (e.g., DDR4, HBM, persistent memory).",
+		"product_memory_type":                                      "Specifies the type of memory used (e.g., DDR4, HBM, persistent memory).",
 		"product_message_delivery_frequency":                       "Frequency of message delivery (e.g., real-time, batch).",
 		"product_message_delivery_order":                           "Defines how messages are delivered (e.g., FIFO, unordered, sequential).",
 		"product_metering_type":                                    "Specifies how usage is metered (e.g., per second, per hour).",
 		"product_min_volume_size":                                  "Minimum volume size allowed for a storage resource.",
 		"product_network_performance":                              "Describes the network throughput of your Amazon EC2 instances.",
-		"product_newcode":                                          "Internal AWS identifier for a newly introduced product or service.",
+		"product_new_code":                                         "Internal AWS identifier for a newly introduced product or service.",
 		"product_normalization_size_factor":                        "Describes the normalization factor of the instance size.",
 		"product_operating_system":                                 "Describes the operating system of your Amazon EC2 instance.",
 		"product_operation":                                        "Describes the specific AWS operation that this line item covers.",
@@ -456,12 +456,12 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_physical_cpu":                                     "The number of physical CPU cores allocated.",
 		"product_physical_gpu":                                     "Indicates whether physical GPU resources are used.",
 		"product_physical_processor":                               "Describes the processor on your Amazon EC2 instance.",
-		"product_platoclassificationtype":                          "Tiered per object pricing for data annotation workflow routing.",
-		"product_platoinstancename":                                "Name of an AWS Plato-based instance.",
-		"product_platoinstancetype":                                "Instance type for AWS Plato-based compute offerings.",
-		"product_platopricingtype":                                 "Pricing model for AWS Plato instances.",
+		"product_plato_classification_type":                        "Tiered per object pricing for data annotation workflow routing.",
+		"product_plato_instance_name":                              "Name of an AWS Plato-based instance.",
+		"product_plato_instance_type":                              "Instance type for AWS Plato-based compute offerings.",
+		"product_plato_pricing_type":                               "Pricing model for AWS Plato instances.",
 		"product_pre_installed_sw":                                 "Software pre-installed on an AWS instance (e.g., Windows Server, RHEL, MySQL).",
-		"product_pricingplan":                                      "Defines the AWS pricing model (e.g., On-Demand, Reserved, Spot).",
+		"product_pricing_plan":                                     "Defines the AWS pricing model (e.g., On-Demand, Reserved, Spot).",
 		"product_pricing_unit":                                     "The smallest billing unit for an AWS service. For example, 0.01c per API call.",
 		"product_processor_architecture":                           "Describes your processor architecture.",
 		"product_processor_features":                               "Describes the processor features of your instances.",
@@ -503,7 +503,7 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_tenancy":                                          "The type of tenancy allowed on the Amazon EC2 instance.",
 		"product_throughput":                                       "Performance capacity of a service (e.g., read/write operations per second).",
 		"product_throughput_capacity":                              "Describes the Speed at which the file server hosting the file system can serve file data. For Amazon FileCache, the value will be 1000 only.",
-		"product_tiertype":                                         "Another storage classification, possibly related to service plans.",
+		"product_tier_type":                                        "Another storage classification, possibly related to service plans.",
 		"product_to_location":                                      "Describes the location usage destination.",
 		"product_to_location_type":                                 "Describes the destination location of the service usage.",
 		"product_to_region_code":                                   "Describes the source Region code for the AWS service.",
@@ -511,14 +511,14 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_type":                                             "Type of AWS service (e.g., Compute, Storage, Networking).",
 		"product_usage_family":                                     "The category of service usage (e.g., Compute, Storage, Data Transfer).",
 		"product_usage_group":                                      "Groups similar usage types together for billing.",
-		"product_usagetype":                                        "Describes the usage details of the line item.",
+		"product_usage_type":                                       "Describes the usage details of the line item.",
 		"product_usage_volume":                                     "Amount of service usage, typically in GB, hours, or transactions.",
-		"product_vaulttype":                                        "Type of AWS backup vault (e.g., AWS Backup Vault, Glacier Vault).",
+		"product_vault_type":                                       "Type of AWS backup vault (e.g., AWS Backup Vault, Glacier Vault).",
 		"product_vcpu":                                             "Describes the number of threads concurrently running on a single CPU core. Amazon EC2 instances support multithreading, which enables multiple threads to run concurrently on a single CPU core. Each thread is represented as a virtual CPU (vCPU) on the instance.",
 		"product_version":                                          "The version of the AWS service or API being used.",
 		"product_volume_api_name":                                  "The API name for a volume type (e.g., gp3, io1 for EBS).",
 		"product_volume_type":                                      "Describes your Amazon EBS volume types.",
-		"product_vpcnetworkingsupport":                             "Indicates whether a service supports VPC networking.",
+		"product_vpc_networking_support":                           "Indicates whether a service supports VPC networking.",
 		"product_with_active_users":                                "Tracks whether a service has active users during the billing period.",
 		"reservation":                                              "A map column for where each key-value pair is an additional reservation attribute and its value.",
 		"reservation_amortized_upfront_cost_for_usage":             "The initial upfront payment for all upfront RIs and partial upfront RIs amortized for usage time. The value is equal to: RIAmortizedUpfrontFeeForBillingPeriod * The normalized usage amount for DiscountedUsage line items / The normalized usage amount for the RIFee. Because there are no upfront payments for no upfront RIs, the value for a no upfront RI is 0. We do not provide this value for Dedicated Host reservations at this time. The change will be made in a future update.",
