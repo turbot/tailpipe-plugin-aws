@@ -81,8 +81,7 @@ select
   action,
   protocol,
   region,
-  vpc_id,
-  action
+  vpc_id
 from 
   aws_vpc_flow_log
 where 
