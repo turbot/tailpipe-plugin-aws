@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/tables/cloudtrail_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/nlb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
+	"github.com/turbot/tailpipe-plugin-aws/tables/waf_traffic_log"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -21,10 +22,11 @@ func init() {
 	// Register tables, with type parameters:
 	// 1. row struct
 	// 2. table implementation
-	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
 	table.RegisterTable[*alb_access_log.AlbAccessLog, *alb_access_log.AlbAccessLogTable]()
-	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
+	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
 	table.RegisterTable[*nlb_access_log.NlbAccessLog, *nlb_access_log.NlbAccessLogTable]()
+	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
+	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
