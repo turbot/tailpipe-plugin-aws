@@ -18,7 +18,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const WaftTrafficLogTableIdentifier = "aws_waf_traffic_log"
+const WafTrafficLogTableIdentifier = "aws_waf_traffic_log"
 
 // WafTrafficLogTable - table for Waf traffic logs
 type WafTrafficLogTable struct{}
@@ -49,7 +49,7 @@ func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*WafTra
 }
 
 func (c *WafTrafficLogTable) Identifier() string {
-	return WaftTrafficLogTableIdentifier
+	return WafTrafficLogTableIdentifier
 }
 
 // EnrichRow implements table.Table
