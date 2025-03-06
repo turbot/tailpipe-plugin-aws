@@ -1,4 +1,4 @@
-package cost_and_usage_report
+package cost_and_usage
 
 import (
 	"time"
@@ -68,7 +68,7 @@ type CostAndUsageLog struct {
 	ProductAttachmentType                                    *string                 `json:"product_attachment_type,omitempty" parquet:"name=product_attachment_type"`
 	ProductAvailability                                      *string                 `json:"product_availability,omitempty" parquet:"name=product_availability"`
 	ProductAvailabilityZone                                  *string                 `json:"product_availability_zone,omitempty" parquet:"name=product_availability_zone"`
-	ProductBackupservice                                     *string                 `json:"product_backupservice,omitempty" parquet:"name=product_backup_service"`
+	ProductBackupService                                     *string                 `json:"product_backupservice,omitempty" parquet:"name=product_backup_service"`
 	ProductBrokerEngine                                      *string                 `json:"product_broker_engine,omitempty" parquet:"name=product_broker_engine"`
 	ProductCacheEngine                                       *string                 `json:"product_cache_engine,omitempty" parquet:"name=product_cache_engine"`
 	ProductCacheType                                         *string                 `json:"product_cache_type,omitempty" parquet:"name=product_cache_type"`
