@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/tables/cloudtrail_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/nlb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
+	"github.com/turbot/tailpipe-plugin-aws/tables/vpc_flow_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/waf_traffic_log"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
@@ -26,6 +27,7 @@ func init() {
 	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
 	table.RegisterTable[*nlb_access_log.NlbAccessLog, *nlb_access_log.NlbAccessLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
+	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
 
 	// register sources
