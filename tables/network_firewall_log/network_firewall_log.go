@@ -7,29 +7,50 @@ import (
 )
 
 type NetworkFirewallAlert struct {
-	Action      string `json:"action"`
-	SignatureID int    `json:"signature_id"`
-	Rev         int    `json:"rev"`
-	Signature   string `json:"signature"`
-	Category    string `json:"category"`
-	Severity    int    `json:"severity"`
+	Action      string `json:"action,omitempty"`
+	SignatureID int    `json:"signature_id,omitempty"`
+	Rev         int    `json:"rev,omitempty"`
+	Signature   string `json:"signature,omitempty"`
+	Category    string `json:"category,omitempty"`
+	Severity    int    `json:"severity,omitempty"`
+}
+
+type NetworkFirewallNetflow struct {
+	StartTime *time.Time `json:"start_time,omitempty"`
+	EndTime   *time.Time `json:"end_time,omitempty"`
+	Bytes     int        `json:"bytes,omitempty"`
+	Packets   int        `json:"packets,omitempty"`
+	Age       int        `json:"age,omitempty"`
+	MinTtl    int        `json:"min_ttl,omitempty"`
+	MaxTtl    int        `json:"max_ttl,omitempty"`
+}
+
+type RevocationCheck struct {
+	LeafCertFpr string `json:"leaf_cert_fpr,omitempty"`
+	Status        string `json:"status,omitempty"`
+	Action        string `json:"action,omitempty"`
+}
+
+type TLSError struct {
+	ErrorMsg string `json:"error_message"`
 }
 
 type NetworkFirewallEvent struct {
-	Timestamp       *time.Time            `json:"timestamp"`
-	FlowID          int64                 `json:"flow_id"`
-	EventType       string                `json:"event_type"`
-	SrcIP           string                `json:"src_ip"`
-	SrcPort         int                   `json:"src_port"`
-	DestIP          string                `json:"dest_ip"`
-	DestPort        int                   `json:"dest_port"`
-	Proto           string                `json:"proto"`
-	Alert           *NetworkFirewallAlert `json:"alert,omitempty"`
-	TLSInspected    *bool                 `json:"tls_inspected,omitempty"`
-	TLSError        *string               `json:"tls_error,omitempty"`
-	RevocationCheck *string               `json:"revocation_check,omitempty"`
-	Bytes           *int64                `json:"bytes,omitempty"`
-	Packets         *int64                `json:"packets,omitempty"`
+	Timestamp       *time.Time              `json:"timestamp"`
+	FlowID          int64                   `json:"flow_id"`
+	EventType       string                  `json:"event_type"`
+	SrcIP           string                  `json:"src_ip"`
+	SrcPort         int                     `json:"src_port"`
+	DestIP          string                  `json:"dest_ip"`
+	DestPort        int                     `json:"dest_port"`
+	Sni             string                  `json:"sni,omitempty"`
+	Proto           string                  `json:"proto,omitempty"`
+	AppProto        *string                 `json:"app_proto,omitempty"`
+	Alert           *NetworkFirewallAlert   `json:"alert,omitempty"`
+	Netflow         *NetworkFirewallNetflow `json:"netflow,omitempty"`
+	TLSInspected    *bool                   `json:"tls_inspected,omitempty"`
+	TLSError        *TLSError               `json:"tls_error,omitempty"`
+	RevocationCheck *RevocationCheck        `json:"revocation_check,omitempty"`
 }
 
 type NetworkFirewallLog struct {
