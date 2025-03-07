@@ -152,20 +152,6 @@ partition "aws_vpc_flow_log" "local_logs" {
 }
 ```
 
-### Exclude rejected traffic
-
-Use the filter argument in your partition to exclude rejected traffic logs.
-
-```hcl
-partition "aws_vpc_flow_log" "my_logs_accepted" {
-  filter = "action = 'ACCEPT'"
-  source "aws_s3_bucket" {
-    connection = connection.aws.vpc_logging
-    bucket     = "aws-vpc-flow-logs-bucket"
-  }
-}
-```
-
 ### Collect logs for all accounts in an organization
 
 For a specific organization, collect logs for all accounts and regions.
