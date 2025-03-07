@@ -139,9 +139,9 @@ partition "aws_s3_server_access_log" "my_s3_logs" {
 }
 ```
 
-### Exclude read-only requests
+### Collect logs with a custom filter
 
-Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
+Use the filter argument in your partition to exclude specific operations from the logs. This example excludes GET and HEAD operations from the logs while collecting all other operations which can help reduce the size of local log storage.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs_write" {

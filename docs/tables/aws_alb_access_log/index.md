@@ -163,14 +163,13 @@ partition "aws_alb_access_log" "local_logs" {
 }
 ```
 
-### Exclude read-only events
+### Collect logs with a custom filter
 
-Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+Use the filter argument in your partition to exclude specific events from the logs. This example excludes requests with status code 200 from the logs while collecting all other requests which can help reduce the size of local log storage and focus on troubleshooting failed requests.
 
 ```hcl
-partition "aws_alb_access_log" "my_logs_write" {
-  # Avoid saving read-only events, which can drastically reduce local log size
-  filter = "not read_only"
+partition "aws_alb_access_log" "my_alb_logs_filtered" {
+  filter = "elb_status_code != 200"
 
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account

@@ -158,14 +158,15 @@ partition "aws_nlb_access_log" "local_logs" {
 }
 ```
 
-### Exclude read-only events
+### Collect logs with a custom filter
 
-Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+Use the filter argument in your partition to exclude specific events from the logs. This
+example filters out the requests that are not related to EC2 instances to analyze only the relevant logs.
 
 ```hcl
 partition "aws_nlb_access_log" "my_logs_write" {
   # Avoid saving read-only events, which can drastically reduce local log size
-  filter = "not read_only"
+  filter = "domain_name like 'ec2%'"
 
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
