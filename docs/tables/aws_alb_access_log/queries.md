@@ -397,7 +397,7 @@ order by
 ```
 
 ```yaml
-folder: WAF
+folder: ELB
 ```
 
 ### Requests Exceeding Maximum Allowed Body Size for Lambda

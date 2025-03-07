@@ -350,7 +350,7 @@ folder: WAF
 
 ## Baseline Examples
 
-### Get non-terminating rules that detected SQL injection
+### Non-Terminating Rules Matching on SQL Injection
 
 Evaluate rule effectiveness in detecting SQL injection before enforcing stricter rules.
 

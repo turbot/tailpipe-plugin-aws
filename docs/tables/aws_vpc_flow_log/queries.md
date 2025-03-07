@@ -56,9 +56,9 @@ select
   dst_port,
   protocol,
   action
-from 
+from
   aws_vpc_flow_log
-where 
+where
   src_addr = '192.0.2.100'
   or dst_addr = '192.0.2.100'
 order by
@@ -82,9 +82,9 @@ select
   protocol,
   region,
   vpc_id
-from 
+from
   aws_vpc_flow_log
-where 
+where
   flow_direction = 'ingress'
   and (
     src_addr not like '10.%'  -- Exclude all 10.0.0.0/8
@@ -95,7 +95,7 @@ where
     and src_addr not like '169.254.%' -- Exclude link-local 169.254.0.0/16
     and src_addr not like '127.%' -- Exclude localhost 127.0.0.0/8
   )
-order by 
+order by
   start_time desc;
 ```
 
@@ -146,11 +146,11 @@ select
   protocol,
   subnet_id,
   action
-from 
+from
   aws_vpc_flow_log
-where 
+where
   subnet_id = 'subnet-027e9a6d4add894eb'
-order by 
+order by
   start_time desc;
 ```
 
@@ -224,7 +224,9 @@ select
 from
   aws_vpc_flow_log
 group by
-  start_time, src_addr, request_minute
+  start_time,
+  src_addr,
+  request_minute
 having
   count(*) > 100
 order by
@@ -302,11 +304,11 @@ select
   protocol,
   instance_id,
   action
-from 
+from
   aws_vpc_flow_log
 where
   instance_id = 'i-085c7a43a498c2f5d'
-order by 
+order by
   start_time desc;
 ```
 
