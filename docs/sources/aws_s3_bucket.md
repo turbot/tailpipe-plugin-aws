@@ -5,7 +5,7 @@ description: "Allows users to collect logs from AWS S3 buckets."
 
 # Source: aws_s3_bucket - Collect logs from AWS S3 buckets
 
-An AWS S3 bucket is a cloud storage resource used to store objects like data files and metadata. It serves as a central repository for logs from AWS services such as CloudTrail, ELB, VPC flow logs, and more.
+An AWS S3 bucket is a cloud storage resource used to store objects like data files and metadata. It serves as a central repository for logs from AWS services such as CloudTrail, ALB, VPC flow logs, and more.
 
 Using this source, you can collect, filter, and analyze logs stored in S3 buckets, enabling system monitoring, security investigations, and compliance reporting.
 
@@ -71,5 +71,9 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 
 The following tables define their own default values for certain source arguments:
 
+- **[aws_alb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_alb_access_log#aws_s3_bucket)**
 - **[aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_s3_bucket)**
+- **[aws_nlb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_nlb_access_log#aws_s3_bucket)**
 - **[aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log#aws_s3_bucket)**
+- **[aws_vpc_flow_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log#aws_s3_bucket)**
+- **[aws_waf_traffic_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_waf_traffic_log#aws_s3_bucket)**

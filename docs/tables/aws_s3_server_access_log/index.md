@@ -3,7 +3,7 @@ title: "Tailpipe Table: aws_s3_server_access_log - Query AWS S3 Server Access Lo
 description: "AWS S3 server access logs provide detailed information about requests made to your S3 buckets, including request source, operations performed, and response details."
 ---
 
-# Table: aws_s3_server_access_log - Query AWS S3 server access logs
+# Table: aws_s3_server_access_log - Query AWS S3 Server Access Logs
 
 The `aws_s3_server_access_log` table allows you to query AWS S3 server access logs. This table captures detailed request and access information for S3 buckets, helping to analyze access patterns, troubleshoot issues, and enhance security monitoring.
 
@@ -46,7 +46,7 @@ tailpipe collect aws_s3_server_access_log.my_s3_logs
 
 **[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_s3_server_access_log)**
 
-### Failed requests
+### Failed Requests
 
 Find failed HTTP requests (with status codes 400 and above) to troubleshoot access issues and improve security monitoring.
 
@@ -67,7 +67,7 @@ order by
   timestamp desc;
 ```
 
-### Top 10 requester IP addresses
+### Top 10 Requester IP Addresses
 
 List the top 10 requester IP addresses.
 
@@ -84,7 +84,7 @@ order by
 limit 10;
 ```
 
-### Unusually large file downloads
+### Unusually Large File Downloads
 
 Detect unusually large downloads based on file size.
 
@@ -139,9 +139,9 @@ partition "aws_s3_server_access_log" "my_s3_logs" {
 }
 ```
 
-### Exclude read-only requests
+### Collect logs with a custom filter
 
-Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
+Use the filter argument in your partition to exclude specific operations from the logs. This example excludes GET and HEAD operations from the logs while collecting all other operations which can help reduce the size of local log storage.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs_write" {
