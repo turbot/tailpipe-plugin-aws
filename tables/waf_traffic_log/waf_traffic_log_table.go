@@ -82,5 +82,5 @@ func (c *WafTrafficLogTable) EnrichRow(row *WafTrafficLog, sourceEnrichmentField
 }
 
 func (c *WafTrafficLogTable) GetDescription() string {
-	return "AWS WAF Traffic Logs record detailed web request data, helping analyze threats, monitor rule effectiveness, and improve security posture."
+	return "AWS WAF traffic logs record detailed web request data, helping analyze threats, monitor rule effectiveness, and improve security posture."
 }

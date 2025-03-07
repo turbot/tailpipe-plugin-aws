@@ -1,9 +1,9 @@
 ---
 title: "Tailpipe Table: aws_nlb_access_log - Query AWS NLB Access Logs"
-description: "AWS NLB Access logs capture detailed information about the requests that are processed by a Network Load Balancer. This table provides a structured representation of the log data, including client and destination information, connection times, TLS parameters, and network traffic statistics."
+description: "AWS NLB access logs capture detailed information about the requests that are processed by a Network Load Balancer. This table provides a structured representation of the log data, including client and destination information, connection times, TLS parameters, and network traffic statistics."
 ---
 
-# Table: aws_nlb_access_log - Query AWS NLB access logs
+# Table: aws_nlb_access_log - Query AWS NLB Access Logs
 
 The `aws_nlb_access_log` table allows you to query AWS Network Load Balancer (NLB) access logs. This table provides detailed information about connections processed by your load balancers, including client and destination details, connection times, TLS parameters, and network traffic statistics.
 
@@ -46,7 +46,7 @@ tailpipe collect aws_nlb_access_log.my_nlb_logs
 
 **[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_nlb_access_log)**
 
-### High latency connections
+### High Latency Connections
 
 Identify connections with unusually high connection establishment times to troubleshoot network latency issues.
 
@@ -64,11 +64,10 @@ from
 where
   connection_time > 1000 -- Connections taking longer than 1 second to establish
 order by
-  connection_time desc
-limit 10;
+  connection_time desc;
 ```
 
-### TLS handshake performance issues
+### TLS Handshake Performance Issues
 
 Find connections with slow TLS handshake times that might indicate security configuration or network issues.
 
@@ -88,11 +87,10 @@ from
 where
   tls_handshake_time > 500 -- TLS handshakes taking longer than 500ms
 order by
-  tls_handshake_time desc
-limit 10;
+  tls_handshake_time desc;
 ```
 
-### TLS protocol vulnerabilities
+### TLS Protocol Vulnerabilities
 
 Detect usage of deprecated or insecure TLS protocols.
 
@@ -158,14 +156,12 @@ partition "aws_nlb_access_log" "local_logs" {
 }
 ```
 
-### Collect logs with a custom filter
+### Exclude EC2 related requests
 
-Use the filter argument in your partition to exclude specific events from the logs. This
-example filters out the requests that are not related to EC2 instances to analyze only the relevant logs.
+Use the filter argument in your partition to exclude requests related to EC2 instances.
 
 ```hcl
 partition "aws_nlb_access_log" "my_logs_write" {
-  # Avoid saving read-only events, which can drastically reduce local log size
   filter = "domain_name like 'ec2%'"
 
   source "aws_s3_bucket" {

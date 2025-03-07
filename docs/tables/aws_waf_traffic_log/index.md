@@ -1,6 +1,6 @@
 ---
 title: "Tailpipe Table: aws_waf_traffic_log - Query AWS WAF Traffic Logs"
-description: "AWS WAF Traffic Logs capture detailed information about web requests inspected by AWS WAF, helping analyze threats, monitor rule effectiveness, and improve security posture."
+description: "AWS WAF traffic logs capture detailed information about web requests inspected by AWS WAF, helping analyze threats, monitor rule effectiveness, and improve security posture."
 ---
 
 # Table: aws_waf_traffic_log - Query AWS WAF Traffic Logs
@@ -46,7 +46,7 @@ tailpipe collect aws_waf_traffic_log.my_logs
 
 **[Explore 18+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_waf_traffic_log)**
 
-### Blocked Requests by WAF
+### Blocked Requests
 
 Find all blocked requests recorded by AWS WAF.
 
@@ -64,9 +64,9 @@ order by
   tp_timestamp desc;
 ```
 
-### Top Sources of WAF-Blocked Traffic
+### Top 10 Blocked Client IPs
 
-Identify IPs frequently blocked by AWS WAF.
+List the top 10 IPs frequently blocked by AWS WAF.
 
 ```sql
 select
@@ -83,9 +83,9 @@ order by
 limit 10;
 ```
 
-### Requests Matching SQL Injection Rule
+### Blocked Requests With SQL Injection
 
-Find web requests that matched AWS WAF’s SQL Injection detection.
+Find web requests that matched AWS WAF’s SQL injection detection.
 
 ```sql
 select

@@ -81,5 +81,5 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 }
 
 func (c *AlbAccessLogTable) GetDescription() string {
-	return "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+	return "AWS ALB access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 }

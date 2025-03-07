@@ -1,9 +1,9 @@
 ---
 title: "Tailpipe Table: aws_alb_access_log - Query AWS ALB Access Logs"
-description: "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+description: "AWS ALB access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 ---
 
-# Table: aws_alb_access_log - Query AWS ALB access logs
+# Table: aws_alb_access_log - Query AWS ALB Access Logs
 
 The `aws_alb_access_log` table allows you to query AWS Application Load Balancer (ALB) access logs. This table provides detailed information about requests processed by your load balancers, including client and target details, processing times, and security parameters.
 
@@ -163,9 +163,9 @@ partition "aws_alb_access_log" "local_logs" {
 }
 ```
 
-### Collect logs with a custom filter
+### Exclude successful requests
 
-Use the filter argument in your partition to exclude specific events from the logs. This example excludes requests with status code 200 from the logs while collecting all other requests which can help reduce the size of local log storage and focus on troubleshooting failed requests.
+Use the filter argument in your partition to exclude successful requests to reduce the size of local log storage and focus on troubleshooting failed requests.
 
 ```hcl
 partition "aws_alb_access_log" "my_alb_logs_filtered" {
@@ -193,7 +193,6 @@ partition "aws_alb_access_log" "my_logs_org" {
 ```
 
 ### Collect logs for a single account
-
 
 For a specific account, collect logs for all regions.
 

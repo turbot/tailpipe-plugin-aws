@@ -1,6 +1,6 @@
 ---
 title: "Tailpipe Table: aws_vpc_flow_log - Query AWS VPC Flow Logs"
-description: "AWS VPC Flow Logs capture information about IP traffic going to and from network interfaces in your VPC."
+description: "AWS VPC flow logs capture information about IP traffic going to and from network interfaces in your VPC."
 ---
 
 # Table: aws_vpc_flow_log - Query AWS VPC Flow Logs
@@ -48,46 +48,7 @@ tailpipe collect aws_vpc_flow_log.my_logs
 
 **[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_vpc_flow_log)**
 
-### High-volume network traffic
-
-Identify instances generating high-volume network traffic.
-
-```sql
-select
-  instance_id,
-  count(*) as packet_count,
-  sum(bytes) as total_bytes,
-  date_trunc('minute', start_time) as event_minute
-from
-  aws_vpc_flow_log
-where
-  instance_id is not null
-group by
-  instance_id, event_minute
-order by
-  total_bytes desc;
-```
-
-### Top 10 IP addresses generating the most traffic
-
-Identify the top 10 source IP addresses that generated the most traffic.
-
-```sql
-select
-  src_addr,
-  count(*) as request_count
-from
-  aws_vpc_flow_log
-where
-  src_addr is not null
-group by
-  src_addr
-order by
-  request_count desc
-limit 10;
-```
-
-### Unauthorized traffic attempts
+### Rejected Traffic
 
 Identify rejected traffic within your VPC.
 
@@ -104,6 +65,46 @@ where
   action = 'REJECT'
 order by
   start_time desc;
+```
+
+### High-Volume Network Traffic
+
+Identify network interfaces generating high-volume network traffic.
+
+```sql
+select
+  interface_id,
+  count(*) as packet_count,
+  sum(coalesce(bytes, 0)) as total_bytes,
+  date_trunc('minute', start_time) as event_minute
+from
+  aws_vpc_flow_log
+where
+  bytes is not null
+group by
+  interface_id,
+  event_minute
+order by
+  total_bytes desc;
+```
+
+### Top 10 IP Addresses by Request Count
+
+Identify the top 10 source IP addresses that generated the most traffic.
+
+```sql
+select
+  src_addr,
+  count(*) as request_count
+from
+  aws_vpc_flow_log
+where
+  src_addr is not null
+group by
+  src_addr
+order by
+  request_count desc
+limit 10;
 ```
 
 ## Example Configurations

@@ -78,5 +78,5 @@ func (c *NlbAccessLogTable) EnrichRow(row *NlbAccessLog, sourceEnrichmentFields 
 }
 
 func (c *NlbAccessLogTable) GetDescription() string {
-	return "AWS NLB Access logs capture detailed information about the connections that pass through a Network Load Balancer. This table provides a structured representation of the log data."
+	return "AWS NLB access logs capture detailed information about the connections that pass through a Network Load Balancer. This table provides a structured representation of the log data."
 }
