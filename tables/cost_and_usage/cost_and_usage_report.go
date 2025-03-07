@@ -48,7 +48,7 @@ type CostAndUsageLog struct {
 	LineItemUnblendedRate                                    *string                 `json:"line_item_unblended_rate,omitempty" parquet:"name=line_item_unblended_rate"`
 	LineItemUsageAccountId                                   *string                 `json:"line_item_usage_account_id,omitempty" parquet:"name=line_item_usage_account_id"`
 	LineItemUsageAccountName                                 *string                 `json:"line_item_usage_account_name,omitempty" parquet:"name=line_item_usage_account_name"`
-	LineItemUsageAmount                                      *float64                 `json:"line_item_usage_amount,omitempty" parquet:"name=line_item_usage_amount"`
+	LineItemUsageAmount                                      *float64                `json:"line_item_usage_amount,omitempty" parquet:"name=line_item_usage_amount"`
 	LineItemUsageEndDate                                     *time.Time              `json:"line_item_usage_end_date,omitempty" parquet:"name=line_item_usage_end_date"`
 	LineItemUsageStartDate                                   *time.Time              `json:"line_item_usage_start_date,omitempty" parquet:"name=line_item_usage_start_date"`
 	LineItemUsageType                                        *string                 `json:"line_item_usage_type,omitempty" parquet:"name=line_item_usage_type"`
@@ -481,8 +481,8 @@ func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
 		"product_routing_target":                                   " Defines the destination target for a routed request, typically for networking or messaging services.",
 		"product_routing_type":                                     "Indicates the type of routing (e.g., static, dynamic, policy-based routing).",
 		"product_scan_type":                                        "Specifies the type of scan performed (e.g., security scan, vulnerability scan).",
-		"product_service_code":                                      "This identifies the specific AWS service to the customer as a unique short abbreviation.",
-		"product_service_name":                                      "A simplified description about the AWS service.",
+		"product_service_code":                                     "This identifies the specific AWS service to the customer as a unique short abbreviation.",
+		"product_service_name":                                     "A simplified description about the AWS service.",
 		"product_size_flex":                                        "Describes whether a normalized benefit of the RI can be applied to other instance sizes within the Region and instance family.",
 		"product_sku":                                              "A unique code for a product. The SKU is created by combining the ProductCode, UsageType, and Operation. For size-flexible RIs, the SKU uses the instance that was used. For example, if you used a t2.micro instance and AWS applied a t2.small RI discount to the usage, the line item SKU is created with the t2.micro.",
 		"product_software_type":                                    "Specifies the type of software used (e.g., SaaS, PaaS, or licensed software).",

@@ -192,7 +192,11 @@ func (value *CostAndUsageLog) MapValues(recordMap map[string]string) {
 				switch elemType.Kind() {
 				case reflect.String:
 					val := strVal
-					structField.Set(reflect.ValueOf(&val))
+					if val == "" {
+						structField.Set(reflect.ValueOf(nil))	
+					} else {
+						structField.Set(reflect.ValueOf(&val))
+					}
 				case reflect.Float64:
 					if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
 						structField.Set(reflect.ValueOf(&floatVal)) // Assign converted float64 pointer
