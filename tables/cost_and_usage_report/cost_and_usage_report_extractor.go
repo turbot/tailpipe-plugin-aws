@@ -1,4 +1,4 @@
-package cost_and_usage
+package cost_and_usage_report
 
 import (
 	"archive/zip"

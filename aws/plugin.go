@@ -5,7 +5,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-aws/tables/cloudtrail_log"
-	"github.com/turbot/tailpipe-plugin-aws/tables/cost_and_usage"
+	"github.com/turbot/tailpipe-plugin-aws/tables/cost_and_usage_report"
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
@@ -21,7 +21,7 @@ func init() {
 	// 1. row struct
 	// 2. table implementation
 	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
-	table.RegisterTable[*cost_and_usage.CostAndUsageLog, *cost_and_usage.CostAndUsageLogTable]()
+	table.RegisterTable[*cost_and_usage_report.CostAndUsageLog, *cost_and_usage_report.CostAndUsageLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
 
 	// register sources
