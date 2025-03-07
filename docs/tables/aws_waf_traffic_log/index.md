@@ -192,7 +192,7 @@ partition "aws_waf_traffic_log" "my_logs" {
 }
 ```
 
-### Exclude read requests
+### Exclude GET requests
 
 Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
 
