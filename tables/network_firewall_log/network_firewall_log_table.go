@@ -26,10 +26,8 @@ func (c *NetworkFirewallLogTable) Identifier() string {
 
 // GetSourceMetadata returns the artifact source configurations for the table.
 func (c *NetworkFirewallLogTable) GetSourceMetadata() []*table.SourceMetadata[*NetworkFirewallLog] {
-	// Example file layout – adjust as needed.
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/network-firewall/(?<log_type>flow|alert|tls)/%{DATA:region}/%{DATA:firewall_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{NUMBER:account_id}_network-firewall_%{DATA:log_type}_%{DATA:region}_%{DATA:firewall_name}_%{DATA:timestamp}_%{DATA:hash}.log.gz"),
-		//s3-bucket-name/optional-s3-bucket-prefix/AWSLogs/aws-account-id/network-firewall/log-type/Region/firewall-name/timestamp/
 	}
 
 	return []*table.SourceMetadata[*NetworkFirewallLog]{

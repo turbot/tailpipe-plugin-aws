@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -86,43 +87,30 @@ func unmarshalNetworkFirewallLog(data []byte, log *NetworkFirewallLog) error {
 	if err := json.Unmarshal(data, &temp); err != nil {
 		return err
 	}
-
+	const layout = "2006-01-02T15:04:05.999999-0700"
 	// Assign values from temp struct
 	log.FirewallName = temp.FirewallName
 	log.AvailabilityZone = temp.AvailabilityZone
 
 	// Parse and assign EventTimestamp
 	if temp.EventTimestamp != "" {
-		// Try parsing as Unix timestamp (seconds since epoch)
-		unixTimestamp, err := parseInt64(temp.EventTimestamp)
-		if err == nil {
-			timestamp := time.Unix(unixTimestamp, 0)
-			log.EventTimestamp = &timestamp
-		} else {
-			// Fallback to RFC3339 if it's not a Unix timestamp
-			timestamp, err := time.Parse(time.RFC3339, temp.EventTimestamp)
-			if err != nil {
-				return fmt.Errorf("failed to parse event_timestamp: %w", err)
-			}
-			log.EventTimestamp = &timestamp
+		// For Unix timestamps, we must convert to integer first, then to time
+		unixSeconds, err := strconv.ParseInt(temp.EventTimestamp, 10, 64)
+		if err != nil {
+			return fmt.Errorf("failed to parse event_timestamp as unix timestamp: %w", err)
 		}
+		timestamp := time.Unix(unixSeconds, 0)
+		log.EventTimestamp = &timestamp
 	}
 
 	// Populate Event fields
 	if temp.Event.Timestamp != "" {
 		// Try parsing as Unix timestamp first
-		unixTimestamp, err := parseInt64(temp.Event.Timestamp)
-		if err == nil {
-			timestamp := time.Unix(unixTimestamp, 0)
-			log.Event.Timestamp = &timestamp
-		} else {
-			// Fallback to RFC3339
-			timestamp, err := time.Parse(time.RFC3339, temp.Event.Timestamp)
-			if err != nil {
-				return fmt.Errorf("failed to parse event timestamp: %w", err)
-			}
-			log.Event.Timestamp = &timestamp
+		timestamp, err := time.Parse(layout, temp.Event.Timestamp)
+		if err != nil {
+			return fmt.Errorf("failed to parse event timestamp: %w", err)
 		}
+		log.Event.Timestamp = &timestamp
 	}
 
 	log.Event.FlowID = temp.Event.FlowID
@@ -156,7 +144,6 @@ func unmarshalNetworkFirewallLog(data []byte, log *NetworkFirewallLog) error {
 			MinTtl:  int(temp.Event.NetFlow.MinTTL),
 			MaxTtl:  int(temp.Event.NetFlow.MaxTTL),
 		}
-		const layout = "2006-01-02T15:04:05.999999-0700"
 
 		// Parse start and end times
 		if temp.Event.NetFlow.Start != "" {
@@ -201,9 +188,3 @@ func unmarshalNetworkFirewallLog(data []byte, log *NetworkFirewallLog) error {
 	return nil
 }
 
-// Helper function to parse a string to int64
-func parseInt64(value string) (int64, error) {
-	var result int64
-	_, err := fmt.Sscanf(value, "%d", &result)
-	return result, err
-}
