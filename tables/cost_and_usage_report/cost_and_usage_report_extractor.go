@@ -254,15 +254,20 @@ func initializeNestedMaps(value *CostAndUsageReport) {
 // assignToNestedMap assigns values to dynamically mapped attributes
 func assignToNestedMap(value *CostAndUsageReport, key, strVal string) {
 	switch {
-	case strings.HasPrefix(key, "product"):
+	case strings.HasPrefix(key, "product_"):
+		key = strings.Replace(key, "product_", "", 1)
 		(*value.Product)[key] = strVal
-	case strings.HasPrefix(key, "cost_category"):
+	case strings.HasPrefix(key, "cost_category_"):
+		key = strings.Replace(key, "cost_category_", "", 1)
 		(*value.CostCategory)[key] = strVal
-	case strings.HasPrefix(key, "reservation"):
+	case strings.HasPrefix(key, "reservation_"):
+		key = strings.Replace(key, "reservation_", "", 1)
 		(*value.Reservation)[key] = strVal
-	case strings.HasPrefix(key, "resource_tags"):
+	case strings.HasPrefix(key, "resource_tags_"):
+		key = strings.Replace(key, "resource_tags_", "", 1)
 		(*value.ResourceTags)[key] = strVal
-	case strings.HasPrefix(key, "discount"):
+	case strings.HasPrefix(key, "discount_"):
+		key = strings.Replace(key, "discount_", "", 1)
 		(*value.Discount)[key] = strVal
 	}
 }
