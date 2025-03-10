@@ -9,7 +9,7 @@ import (
 // The following structure is defined based on the legacy and CUR 2.0 Schema structure.
 // Legacy Schema: https://docs.aws.amazon.com/cur/latest/userguide/data-dictionary.html
 // CUR 2.0 Schema: https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2.html
-type CostAndUsageLog struct {
+type CostAndUsageReport struct {
 	schema.CommonFields
 
 	BillBillingEntity                                        *string                 `json:"bill_billing_entity,omitempty" parquet:"name=bill_billing_entity"`
@@ -298,7 +298,7 @@ type CostAndUsageLog struct {
 	SplitLineItemUnusedCost                                  *float64                `json:"split_line_item_unused_cost,omitempty" parquet:"name=split_line_item_unused_cost"`
 }
 
-func (c *CostAndUsageLog) GetColumnDescriptions() map[string]string {
+func (c *CostAndUsageReport) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"bill_billing_entity":                                      "Helps in identify whether the invoices or transactions are for AWS Marketplace or for purchases of other AWS services.",
 		"bill_billing_period_end_date":                             "The end date of the billing period that is covered by this report, in UTC. The format is YYYY-MM-DDTHH:mm:ssZ.",

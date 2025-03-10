@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log/slog"
 	"reflect"
 	"strconv"
 	"strings"
@@ -60,7 +61,7 @@ func extractFromZip(zipData []byte) ([]any, error) {
 		return nil, fmt.Errorf("failed to open zip reader: %v", err)
 	}
 
-	var records []*CostAndUsageLog
+	var records []*CostAndUsageReport
 
 	// Iterate through the files in the archive
 	for _, file := range zipReader.File {
@@ -80,7 +81,7 @@ func extractFromZip(zipData []byte) ([]any, error) {
 
 			// Append extracted records
 			for _, r := range csvRecords {
-				if rec, ok := r.(*CostAndUsageLog); ok {
+				if rec, ok := r.(*CostAndUsageReport); ok {
 					records = append(records, rec)
 				}
 			}
@@ -101,7 +102,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		return nil, fmt.Errorf("error reading CSV header: %v", err)
 	}
 
-	var records []*CostAndUsageLog
+	var records []*CostAndUsageReport
 
 	// Read the remaining rows
 	for {
@@ -128,7 +129,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 			}
 		}
 
-		record := &CostAndUsageLog{}
+		record := &CostAndUsageReport{}
 		record.MapValues(recordMap)
 
 		// Append the record
@@ -140,7 +141,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 }
 
 // Convert a slice of structs to a slice of empty interfaces
-func convertToAny(records []*CostAndUsageLog) []any {
+func convertToAny(records []*CostAndUsageReport) []any {
 	res := make([]any, len(records))
 	for i, record := range records {
 		res[i] = record
@@ -149,24 +150,88 @@ func convertToAny(records []*CostAndUsageLog) []any {
 }
 
 // MapValues dynamically assigns values based on JSON tags, iterating over the map instead of struct fields
-func (value *CostAndUsageLog) MapValues(recordMap map[string]string) {
+func (value *CostAndUsageReport) MapValues(recordMap map[string]string) {
+	if value == nil {
+		panic("CostAndUsageReport is nil") // Prevent nil dereference
+	}
+
 	v := reflect.ValueOf(value).Elem()
 	t := v.Type()
 
 	// Create a map to store json tag → field index mapping
 	jsonTagToField := make(map[string]int)
 	for i := 0; i < t.NumField(); i++ {
-		jsonTag := t.Field(i).Tag.Get("json")
+		field := t.Field(i)
+		jsonTag := field.Tag.Get("json")
 		jsonKey := strings.Split(jsonTag, ",")[0]
 		if jsonKey != "" && jsonKey != "-" {
 			jsonTagToField[jsonKey] = i
 		}
 	}
 
-	// Ensure Product, Reservation, ResourceTags, and CostCategory are initialized
+	// Ensure required maps are initialized
+	initializeNestedMaps(value)
+
+	// Iterate over map keys instead of struct fields
+	for key, strVal := range recordMap {
+		if fieldIndex, exists := jsonTagToField[key]; exists {
+			structField := v.Field(fieldIndex)
+
+			// Ensure the field is addressable and settable
+			if !structField.CanSet() {
+				slog.Debug("Skipping field %s: not settable", key)
+				continue
+			}
+
+			// Assign value based on field type
+			if structField.Kind() == reflect.Ptr {
+				elemType := structField.Type().Elem()
+
+				switch elemType.Kind() {
+				case reflect.String:
+					val := strVal
+					if val == "" {
+						structField.Set(reflect.Zero(structField.Type())) // Set to nil
+					} else {
+						structField.Set(reflect.ValueOf(&val))
+					}
+				case reflect.Float64:
+					if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
+						structField.Set(reflect.ValueOf(&floatVal))
+					} else {
+						defaultVal := float64(0)
+						structField.Set(reflect.ValueOf(&defaultVal))
+					}
+				case reflect.Int64:
+					if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
+						structField.Set(reflect.ValueOf(&intVal))
+					} else {
+						defaultVal := int64(0)
+						structField.Set(reflect.ValueOf(&defaultVal))
+					}
+				case reflect.Struct:
+					if elemType == reflect.TypeOf(time.Time{}) {
+						if timeVal, err := time.Parse(time.RFC3339, strVal); err == nil {
+							structField.Set(reflect.ValueOf(&timeVal))
+						} else {
+							defaultVal := time.Time{}
+							structField.Set(reflect.ValueOf(&defaultVal))
+						}
+					}
+				}
+			}
+		} else {
+			// Handle additional attributes
+			assignToNestedMap(value, key, strVal)
+		}
+	}
+}
+
+// initializeNestedMaps ensures that all map fields in the struct are initialized
+func initializeNestedMaps(value *CostAndUsageReport) {
 	if value.Product == nil {
-		value.Product = new(map[string]interface{})   // Allocate memory for the pointer
-		*value.Product = make(map[string]interface{}) // Assign an empty map
+		value.Product = new(map[string]interface{})
+		*value.Product = make(map[string]interface{})
 	}
 	if value.Reservation == nil {
 		value.Reservation = new(map[string]interface{})
@@ -180,61 +245,24 @@ func (value *CostAndUsageLog) MapValues(recordMap map[string]string) {
 		value.CostCategory = new(map[string]interface{})
 		*value.CostCategory = make(map[string]interface{})
 	}
+	if value.Discount == nil {
+		value.Discount = new(map[string]interface{})
+		*value.Discount = make(map[string]interface{})
+	}
+}
 
-	// Iterate over map keys instead of struct fields
-	for key, strVal := range recordMap {
-		if fieldIndex, exists := jsonTagToField[key]; exists {
-			structField := v.Field(fieldIndex)
-
-			// Assign value based on field type
-			if structField.Kind() == reflect.Ptr {
-				elemType := structField.Type().Elem()
-				switch elemType.Kind() {
-				case reflect.String:
-					val := strVal
-					if val == "" {
-						structField.Set(reflect.ValueOf(nil))	
-					} else {
-						structField.Set(reflect.ValueOf(&val))
-					}
-				case reflect.Float64:
-					if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
-						structField.Set(reflect.ValueOf(&floatVal)) // Assign converted float64 pointer
-					} else {
-						defaultVal := float64(0)
-						structField.Set(reflect.ValueOf(&defaultVal)) // Default value on error
-					}
-				case reflect.Int64:
-					if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
-						structField.Set(reflect.ValueOf(&intVal)) // Assign converted int64 pointer
-					} else {
-						defaultVal := int64(0)
-						structField.Set(reflect.ValueOf(&defaultVal)) // Default value on error
-					}
-				case reflect.Struct:
-					if elemType == reflect.TypeOf(time.Time{}) {
-						if timeVal, err := time.Parse(time.RFC3339, strVal); err == nil {
-							structField.Set(reflect.ValueOf(&timeVal)) // Assign converted time pointer
-						} else {
-							defaultVal := time.Time{}
-							structField.Set(reflect.ValueOf(&defaultVal)) // Default empty time
-						}
-					}
-				}
-			}
-		} else {
-			// The missing keys will be captured based on the key belongs to the group.
-			if strings.HasPrefix(key, "product") {
-				(*value.Product)[key] = strVal
-			} else if strings.HasPrefix(key, "cost_category") {
-				(*value.CostCategory)[key] = strVal
-			} else if strings.HasPrefix(key, "reservation") {
-				(*value.Reservation)[key] = strVal
-			} else if strings.HasPrefix(key, "resource_tags") {
-				(*value.ResourceTags)[key] = strVal
-			} else if strings.HasPrefix(key, "discount") {
-				(*value.Discount)[key] = strVal
-			}
-		}
+// assignToNestedMap assigns values to dynamically mapped attributes
+func assignToNestedMap(value *CostAndUsageReport, key, strVal string) {
+	switch {
+	case strings.HasPrefix(key, "product"):
+		(*value.Product)[key] = strVal
+	case strings.HasPrefix(key, "cost_category"):
+		(*value.CostCategory)[key] = strVal
+	case strings.HasPrefix(key, "reservation"):
+		(*value.Reservation)[key] = strVal
+	case strings.HasPrefix(key, "resource_tags"):
+		(*value.ResourceTags)[key] = strVal
+	case strings.HasPrefix(key, "discount"):
+		(*value.Discount)[key] = strVal
 	}
 }

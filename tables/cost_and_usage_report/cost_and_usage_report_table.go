@@ -18,20 +18,20 @@ import (
 
 const CostUsageLogTableIdentifier = "aws_cost_and_usage_report"
 
-// CostAndUsageLogTable - table for CostAndUsageLogs
-type CostAndUsageLogTable struct{}
+// CostAndUsageReportTable - table for CostAndUsageReports
+type CostAndUsageReportTable struct{}
 
 // Identifier implements table.Table
-func (t *CostAndUsageLogTable) Identifier() string {
+func (t *CostAndUsageReportTable) Identifier() string {
 	return CostUsageLogTableIdentifier
 }
 
-func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*CostAndUsageLog] {
+func (t *CostAndUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*CostAndUsageReport] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"),
 	}
 
-	return []*table.SourceMetadata[*CostAndUsageLog]{
+	return []*table.SourceMetadata[*CostAndUsageReport]{
 		{
 			// any artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
@@ -49,7 +49,7 @@ func (t *CostAndUsageLogTable) GetSourceMetadata() []*table.SourceMetadata[*Cost
 }
 
 // EnrichRow implements table.Table
-func (t *CostAndUsageLogTable) EnrichRow(row *CostAndUsageLog, sourceEnrichmentFields schema.SourceEnrichment) (*CostAndUsageLog, error) {
+func (t *CostAndUsageReportTable) EnrichRow(row *CostAndUsageReport, sourceEnrichmentFields schema.SourceEnrichment) (*CostAndUsageReport, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
@@ -90,4 +90,8 @@ func (t *CostAndUsageLogTable) EnrichRow(row *CostAndUsageLog, sourceEnrichmentF
 	}
 
 	return row, nil
+}
+
+func (c *CostAndUsageReportTable) GetDescription() string {
+	return "AWS Cost and Usage Reports (CUR) provide a comprehensive breakdown of AWS service costs and usage. This table offers a structured view of billing data, including service charges, account-level spending, resource consumption, discounts, and pricing details. It enables cost analysis, budget tracking, and optimization insights across AWS accounts."
 }
