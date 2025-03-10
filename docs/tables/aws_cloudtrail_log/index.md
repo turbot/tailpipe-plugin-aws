@@ -3,7 +3,7 @@ title: "Tailpipe Table: aws_cloudtrail_log - Query AWS CloudTrail Logs"
 description: "AWS CloudTrail logs capture API activity and user actions within your AWS account."
 ---
 
-# Table: aws_cloudtrail_log - Query AWS CloudTrail logs
+# Table: aws_cloudtrail_log - Query AWS CloudTrail Logs
 
 The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
 
@@ -46,7 +46,7 @@ tailpipe collect aws_cloudtrail_log.my_logs
 
 **[Explore 100+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log)**
 
-### Root activity
+### Root Activity
 
 Find any actions taken by the root user.
 
@@ -66,7 +66,7 @@ order by
   event_time desc;
 ```
 
-### Top 10 events
+### Top 10 Events
 
 List the top 10 events and how many times they were called.
 
@@ -85,7 +85,7 @@ order by
 limit 10;
 ```
 
-### High volume S3 access requests
+### High Volume S3 Access Requests
 
 Find users generating a high volume of S3 access requests to identify potential anomalous activity.
 
