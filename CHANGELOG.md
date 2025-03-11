@@ -1,3 +1,30 @@
+## v0.6.0 [2025-03-07]
+
+_What's new?_
+
+- New tables added:
+  - [aws_alb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_alb_access_log) ([#116](https://github.com/turbot/tailpipe-plugin-aws/pull/116))
+  - [aws_nlb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_nlb_access_log) ([#116](https://github.com/turbot/tailpipe-plugin-aws/pull/116))
+  - [aws_vpc_flow_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log) ([#116](https://github.com/turbot/tailpipe-plugin-aws/pull/116))
+  - [aws_waf_traffic_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_waf_traffic_log) ([#116](https://github.com/turbot/tailpipe-plugin-aws/pull/116))
+
+_Dependencies_
+
+- Bumped github.com/aws/aws-sdk-go-v2 from 1.36.2 to 1.36.3 ([#110](https://github.com/turbot/tailpipe-plugin-aws/pull/110))
+- Bumped github.com/aws/aws-sdk-go-v2/credentials from 1.17.59 to 1.17.61 ([#111](https://github.com/turbot/tailpipe-plugin-aws/pull/111))
+- Bumped github.com/turbot/pipe-fittings/v2 from 2.1.1 to 2.2.0 ([#100](https://github.com/turbot/tailpipe-plugin-aws/pull/100))
+
+## v0.5.0 [2025-03-03]
+
+_Enhancements_
+
+- Standardized all example query titles to use `Title Case` for consistency. ([#109](https://github.com/turbot/tailpipe-plugin-aws/pull/109))
+- Added `folder` front matter to all queries for improved organization and discoverability in the Hub. ([#109](https://github.com/turbot/tailpipe-plugin-aws/pull/109))
+
+_Bug fixes_
+
+- Fixed the `display_name` in `docs/index.md` from `Amazon Web Services` to `AWS` for consistency with standard naming conventions. ([#109](https://github.com/turbot/tailpipe-plugin-aws/pull/109))
+
 ## v0.4.0 [2025-02-14]
 
 _Breaking changes_
@@ -8,7 +35,7 @@ _Breaking changes_
 
 _What's new?_
 
-- New tables added
+- New tables added:
   - [aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log) ([#75](https://github.com/turbot/tailpipe-plugin-aws/pull/75))
 
 _Enhancements_
@@ -36,7 +63,7 @@ _Enhancements_
 
 _What's new?_
 
-- New tables added
+- New tables added:
   - [aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log)
-- New sources added
+- New sources added:
   - [aws_s3_bucket](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket)

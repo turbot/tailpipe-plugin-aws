@@ -19,18 +19,18 @@ require (
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.10 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.28 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.33 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.33 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.30 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.34 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.34 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.33 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.6.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.14 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.15 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.14 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.24.15 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.14 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.33.14 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.25.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.29.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.33.16 // indirect
 	github.com/aws/smithy-go v1.22.2 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
@@ -178,9 +178,9 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
-	github.com/aws/aws-sdk-go-v2 v1.36.2
+	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.6
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.59
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.61
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.62
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.77.1
 	github.com/elastic/go-grok v0.3.1
@@ -188,6 +188,6 @@ require (
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.6.0
 	github.com/turbot/go-kit v1.1.0
-	github.com/turbot/pipe-fittings/v2 v2.1.1
+	github.com/turbot/pipe-fittings/v2 v2.2.0
 	golang.org/x/sync v0.11.0
 )

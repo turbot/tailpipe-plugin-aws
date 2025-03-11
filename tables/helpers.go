@@ -63,3 +63,10 @@ func AwsAkasFromArn(arn string) []string {
 
 	return keyElements
 }
+
+func NilIfDash(field *string) *string {
+	if field != nil && *field == "-" {
+		return nil
+	}
+	return field
+}
