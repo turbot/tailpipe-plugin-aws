@@ -21,7 +21,7 @@ func init() {
 	// 1. row struct
 	// 2. table implementation
 	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
-	table.RegisterTable[*cost_and_usage_report.CostAndUsageLog, *cost_and_usage_report.CostAndUsageLogTable]()
+	table.RegisterTable[*cost_and_usage_report.CostAndUsageReport, *cost_and_usage_report.CostAndUsageReportTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
 
 	// register sources

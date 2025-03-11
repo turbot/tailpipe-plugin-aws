@@ -6,8 +6,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
-// The following structure is defined based on the legacy and CUR 2.0 Schema structure.
-// Legacy Schema: https://docs.aws.amazon.com/cur/latest/userguide/data-dictionary.html
 // CUR 2.0 Schema: https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2.html
 type CostAndUsageReport struct {
 	schema.CommonFields
@@ -21,9 +19,6 @@ type CostAndUsageReport struct {
 	BillPayerAccountId                                       *string                 `json:"bill_payer_account_id,omitempty" parquet:"name=bill_payer_account_id"`
 	BillPayerAccountName                                     *string                 `json:"bill_payer_account_name,omitempty" parquet:"name=bill_payer_account_name"`
 	CostCategory                                             *map[string]interface{} `json:"cost_category,omitempty" parquet:"name=cost_category"`
-	CostCategoryProject                                      *string                 `json:"cost_category_project,omitempty" parquet:"name=cost_category_project"`
-	CostCategoryTeam                                         *string                 `json:"cost_category_team,omitempty" parquet:"name=cost_category_team"`
-	CostCategoryTest_Cost_Category                           *string                 `json:"cost_category_test_cost_category,omitempty" parquet:"name=cost_category_test_cost_category"`
 	Discount                                                 *map[string]interface{} `json:"discount,omitempty" parquet:"name=discount"`
 	DiscountBundledDiscount                                  *float64                `json:"discount_bundled_discount,omitempty" parquet:"name=discount_bundled_discount"`
 	DiscountTotalDiscount                                    *float64                `json:"discount_total_discount,omitempty" parquet:"name=discount_total_discount"`
@@ -154,9 +149,6 @@ func (c *CostAndUsageReport) GetColumnDescriptions() map[string]string {
 		"bill_payer_account_id":                                    "The account ID of the paying account. For an organization in AWS Organizations, this is the account ID of the management account.",
 		"bill_payer_account_name":                                  "The account name of the paying account. For an organization in AWS Organizations, this is the name of the management account.",
 		"cost_category":                                            "Cost Category entries are automatically populated when you create a Cost Category and categorization rule. These entries include user-defined Cost Category names as keys, and corresponding Cost Category values.",
-		"cost_category_project":                                    "The project associated with the cost.",
-		"cost_category_team":                                       "The team responsible for the cost.",
-		"cost_category_test_cost_category":                         "A test cost category grouping.",
 		"discount":                                                 "A map column that contains key-value pairs of additional discount data for a given line item when applicable.",
 		"discount_bundled_discount":                                "The bundled discount applied to the line item. A bundled discount is a usage-based discount that provides free or discounted usage of a service or feature based on the usage of another service or feature.",
 		"discount_total_discount":                                  "The sum of all the discount columns for the corresponding line item.",
