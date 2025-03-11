@@ -266,5 +266,9 @@ func (c *CostUsageReport) GetColumnDescriptions() map[string]string {
 		"split_line_item_split_usage":                                      "The usage for vCPU or memory (based on line_item_usage_type) allocated for the specified time period to the Amazon ECS task. This is defined as the maximum usage of split_line_item_reserved_usage or split_line_item_actual_usage.",
 		"split_line_item_split_usage_ratio":                                "The ratio of vCPU or memory (based on line_item_usage_type) allocated to the Amazon ECS task compared to the overall CPU or memory available on the EC2 instance (referenced in the split_line_item_parent_resource_id column).",
 		"split_line_item_unused_cost":                                      "The unused cost for vCPU or memory (based on line_item_usage_type) allocated for the time period to the Amazon ECS task. Unused costs are costs associated with resources (CPU or memory) on the EC2 instance (referenced in the split_line_item_parent_resource_id column) that were not utilized for the specified time period. This includes amortized costs if the EC2 instance (split_line_item_parent_resource_id) has upfront or partial upfront charges for reservations or Savings Plans.",
+
+		// Override table specific tp_* column descriptions
+		"tp_index":     "The AWS account ID associated with the report, determined based on the following priority: LineItemUsageAccountId, BillPayerAccountId, or a default value if neither is available.",
+		"tp_timestamp": "The timestamp representing the start or end date of the usage, depending on availability. If not available, the billing period start or end date is used. The timestamp is in ISO 8601 format.",
 	}
 }
