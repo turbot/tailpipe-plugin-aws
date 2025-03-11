@@ -16,40 +16,40 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const CostUsageLogTableIdentifier = "aws_cost_and_usage_report"
+const CostUsageReportTableIdentifier = "aws_cost_and_usage_report"
 
-// CostAndUsageReportTable - table for CostAndUsageReports
-type CostAndUsageReportTable struct{}
+// CostUsageReportTable - table for CostUsageReports
+type CostUsageReportTable struct{}
 
 // Identifier implements table.Table
-func (t *CostAndUsageReportTable) Identifier() string {
-	return CostUsageLogTableIdentifier
+func (t *CostUsageReportTable) Identifier() string {
+	return CostUsageReportTableIdentifier
 }
 
-func (t *CostAndUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*CostAndUsageReport] {
+func (t *CostUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageReport] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"),
 	}
 
-	return []*table.SourceMetadata[*CostAndUsageReport]{
+	return []*table.SourceMetadata[*CostUsageReport]{
 		{
 			// any artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewCostUsageLogExtractor())},
+				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor())},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewCostUsageLogExtractor())},
+				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor())},
 		},
 	}
 }
 
 // EnrichRow implements table.Table
-func (t *CostAndUsageReportTable) EnrichRow(row *CostAndUsageReport, sourceEnrichmentFields schema.SourceEnrichment) (*CostAndUsageReport, error) {
+func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentFields schema.SourceEnrichment) (*CostUsageReport, error) {
 	// initialize the enrichment fields to any fields provided by the source
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
@@ -92,6 +92,6 @@ func (t *CostAndUsageReportTable) EnrichRow(row *CostAndUsageReport, sourceEnric
 	return row, nil
 }
 
-func (c *CostAndUsageReportTable) GetDescription() string {
+func (c *CostUsageReportTable) GetDescription() string {
 	return "AWS Cost and Usage Reports (CUR) provide a comprehensive breakdown of AWS service costs and usage. This table offers a structured view of billing data, including service charges, account-level spending, resource consumption, discounts, and pricing details. It enables cost analysis, budget tracking, and optimization insights across AWS accounts."
 }

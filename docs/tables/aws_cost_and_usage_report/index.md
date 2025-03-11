@@ -185,7 +185,7 @@ partition "aws_cost_and_usage_report" "org_cur" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-org-bucket"
-    file_layout = "%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestampz}/%{DATA}.csv.(?:gz|zip)"
+    file_layout = "%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"
   }
 }
 ```
@@ -198,4 +198,4 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 
 | Argument      | Default |
 |--------------|---------|
-| file_layout  | `%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestampz}/%{DATA}.csv.(?:gz|zip)` |
+| file_layout  | `%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)` |

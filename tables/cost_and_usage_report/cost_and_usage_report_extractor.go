@@ -17,21 +17,21 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 )
 
-// CostUsageLogExtractor is an extractor that receives JSON serialised CostUsageLogBatch objects
-// and extracts CostUsageLog records from them
-type CostUsageLogExtractor struct {
+// CostUsageReportExtractor is an extractor that receives JSON serialised CostUsageReportBatch objects
+// and extracts CostUsageReport records from them
+type CostUsageReportExtractor struct {
 }
 
-// NewCostUsageLogExtractor creates a new CostUsageLogExtractor
-func NewCostUsageLogExtractor() artifact_source.Extractor {
-	return &CostUsageLogExtractor{}
+// NewCostUsageReportExtractor creates a new CostUsageReportExtractor
+func NewCostUsageReportExtractor() artifact_source.Extractor {
+	return &CostUsageReportExtractor{}
 }
 
-func (c *CostUsageLogExtractor) Identifier() string {
+func (c *CostUsageReportExtractor) Identifier() string {
 	return "cost_and_usage_report_extractor"
 }
 
-func (c *CostUsageLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
+func (c *CostUsageReportExtractor) Extract(_ context.Context, a any) ([]any, error) {
 	// Assert that 'a' is of type []byte
 	data, ok := a.([]byte)
 	if !ok {
@@ -61,7 +61,7 @@ func extractFromZip(zipData []byte) ([]any, error) {
 		return nil, fmt.Errorf("failed to open zip reader: %v", err)
 	}
 
-	var records []*CostAndUsageReport
+	var records []*CostUsageReport
 
 	// Iterate through the files in the archive
 	for _, file := range zipReader.File {
@@ -81,7 +81,7 @@ func extractFromZip(zipData []byte) ([]any, error) {
 
 			// Append extracted records
 			for _, r := range csvRecords {
-				if rec, ok := r.(*CostAndUsageReport); ok {
+				if rec, ok := r.(*CostUsageReport); ok {
 					records = append(records, rec)
 				}
 			}
@@ -102,7 +102,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		return nil, fmt.Errorf("error reading CSV header: %v", err)
 	}
 
-	var records []*CostAndUsageReport
+	var records []*CostUsageReport
 
 	// Read the remaining rows
 	for {
@@ -129,7 +129,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 			}
 		}
 
-		record := &CostAndUsageReport{}
+		record := &CostUsageReport{}
 		record.MapValues(recordMap)
 
 		// Append the record
@@ -141,7 +141,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 }
 
 // Convert a slice of structs to a slice of empty interfaces
-func convertToAny(records []*CostAndUsageReport) []any {
+func convertToAny(records []*CostUsageReport) []any {
 	res := make([]any, len(records))
 	for i, record := range records {
 		res[i] = record
@@ -150,9 +150,9 @@ func convertToAny(records []*CostAndUsageReport) []any {
 }
 
 // MapValues dynamically assigns values based on JSON tags, iterating over the map instead of struct fields
-func (value *CostAndUsageReport) MapValues(recordMap map[string]string) {
+func (value *CostUsageReport) MapValues(recordMap map[string]string) {
 	if value == nil {
-		panic("CostAndUsageReport is nil") // Prevent nil dereference
+		panic("CostUsageReport is nil") // Prevent nil dereference
 	}
 
 	v := reflect.ValueOf(value).Elem()
@@ -228,7 +228,7 @@ func (value *CostAndUsageReport) MapValues(recordMap map[string]string) {
 }
 
 // initializeNestedMaps ensures that all map fields in the struct are initialized
-func initializeNestedMaps(value *CostAndUsageReport) {
+func initializeNestedMaps(value *CostUsageReport) {
 	if value.Product == nil {
 		value.Product = new(map[string]interface{})
 		*value.Product = make(map[string]interface{})
@@ -252,7 +252,7 @@ func initializeNestedMaps(value *CostAndUsageReport) {
 }
 
 // assignToNestedMap assigns values to dynamically mapped attributes
-func assignToNestedMap(value *CostAndUsageReport, key, strVal string) {
+func assignToNestedMap(value *CostUsageReport, key, strVal string) {
 	switch {
 	case strings.HasPrefix(key, "product_"):
 		key = strings.Replace(key, "product_", "", 1)

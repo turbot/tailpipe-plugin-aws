@@ -26,7 +26,7 @@ func init() {
 	// 2. table implementation
 	table.RegisterTable[*alb_access_log.AlbAccessLog, *alb_access_log.AlbAccessLogTable]()
 	table.RegisterTable[*cloudtrail_log.CloudTrailLog, *cloudtrail_log.CloudTrailLogTable]()
-	table.RegisterTable[*cost_and_usage_report.CostAndUsageReport, *cost_and_usage_report.CostAndUsageReportTable]()
+	table.RegisterTable[*cost_and_usage_report.CostUsageReport, *cost_and_usage_report.CostUsageReportTable]()
 	table.RegisterTable[*nlb_access_log.NlbAccessLog, *nlb_access_log.NlbAccessLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
 	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
