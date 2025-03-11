@@ -179,7 +179,7 @@ func (value *CostAndUsageReport) MapValues(recordMap map[string]string) {
 
 			// Ensure the field is addressable and settable
 			if !structField.CanSet() {
-				slog.Debug("Skipping field %s: not settable", key)
+				slog.Debug("Skipping field '", key, "' is not settable")
 				continue
 			}
 
