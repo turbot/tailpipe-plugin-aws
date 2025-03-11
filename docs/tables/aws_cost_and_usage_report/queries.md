@@ -105,7 +105,7 @@ order by
 ```
 
 ```yaml
-folder: Analysis/Cost Anomalies
+folder: Account
 ```
 
 ### High Data Transfer Usage
@@ -312,6 +312,74 @@ where
   ((c.total_cost - a.avg_monthly_cost) / a.avg_monthly_cost) > 0.2
 order by
   percentage_increase desc;
+```
+
+```yaml
+folder: Account
+```
+
+### Cost comparison across billing periods
+
+Compare costs between the current and previous billing period.
+
+```sql
+with current_period as (
+  select
+    line_item_product_code as service,
+    sum(line_item_unblended_cost) as cost,
+    line_item_currency_code as currency
+  from
+    aws_cost_and_usage_report
+  where
+    bill_billing_period_start_date = (
+      select max(bill_billing_period_start_date)
+      from aws_cost_and_usage_report
+    )
+  group by
+    line_item_product_code,
+    line_item_currency_code
+),
+previous_period as (
+  select
+    line_item_product_code as service,
+    sum(line_item_unblended_cost) as cost,
+    line_item_currency_code as currency
+  from
+    aws_cost_and_usage_report
+  where
+    bill_billing_period_start_date = (
+      select max(bill_billing_period_start_date)
+      from aws_cost_and_usage_report
+      where bill_billing_period_start_date < (
+        select max(bill_billing_period_start_date)
+        from aws_cost_and_usage_report
+      )
+    )
+  group by
+    line_item_product_code,
+    line_item_currency_code
+)
+
+select
+  current_period.service,
+  current_period.cost as current_cost,
+  previous_period.cost as previous_cost,
+  (current_period.cost - coalesce(previous_period.cost, 0)) as cost_difference,
+  case
+    when previous_period.cost > 0 then
+      ((current_period.cost - previous_period.cost) / previous_period.cost) * 100
+    else
+      null
+  end as percentage_change,
+  current_period.currency
+from
+  current_period
+  left join previous_period on (
+    current_period.service = previous_period.service
+    and current_period.currency = previous_period.currency
+  )
+order by
+  current_cost desc;
 ```
 
 ```yaml
