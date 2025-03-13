@@ -261,7 +261,7 @@ Compare spending across AWS regions.
 
 ```sql
 select
-  product_region as region,
+  product_region_code as region,
   sum(cast(line_item_unblended_cost as double)) as total_cost
 from
   aws_cost_and_usage_report

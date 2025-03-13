@@ -104,13 +104,13 @@ Get a breakdown of usage and cost by AWS region.
 
 ```sql
 select
-  product_region,
+  product_region_code,
   sum(cast(line_item_usage_amount as double)) as total_usage,
   sum(line_item_unblended_cost) as total_cost
 from
   aws_cost_and_usage_report
 group by
-  product_region
+  product_region_code
 order by
   total_cost desc;
 ```
