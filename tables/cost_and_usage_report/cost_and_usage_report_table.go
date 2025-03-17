@@ -37,13 +37,15 @@ func (t *CostUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*Cost
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor())},
+				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor()),
+			},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor())},
+				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor()),
+			},
 		},
 	}
 }

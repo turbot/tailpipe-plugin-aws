@@ -11,6 +11,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/vpc_flow_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/waf_traffic_log"
+	"github.com/turbot/tailpipe-plugin-aws/tables/cost_and_usage_focus_1_0"
 	"github.com/turbot/tailpipe-plugin-sdk/plugin"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -31,6 +32,7 @@ func init() {
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
 	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
+	table.RegisterTable[*cost_and_usage_focus_1_0.Focus1_0, *cost_and_usage_focus_1_0.Focus1_0Table]()
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
