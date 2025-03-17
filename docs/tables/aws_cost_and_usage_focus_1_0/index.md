@@ -51,8 +51,8 @@ Retrieve the total cost for each month, grouped by AWS account.
 
 ```sql
 select
-  date_trunc('month', billing_period_start) as billing_month,
-  billing_account_id as account_id,
+  date_trunc('month', charge_period_start) as billing_month,
+  sub_account_id as account_id,
   sum(billed_cost) as total_cost
 from
   aws_cost_and_usage_focus_1_0
