@@ -72,7 +72,10 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		}
 
 		record := &Focus1_0{}
-		record.mapValues(recordMap)
+		err = record.mapValues(recordMap)
+		if err != nil {
+			return nil, fmt.Errorf("error in mapping the value to struct: %w", err)
+		}
 
 		// Append the record
 		records = append(records, record)
