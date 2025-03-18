@@ -166,8 +166,6 @@ Identify expensive Amazon EBS volumes.
 select
   line_item_resource_id,
   line_item_product_code,
-  product_volume_api_name,
-  product_product_name,
   sum(cast(line_item_unblended_cost as double)) as total_cost
 from
   aws_cost_and_usage_report
@@ -177,9 +175,7 @@ where
   and line_item_usage_type like '%EBS:VolumeUsage%'
 group by
   line_item_resource_id, 
-  product_volume_api_name, 
-  line_item_product_code, 
-  product_product_name
+  line_item_product_code
 order by
   total_cost desc
 limit 10;
