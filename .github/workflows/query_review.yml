@@ -1,77 +1,272 @@
-name: Query Review Bot
+name: SQL Query Evaluator
 
 on:
   pull_request:
-    types:
-      - labeled
-  workflow_dispatch: # Allows manual triggering from GitHub UI
-
-permissions:
-  pull-requests: write
-  contents: read
+    types: [labeled]
 
 jobs:
-  review-query:
-    if: |
-      github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test-github-actions'
+  evaluate-queries:
+    if: github.event.label.name == 'review'
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Increased timeout to handle retries
+    
     steps:
-      - name: Checkout PR Code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 2
-
+          fetch-depth: 0  # Fetch all history so we can see changes
+        
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
-
-      - name: Install Dependencies
+          python-version: '3.10'
+          
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install duckdb
-
-      - name: Get Modified queries.md Files
-        id: get_files
+          pip install anthropic python-dotenv
+      
+      - name: Identify changed query files and their tables
+        id: find-changes
         run: |
-          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
-          MODIFIED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}..HEAD | grep 'queries.md' || echo "")
-
-          if [[ -z "$MODIFIED_FILES" ]]; then
-            MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | grep 'queries.md' || echo "")
-          fi
-
-          echo "Modified files: $MODIFIED_FILES"
-          echo "files=$MODIFIED_FILES" >> $GITHUB_ENV
-
-      - name: Evaluate Queries
-        id: evaluate_queries
-        run: |
-          if [[ -z "${{ env.files }}" ]]; then
-            echo "No queries.md files found."
-            exit 0
-          fi
-
-          OUTPUT=""
-          for FILE in ${{ env.files }}; do
-            echo "Processing file: $FILE"
-            RESULT=$(python scripts/evaluate_sql.py "$FILE")
-            OUTPUT+="\n\n#### Review for $FILE\n$RESULT"
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          echo "Changed files: $CHANGED_FILES"
+          
+          # Initialize empty arrays for query files and their corresponding schemas
+          QUERY_FILES=()
+          TABLE_NAMES=()
+          DISPLAY_NAMES=()
+          
+          # Find changed query files and their corresponding table names
+          for FILE in $CHANGED_FILES; do
+            # Check if it's a queries.md file in the docs/tables directory
+            if [[ $FILE =~ docs/tables/(.+)/queries.md ]]; then
+              echo "Found changed query file: $FILE"
+              
+              # Extract the full table name from the path (may include aws_ prefix)
+              FULL_TABLE_NAME="${BASH_REMATCH[1]}"
+              echo "Full table name from path: $FULL_TABLE_NAME"
+              
+              # Strip aws_ prefix if present for the actual table name
+              TABLE_NAME="${FULL_TABLE_NAME#aws_}"
+              echo "Actual table name (for schema): $TABLE_NAME"
+              
+              QUERY_FILES+=("$FILE")
+              TABLE_NAMES+=("$TABLE_NAME")
+              DISPLAY_NAMES+=("$FULL_TABLE_NAME")
+            fi
           done
-
-          echo -e "$OUTPUT" > review_output.txt
-          echo "review_output=$(cat review_output.txt)" >> $GITHUB_ENV
-
-      - name: Comment on PR
-        run: |
-          if [[ -z "${{ env.review_output }}" ]]; then
-            echo "No AI suggestions to post."
-            exit 0
+          
+          # Create output variables for next steps
+          if [[ ${#QUERY_FILES[@]} -gt 0 ]]; then
+            echo "QUERY_FILES=${QUERY_FILES[*]}" >> $GITHUB_OUTPUT
+            echo "TABLE_NAMES=${TABLE_NAMES[*]}" >> $GITHUB_OUTPUT
+            echo "DISPLAY_NAMES=${DISPLAY_NAMES[*]}" >> $GITHUB_OUTPUT
+            echo "FOUND_CHANGES=true" >> $GITHUB_OUTPUT
+          else
+            echo "No relevant changes found to query files"
+            echo "FOUND_CHANGES=false" >> $GITHUB_OUTPUT
           fi
-
-          COMMENT="### 🤖 SQL Query Review\n${{ env.review_output }}"
-          echo "$COMMENT" > pr_comment.txt
-
-          gh pr comment ${{ github.event.pull_request.html_url }} --body-file pr_comment.txt
+      
+      - name: Extract schema definitions
+        id: extract-schemas
+        if: steps.find-changes.outputs.FOUND_CHANGES == 'true'
+        run: |
+          # Convert space-separated strings to arrays
+          IFS=' ' read -ra QUERY_FILES <<< "${{ steps.find-changes.outputs.QUERY_FILES }}"
+          IFS=' ' read -ra TABLE_NAMES <<< "${{ steps.find-changes.outputs.TABLE_NAMES }}"
+          IFS=' ' read -ra DISPLAY_NAMES <<< "${{ steps.find-changes.outputs.DISPLAY_NAMES }}"
+          
+          mkdir -p schema_extracts
+          
+          # Get list of all modified files in the PR
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          
+          # For each table, try to find and extract its schema
+          for i in "${!TABLE_NAMES[@]}"; do
+            TABLE_NAME="${TABLE_NAMES[$i]}"
+            DISPLAY_NAME="${DISPLAY_NAMES[$i]}"
+            
+            echo "Looking for schema for table: $TABLE_NAME (display name: $DISPLAY_NAME)"
+            
+            # First, check if the table schema was modified in this PR
+            # This helps detect newly added tables
+            NEW_SCHEMA_FILES=()
+            for FILE in $CHANGED_FILES; do
+              if [[ $FILE == tables*/${TABLE_NAME}/${TABLE_NAME}.go || $FILE == tables*/${TABLE_NAME}.go ]]; then
+                NEW_SCHEMA_FILES+=("$FILE")
+                echo "Found schema file in PR changes: $FILE"
+              fi
+            done
+            
+            if [[ ${#NEW_SCHEMA_FILES[@]} -gt 0 ]]; then
+              # Use the first matching schema file from PR changes
+              SCHEMA_FILE="${NEW_SCHEMA_FILES[0]}"
+              echo "Using schema file from PR changes: $SCHEMA_FILE"
+            else
+              # Try specific locations for existing files
+              SCHEMA_FILE="tables/${TABLE_NAME}/${TABLE_NAME}.go"
+              if [[ -f "$SCHEMA_FILE" ]]; then
+                echo "Found schema file at expected location: $SCHEMA_FILE"
+              else
+                # Try different potential locations for the schema file
+                SCHEMA_LOCATIONS=(
+                  "tables/${TABLE_NAME}/${TABLE_NAME}.go"
+                  "tables/${TABLE_NAME}/table.go"
+                  "tables/${TABLE_NAME}*.go"
+                  "tables/*/${TABLE_NAME}.go"
+                  "tables/${TABLE_NAME}*/*.go"
+                )
+                
+                SCHEMA_FOUND=false
+                
+                for SCHEMA_PATTERN in "${SCHEMA_LOCATIONS[@]}"; do
+                  echo "Searching with pattern: $SCHEMA_PATTERN"
+                  # Find matching files
+                  mapfile -t MATCHING_FILES < <(find tables -path "$SCHEMA_PATTERN" 2>/dev/null || find tables -name "$SCHEMA_PATTERN" 2>/dev/null)
+                  
+                  if [[ ${#MATCHING_FILES[@]} -gt 0 ]]; then
+                    SCHEMA_FILE="${MATCHING_FILES[0]}"
+                    echo "Found schema file for ${TABLE_NAME}: ${SCHEMA_FILE}"
+                    break
+                  fi
+                done
+              fi
+            fi
+            
+            OUTPUT_FILE="schema_extracts/${DISPLAY_NAME}_schema.txt"
+            
+            if [[ -f "$SCHEMA_FILE" ]]; then
+              # Extract the struct definition
+              echo "Extracting schema from $SCHEMA_FILE to $OUTPUT_FILE"
+              awk '/type.*struct \{/,/\}/' "$SCHEMA_FILE" > "$OUTPUT_FILE"
+              
+              if [[ -s "$OUTPUT_FILE" ]]; then
+                echo "Successfully extracted schema for ${TABLE_NAME}"
+                echo "Schema content preview:"
+                head -n 10 "$OUTPUT_FILE"
+              else
+                echo "Warning: Extracted schema is empty, trying alternate extraction method"
+                grep -A 50 -B 5 "type.*struct" "$SCHEMA_FILE" > "$OUTPUT_FILE"
+                
+                if [[ -s "$OUTPUT_FILE" ]]; then
+                  echo "Successfully extracted schema using alternate method"
+                else
+                  echo "Could not extract schema, using default"
+                  echo "type ${TABLE_NAME^}Log struct {}" > "$OUTPUT_FILE"
+                fi
+              fi
+            else
+              echo "Could not find schema file for ${TABLE_NAME}, using default"
+              echo "type ${TABLE_NAME^}Log struct {}" > "$OUTPUT_FILE"
+            fi
+          done
+          
+          echo "QUERY_FILES_LIST=${QUERY_FILES[*]}" >> $GITHUB_OUTPUT
+          echo "TABLE_NAMES_LIST=${TABLE_NAMES[*]}" >> $GITHUB_OUTPUT
+          echo "DISPLAY_NAMES_LIST=${DISPLAY_NAMES[*]}" >> $GITHUB_OUTPUT
+      
+      - name: Run query evaluator for each table
+        id: run-evaluator
+        if: steps.find-changes.outputs.FOUND_CHANGES == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Ensure the script exists
+          if [ ! -f "scripts/claude_sql.py" ]; then
+            echo "❌ Script 'scripts/claude_sql.py' not found!"
+            exit 1
+          fi
+          
+          # Convert space-separated strings to arrays
+          IFS=' ' read -ra QUERY_FILES <<< "${{ steps.extract-schemas.outputs.QUERY_FILES_LIST }}"
+          IFS=' ' read -ra TABLE_NAMES <<< "${{ steps.extract-schemas.outputs.TABLE_NAMES_LIST }}"
+          IFS=' ' read -ra DISPLAY_NAMES <<< "${{ steps.extract-schemas.outputs.DISPLAY_NAMES_LIST }}"
+          
+          # Create directory for results
+          mkdir -p query_results
+          
+          # Track evaluation status
+          SUCCESSFUL_EVALUATIONS=()
+          
+          # Process each query file with its corresponding schema
+          for i in "${!QUERY_FILES[@]}"; do
+            QUERY_FILE="${QUERY_FILES[$i]}"
+            TABLE_NAME="${TABLE_NAMES[$i]}"
+            DISPLAY_NAME="${DISPLAY_NAMES[$i]}"
+            SCHEMA_FILE="schema_extracts/${DISPLAY_NAME}_schema.txt"
+            RESULT_FILE="query_results/${DISPLAY_NAME}_results.md"
+            
+            echo "Evaluating queries for table ${DISPLAY_NAME}..."
+            echo "Query file: ${QUERY_FILE}"
+            echo "Schema file: ${SCHEMA_FILE}"
+            
+            # Check if files exist
+            if [[ ! -f "$QUERY_FILE" ]]; then
+              echo "❌ Query file not found: $QUERY_FILE"
+              continue
+            fi
+            
+            if [[ ! -f "$SCHEMA_FILE" ]]; then
+              echo "❌ Schema file not found: $SCHEMA_FILE"
+              continue
+            fi
+            
+            # Read the schema content
+            SCHEMA_CONTENT=$(cat "$SCHEMA_FILE")
+            
+            # Run the query evaluator with the schema content and table name
+            SCHEMA_CONTENT="$SCHEMA_CONTENT" TABLE_NAME="${DISPLAY_NAME}" python scripts/claude_sql.py "$QUERY_FILE"
+            
+            # Copy the output file to our results directory
+            if [[ -f "review_output.md" ]]; then
+              cp review_output.md "$RESULT_FILE"
+              echo "✅ Evaluation for ${DISPLAY_NAME} completed. Results saved to ${RESULT_FILE}"
+              SUCCESSFUL_EVALUATIONS+=("${DISPLAY_NAME}")
+            else
+              echo "❌ No output file generated for ${DISPLAY_NAME}"
+            fi
+          done
+          
+          # Save successful evaluations to output
+          if [[ ${#SUCCESSFUL_EVALUATIONS[@]} -gt 0 ]]; then
+            echo "SUCCESSFUL_EVALUATIONS=${SUCCESSFUL_EVALUATIONS[*]}" >> $GITHUB_OUTPUT
+            echo "ANY_SUCCESS=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ No successful evaluations completed"
+            echo "ANY_SUCCESS=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Post evaluation results as PR comments
+        if: steps.run-evaluator.outputs.ANY_SUCCESS == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            // Get list of successful evaluations
+            const successfulEvals = '${{ steps.run-evaluator.outputs.SUCCESSFUL_EVALUATIONS }}'.split(' ');
+            
+            for (const tableName of successfulEvals) {
+              const resultFile = `query_results/${tableName}_results.md`;
+              
+              if (fs.existsSync(resultFile)) {
+                // Read evaluation results
+                const evaluationResults = fs.readFileSync(resultFile, 'utf8');
+                
+                // Create comment title with table name
+                const commentBody = `## SQL Query Evaluation Results for \`${tableName}\`\n\n${evaluationResults}`;
+                
+                // Post as a comment on the PR
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: commentBody
+                });
+                
+                console.log(`✅ Posted evaluation results for ${tableName} as a PR comment`);
+              }
+            }
