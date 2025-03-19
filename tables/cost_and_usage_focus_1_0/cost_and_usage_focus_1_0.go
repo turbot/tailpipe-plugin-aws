@@ -111,8 +111,8 @@ func (c *Focus1_0) GetColumnDescriptions() map[string]string {
 		"x_usage_type":                 "The usage details of the line item.",
 
 		// Override table specific tp_* column descriptions
+		"tp_akas":      "The list of ARNs associated with a cost and usage report. If ResourceId starts with 'arn:', it is included in this list.",
 		"tp_index":     "The account ID associated with the report, determined based on the following priority: SubAccountId, BillingAccountId, or a default value if neither is available.",
 		"tp_timestamp": "The timestamp representing the start or end date of the usage. If available, ChargePeriodStart is used first, followed by ChargePeriodEnd, BillingPeriodStart, or BillingPeriodEnd in that order. The timestamp is stored in ISO 8601 format.",
-		"tp_akas":      "The list of ARNs associated with a cost and usage report. If ResourceId starts with 'arn:', it is included in this list.",
 	}
 }
