@@ -6,7 +6,7 @@ on:
 
 jobs:
   evaluate-queries:
-    if: github.event.label.name == 'query-review'
+    if: github.event.label.name == 'review'
     runs-on: ubuntu-latest
     timeout-minutes: 15  # Increased timeout to handle retries
     
