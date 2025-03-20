@@ -8,7 +8,7 @@ jobs:
   evaluate-queries:
     if: github.event.label.name == 'review'
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # Increased timeout to handle retries
+    timeout-minutes: 60  # Increased timeout to handle retries
     
     steps:
       - name: Checkout repository
