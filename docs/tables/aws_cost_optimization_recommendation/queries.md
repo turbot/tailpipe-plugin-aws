@@ -111,7 +111,8 @@ from
 where
   last_refresh_timestamp::timestamp < now()::timestamp - interval '7' day
 order by
-  last_refresh_timestamp asc;
+  tp_timestamp,
+  last_refresh_timestamp desc;
 ```
 
 ```yaml
@@ -218,6 +219,7 @@ where
   tags is not null
   and tags != '{}'
 order by
+  tp_timestamp,
   savings_amount desc
 limit 20;
 ```
