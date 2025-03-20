@@ -99,11 +99,13 @@ Identify recommendations that haven't been refreshed recently.
 
 ```sql
 select
+  tp_timestamp,
   recommendation_id,
   account_id,
   current_resource_type,
   last_refresh_timestamp,
-  estimated_monthly_savings_after_discount as savings_amount
+  estimated_monthly_savings_after_discount as savings_amount,
+  tp_index
 from
   aws_cost_optimization_recommendation
 where
@@ -146,13 +148,15 @@ Find recommendations that are easy to implement and don't require restarts.
 
 ```sql
 select
+  tp_timestamp,
   recommendation_id,
   account_id,
   current_resource_type,
   recommended_resource_type,
   implementation_effort,
   restart_needed,
-  estimated_monthly_savings_after_discount as savings_amount
+  estimated_monthly_savings_after_discount as savings_amount,
+  tp_index
 from
   aws_cost_optimization_recommendation
 where
@@ -201,11 +205,13 @@ Find optimization opportunities for resources with specific tags.
 
 ```sql
 select
+  tp_timestamp,
   resource_arn,
   current_resource_type,
   tags,
   estimated_monthly_savings_after_discount as savings_amount,
-  estimated_savings_percentage_after_discount as savings_percentage
+  estimated_savings_percentage_after_discount as savings_percentage,
+  tp_index
 from
   aws_cost_optimization_recommendation
 where
