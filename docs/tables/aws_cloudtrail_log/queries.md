@@ -1,6 +1,6 @@
 ## Activity Examples
 
-### Daily activity trends
+### Daily Activity Trends
 
 Count events per day to identify activity trends over time.
 
@@ -16,7 +16,11 @@ order by
   event_date asc;
 ```
 
-### Top 10 events
+```yaml
+folder: Account
+```
+
+### Top 10 Events
 
 List the 10 most frequently called events.
 
@@ -35,28 +39,11 @@ order by
 limit 10;
 ```
 
-### Top 10 events (exclude read-only)
-
-List the top 10 most frequently called events, excluding read-only events.
-
-```sql
-select
-  event_source,
-  event_name,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-where
-  not read_only
-group by
-  event_source,
-  event_name,
-order by
-  event_count desc
-limit 10;
+```yaml
+folder: Account
 ```
 
-### Top events by account
+### Top Events by Account
 
 Count and group events by account ID, event source, and event name to analyze activity across accounts.
 
@@ -76,7 +63,11 @@ order by
   event_count desc;
 ```
 
-### Top error codes
+```yaml
+folder: Account
+```
+
+### Top Error Codes
 
 Identify the most frequent error codes.
 
@@ -94,9 +85,13 @@ order by
   event_count desc;
 ```
 
+```yaml
+folder: Account
+```
+
 ## Detection Examples
 
-### Default EBS encryption disabled in a region
+### Default EBS Encryption Disabled in a Region
 
 Detect when default EBS encryption was disabled in a region.
 
@@ -119,7 +114,11 @@ order by
   event_time desc;
 ```
 
-### CloudTrail trail logging stopped
+```yaml
+folder: EBS
+```
+
+### CloudTrail Trail Logging Stopped
 
 Detect when logging was stopped for a CloudTrail trail.
 
@@ -142,7 +141,11 @@ order by
   event_time desc;
 ```
 
-### Unsuccessful AWS console login attempts
+```yaml
+folder: CloudTrail
+```
+
+### Unsuccessful AWS Console Login Attempts
 
 Find failed console login attempts, highlighting potential unauthorized access attempts.
 
@@ -166,7 +169,11 @@ order by
   event_time desc;
 ```
 
-### Root activity
+```yaml
+folder: IAM
+```
+
+### Root Activity
 
 Track any actions performed by the root user.
 
@@ -186,7 +193,11 @@ order by
   event_time desc;
 ```
 
-### Activity in unapproved regions
+```yaml
+folder: IAM
+```
+
+### Activity in Unapproved Regions
 
 Identify actions occurring in AWS regions outside an approved list.
 
@@ -207,7 +218,11 @@ order by
   event_time desc;
 ```
 
-### Activity from unapproved IP addresses
+```yaml
+folder: Account
+```
+
+### Activity from Unapproved IP Addresses
 
 Flag activity originating from IP addresses outside an approved list.
 
@@ -228,9 +243,13 @@ order by
   event_time desc;
 ```
 
+```yaml
+folder: Account
+```
+
 ## Operational Examples
 
-### VPC security group rule updates
+### VPC Security Group Rule Updates
 
 Track changes to VPC security group ingress and egress rules.
 
@@ -253,7 +272,11 @@ order by
   event_time desc;
 ```
 
-### IAM user permission updates
+```yaml
+folder: VPC
+```
+
+### IAM User Permission Updates
 
 List events where an IAM user has added or removed permissions through managed policies, inline policies, or groups.
 
@@ -276,9 +299,13 @@ order by
   event_time desc;
 ```
 
+```yaml
+folder: IAM
+```
+
 ## Volume Examples
 
-### High volume of S3 bucket access requests
+### High Volume of S3 Bucket Access Requests
 
 Detect unusually high access activity to S3 buckets and objects.
 
@@ -301,7 +328,11 @@ order by
   event_count desc;
 ```
 
-### Excessive IAM role assumptions
+```yaml
+folder: S3
+```
+
+### Excessive IAM Role Assumptions
 
 Identify IAM roles being assumed at an unusually high frequency.
 
@@ -325,9 +356,13 @@ order by
   event_count desc;
 ```
 
+```yaml
+folder: IAM
+```
+
 ## Baseline Examples
 
-### Unrecognized user source IP addresses
+### Unrecognized User Source IP Addresses
 
 Detect user activity from unexpected or new source IP addresses.
 
@@ -350,7 +385,11 @@ order by
   access_count desc;
 ```
 
-### Activity outside of normal hours
+```yaml
+folder: Account
+```
+
+### Activity Outside of Normal Hours
 
 Flag activity occurring outside of standard working hours, e.g., activity bewteen 8 PM and 6 AM.
 
@@ -371,3 +410,8 @@ where
   or extract('hour' from timestamp) < 6 -- 6 AM
 order by
   event_time desc;
+```
+
+```yaml
+folder: Account
+```

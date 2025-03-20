@@ -1,9 +1,9 @@
 ---
 title: "Tailpipe Table: aws_alb_access_log - Query AWS ALB Access Logs"
-description: "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+description: "AWS ALB access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 ---
 
-# Table: aws_alb_access_log - Query AWS ALB access logs
+# Table: aws_alb_access_log - Query AWS ALB Access Logs
 
 The `aws_alb_access_log` table allows you to query AWS Application Load Balancer (ALB) access logs. This table provides detailed information about requests processed by your load balancers, including client and target details, processing times, and security parameters.
 
@@ -46,7 +46,7 @@ tailpipe collect aws_alb_access_log.my_alb_logs
 
 **[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_alb_access_log)**
 
-### Failed requests
+### Failed Requests
 
 Find failed HTTP requests (with status codes 400 and above) to troubleshoot load balancer issues.
 
@@ -59,7 +59,9 @@ select
   target_ip,
   elb_status_code,
   target_status_code,
-  request
+  request_url,
+  request_http_method,
+  request_http_version
 from
   aws_alb_access_log
 where
@@ -68,7 +70,7 @@ order by
   timestamp desc;
 ```
 
-### Slow response times
+### Slow Response Times
 
 Identify requests where the combined processing time (request + target + response) exceeds 1 second. This includes the time taken to process the request at the load balancer, the target's processing time, and the response processing time.
 
@@ -77,7 +79,9 @@ select
   timestamp,
   elb,
   tp_index as account_id,
-  request,
+  request_url,
+  request_http_method,
+  request_http_version,
   client_ip,
   target_ip,
   request_processing_time,  -- Time taken by load balancer to process request
@@ -93,7 +97,7 @@ order by
 limit 10;
 ```
 
-### SSL cipher vulnerabilities
+### SSL Cipher Vulnerabilities
 
 Detect usage of deprecated or insecure SSL ciphers.
 
@@ -159,14 +163,13 @@ partition "aws_alb_access_log" "local_logs" {
 }
 ```
 
-### Exclude read-only events
+### Exclude successful requests
 
-Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
+Use the filter argument in your partition to exclude successful requests to reduce the size of local log storage and focus on troubleshooting failed requests.
 
 ```hcl
-partition "aws_alb_access_log" "my_logs_write" {
-  # Avoid saving read-only events, which can drastically reduce local log size
-  filter = "not read_only"
+partition "aws_alb_access_log" "my_alb_logs_filtered" {
+  filter = "elb_status_code != 200"
 
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account
@@ -184,13 +187,12 @@ partition "aws_alb_access_log" "my_logs_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
   }
 }
 ```
 
 ### Collect logs for a single account
-
 
 For a specific account, collect logs for all regions.
 
@@ -199,7 +201,7 @@ partition "aws_alb_access_log" "my_logs_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
   }
 }
 ```
@@ -213,7 +215,7 @@ partition "aws_alb_access_log" "my_logs_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
   }
 }
 ```
@@ -227,7 +229,7 @@ partition "aws_alb_access_log" "my_logs_regions" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"
+    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
   }
 }
 ```
@@ -240,4 +242,4 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 
 | Argument      | Default |
 |--------------|---------|
-| file_layout  | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz` |
+| file_layout  | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz` |

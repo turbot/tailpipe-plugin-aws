@@ -9,14 +9,10 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
-type AlbAccessLogBatch struct {
-	Records []AlbAccessLog `json:"Records"`
-}
-
 type AlbAccessLog struct {
 	schema.CommonFields
 
-	ActionsExecuted        string    `json:"actions_executed,omitempty"`
+	ActionsExecuted        []string  `json:"actions_executed,omitempty"`
 	ChosenCertArn          string    `json:"chosen_cert_arn,omitempty"`
 	Classification         *string   `json:"classification,omitempty"`
 	ClassificationReason   *string   `json:"classification_reason,omitempty"`
@@ -30,29 +26,32 @@ type AlbAccessLog struct {
 	MatchedRulePriority    int       `json:"matched_rule_priority,omitempty"`
 	ReceivedBytes          *int64    `json:"received_bytes"`
 	RedirectURL            *string   `json:"redirect_url,omitempty"`
-	Request                string    `json:"request"`
+	RequestHTTPVersion     string    `json:"request_http_version,omitempty"`
+	RequestHTTPMethod      string    `json:"request_http_method,omitempty"`
+	RequestUrl             string    `json:"request_url,omitempty"`
 	RequestCreationTime    time.Time `json:"request_creation_time"`
-	RequestProcessingTime  float64   `json:"request_processing_time"`
-	ResponseProcessingTime float64   `json:"response_processing_time"`
+	RequestProcessingTime  float64   `json:"request_processing_time,omitempty"`
+	ResponseProcessingTime float64   `json:"response_processing_time,omitempty"`
 	SentBytes              *int64    `json:"sent_bytes"`
 	SslCipher              string    `json:"ssl_cipher,omitempty"`
 	SslProtocol            string    `json:"ssl_protocol,omitempty"`
-	TargetGroupArn         string    `json:"target_group_arn"`
+	TargetGroupArn         *string   `json:"target_group_arn,omitempty"`
 	TargetIP               *string   `json:"target_ip,omitempty"`
 	TargetList             *string   `json:"target_list,omitempty"`
 	TargetPort             int       `json:"target_port,omitempty"`
-	TargetProcessingTime   float64   `json:"target_processing_time"`
+	TargetProcessingTime   float64   `json:"target_processing_time,omitempty"`
 	TargetStatusCode       *int      `json:"target_status_code,omitempty"`
 	TargetStatusList       *string   `json:"target_status_list,omitempty"`
 	Timestamp              time.Time `json:"timestamp"`
-	TraceID                string    `json:"trace_id"`
+	TraceID                string    `json:"trace_id,omitempty"`
 	Type                   string    `json:"type"`
-	UserAgent              string    `json:"user_agent"`
+	UserAgent              string    `json:"user_agent,omitempty"`
 }
 
 // InitialiseFromMap - initialise the struct from a map
 func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 	var err error
+
 	for key, value := range m {
 		if value == "-" {
 			continue
@@ -68,18 +67,14 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.Type = value
 		case "elb":
 			l.Elb = value
-		case "client":
-			if strings.Contains(value, ":") {
-				parts := strings.Split(value, ":")
-				ip := parts[0]
-				l.ClientIP = ip
-				l.ClientPort, err = strconv.Atoi(parts[1])
-				if err != nil {
-					return fmt.Errorf("error parsing client_port: %w", err)
-				}
+		case "client_ip":
+			l.ClientIP = value
+		case "client_port":
+			l.ClientPort, err = strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("error parsing client_port: %w", err)
 			}
 		case "target":
-			if strings.Contains(value, ":") {
 				parts := strings.Split(value, ":")
 				ip := parts[0]
 				l.TargetIP = &ip
@@ -87,21 +82,26 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				if err != nil {
 					return fmt.Errorf("error parsing target_port: %w", err)
 				}
-			}
 		case "request_processing_time":
-			l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return fmt.Errorf("error parsing request_processing_time: %w", err)
+			if value != "-1" { // -1 if the load balancer can't dispatch the request to a target
+				l.RequestProcessingTime, err = strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing request_processing_time: %w", err)
+				}
 			}
 		case "target_processing_time":
-			l.TargetProcessingTime, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return fmt.Errorf("error parsing target_processing_time: %w", err)
+			if value != "-1" { // -1 if the load balancer can't dispatch the request to a target
+				l.TargetProcessingTime, err = strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing target_processing_time: %w", err)
+				}
 			}
 		case "response_processing_time":
-			l.ResponseProcessingTime, err = strconv.ParseFloat(value, 64)
-			if err != nil {
-				return fmt.Errorf("error parsing response_processing_time: %w", err)
+			if value != "-1" { // -1 if the load balancer doesn't receive a response from a target.
+				l.ResponseProcessingTime, err = strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing response_processing_time: %w", err)
+				}
 			}
 		case "elb_status_code":
 			esc, err := strconv.Atoi(value)
@@ -127,8 +127,12 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing sent_bytes: %w", err)
 			}
 			l.SentBytes = &sb
-		case "request":
-			l.Request = value
+		case "request_http_method":
+			l.RequestHTTPMethod = value
+		case "request_url":
+			l.RequestUrl = value
+		case "request_http_version":
+			l.RequestHTTPVersion = value
 		case "user_agent":
 			l.UserAgent = value
 		case "ssl_cipher":
@@ -136,7 +140,7 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 		case "ssl_protocol":
 			l.SslProtocol = value
 		case "target_group_arn":
-			l.TargetGroupArn = value
+			l.TargetGroupArn = &value
 		case "trace_id":
 			l.TraceID = value
 		case "domain_name":
@@ -154,7 +158,7 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 				return fmt.Errorf("error parsing request_creation_time: %w", err)
 			}
 		case "actions_executed":
-			l.ActionsExecuted = value
+			l.ActionsExecuted = strings.Split(value, ",")
 		case "redirect_url":
 			l.RedirectURL = &value
 		case "error_reason":
@@ -171,6 +175,7 @@ func (l *AlbAccessLog) InitialiseFromMap(m map[string]string) error {
 			l.ConnTraceID = &value
 		}
 	}
+
 	return nil
 }
 func (c *AlbAccessLog) GetColumnDescriptions() map[string]string {
@@ -189,7 +194,9 @@ func (c *AlbAccessLog) GetColumnDescriptions() map[string]string {
 		"matched_rule_priority":    "The priority of the rule that matched the request. Default rules are assigned 0.",
 		"received_bytes":           "The number of bytes received from the client, including headers.",
 		"redirect_url":             "The target URL for redirection if a redirect action was executed.",
-		"request":                  "The full request line from the client, including method, protocol, and URI.",
+		"request_http_method":      "The HTTP method used in the request.",
+		"request_http_version":     "The HTTP version used in the request.",
+		"request_url":              "The URL path requested by the client.",
 		"request_creation_time":    "The timestamp when the load balancer received the request from the client.",
 		"request_processing_time":  "The time elapsed from receiving the request to sending it to a target, in seconds.",
 		"response_processing_time": "The time taken from receiving the response header to sending the response to the client.",

@@ -1,12 +1,12 @@
 package alb_access_log
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -18,15 +18,7 @@ import (
 
 const AlbAccessLogTableIdentifier = "aws_alb_access_log"
 
-func init() {
-	// Register the table, with type parameters:
-	// 1. row struct
-	// 2. table config struct
-	// 3. table implementation
-	table.RegisterTable[*AlbAccessLog, *AlbAccessLogTable]()
-}
-
-const albLogFormat = `$type $timestamp $elb $client $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
+const albLogFormat = `$type $timestamp $elb $client_ip:$client_port $target $request_processing_time $target_processing_time $response_processing_time $elb_status_code $target_status_code $received_bytes $sent_bytes "$request_http_method $request_url $request_http_version" "$user_agent" $ssl_cipher $ssl_protocol $target_group_arn "$trace_id" "$domain_name" "$chosen_cert_arn" $matched_rule_priority $request_creation_time "$actions_executed" "$redirect_url" "$error_reason" "$target_list" "$target_status_list" "$classification" "$classification_reason" $conn_trace_id`
 
 type AlbAccessLogTable struct{}
 
@@ -36,7 +28,7 @@ func (c *AlbAccessLogTable) Identifier() string {
 
 func (c *AlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*AlbAccessLog] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz"),
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*AlbAccessLog]{
@@ -68,12 +60,7 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-
-	callerIdentityData, err := tables.GetCallerIdentityData()
-	if err != nil {
-		return nil, err
-	}
-	row.TpIndex = *callerIdentityData.Account
+	row.TpIndex = strings.TrimPrefix(row.Elb, "app/")
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
@@ -86,13 +73,13 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 		row.TpDomains = append(row.TpDomains, row.DomainName)
 	}
 
-	if row.TargetGroupArn != "" {
-		row.TpAkas = append(row.TpAkas, row.TargetGroupArn)
+	if row.TargetGroupArn != nil {
+		row.TpAkas = append(row.TpAkas, *row.TargetGroupArn)
 	}
 
 	return row, nil
 }
 
 func (c *AlbAccessLogTable) GetDescription() string {
-	return "AWS ALB Access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
+	return "AWS ALB access logs capture detailed information about the requests that are processed by an Application Load Balancer. This table provides a structured representation of the log data, including request and response details, client and target information, processing times, and security parameters."
 }
