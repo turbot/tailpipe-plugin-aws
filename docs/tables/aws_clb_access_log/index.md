@@ -44,7 +44,7 @@ tailpipe collect aws_clb_access_log.my_clb_logs
 
 ## Query
 
-### Failed requests
+### Failed Requests
 
 Find failed HTTP requests (with status codes 400 and above) to troubleshoot load balancer issues.
 
@@ -68,7 +68,7 @@ order by
   timestamp desc;
 ```
 
-### Slow response times
+### Slow Response Times
 
 Identify requests where the combined processing time (request + backend + response) exceeds 1 second.
 
@@ -91,11 +91,10 @@ from
 where
   (request_processing_time + backend_processing_time + response_processing_time) > 1
 order by
-  total_time desc
-limit 10;
+  total_time desc;
 ```
 
-### SSL cipher vulnerabilities
+### SSL Cipher Vulnerabilities
 
 Detect usage of deprecated or insecure SSL ciphers.
 
@@ -151,11 +150,13 @@ partition "aws_clb_access_log" "local_logs" {
 }
 ```
 
-### Exclude read-only events
+### Exclude successful requests
+
+Use the filter argument in your partition to exclude successful requests to reduce the size of local log storage and focus on troubleshooting failed requests.
 
 ```hcl
 partition "aws_clb_access_log" "my_logs_write" {
-  filter = "not read_only"
+  filter = "elb_status_code != 200"
 
   source "aws_s3_bucket" {
     connection = connection.aws.logging_account

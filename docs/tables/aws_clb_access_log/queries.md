@@ -186,7 +186,7 @@ from
 where
   total_time > 1
 order by
-  total_time desc
+  total_time desc;
 ```
 
 ```yaml
