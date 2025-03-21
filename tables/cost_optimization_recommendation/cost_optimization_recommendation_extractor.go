@@ -134,7 +134,6 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 
 		// Ensure the field is settable
 		if !fieldVal.CanSet() {
-			slog.Error("The field value can not set:", fieldVal)
 			continue
 		}
 
