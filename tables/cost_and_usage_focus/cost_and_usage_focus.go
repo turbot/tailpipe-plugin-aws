@@ -1,4 +1,4 @@
-package cost_and_usage_focus_1_0
+package cost_and_usage_focus
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 )
 
-type Focus1_0 struct {
+type CostUsageFocus struct {
 	schema.CommonFields
 
 	AvailabilityZone           *string            `json:"AvailabilityZone,omitempty" parquet:"name=availability_zone"`
@@ -59,7 +59,7 @@ type Focus1_0 struct {
 	XUsageType                 *string            `json:"x_UsageType,omitempty" parquet:"name=x_usage_type"`
 }
 
-func (c *Focus1_0) GetColumnDescriptions() map[string]string {
+func (c *CostUsageFocus) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"availability_zone":            "A provider-assigned identifier for a physically separated and isolated area within a Region that provides high availability and fault tolerance.",
 		"billed_cost":                  "A charge that is the basis for invoicing, inclusive of all reduced rates and discounts while excluding the amortization of relevant purchases paid to cover future eligible charges.",

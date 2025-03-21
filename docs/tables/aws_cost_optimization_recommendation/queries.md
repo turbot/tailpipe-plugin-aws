@@ -22,7 +22,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ### Recommendations by Service Type
@@ -44,7 +44,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ### Account-Level Optimization Opportunities
@@ -66,7 +66,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ## Detection Examples
@@ -90,7 +90,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ### Stale Recommendations
@@ -116,7 +116,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ## Operational Examples
@@ -140,7 +140,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ### Easy to Implement Recommendations
@@ -168,7 +168,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ## Volume Examples
@@ -195,7 +195,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ## Baseline Examples
@@ -225,7 +225,7 @@ limit 20;
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```
 
 ### Projected Annual Savings
@@ -242,5 +242,5 @@ from
 ```
 
 ```yaml
-folder: Account
+folder: Cost Optimization Hub
 ```

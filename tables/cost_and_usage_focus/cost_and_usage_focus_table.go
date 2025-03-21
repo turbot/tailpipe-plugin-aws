@@ -1,4 +1,4 @@
-package cost_and_usage_focus_1_0
+package cost_and_usage_focus
 
 import (
 	"strings"
@@ -16,39 +16,39 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/table"
 )
 
-const Focus1_0TableIdentifier = "aws_cost_and_usage_focus_1_0"
+const CostUsageFocusTableIdentifier = "aws_cost_and_usage_focus"
 
-type Focus1_0Table struct{}
+type CostUsageFocusTable struct{}
 
-func (c *Focus1_0Table) Identifier() string {
-	return Focus1_0TableIdentifier
+func (c *CostUsageFocusTable) Identifier() string {
+	return CostUsageFocusTableIdentifier
 }
 
-func (c *Focus1_0Table) GetSourceMetadata() []*table.SourceMetadata[*Focus1_0] {
+func (c *CostUsageFocusTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageFocus] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:billing_period}/%{DATA:assembly_id}/%{DATA}.csv.(?:gz|zip)"),
 	}
 
-	return []*table.SourceMetadata[*Focus1_0]{
+	return []*table.SourceMetadata[*CostUsageFocus]{
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewCostUsageFocus_1_0_Extractor()),
+				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
 			},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewCostUsageFocus_1_0_Extractor()),
+				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
 			},
 		},
 	}
 }
 
-func (c *Focus1_0Table) EnrichRow(row *Focus1_0, sourceEnrichmentFields schema.SourceEnrichment) (*Focus1_0, error) {
+func (c *CostUsageFocusTable) EnrichRow(row *CostUsageFocus, sourceEnrichmentFields schema.SourceEnrichment) (*CostUsageFocus, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
 
 	// Record standardization
@@ -90,6 +90,6 @@ func (c *Focus1_0Table) EnrichRow(row *Focus1_0, sourceEnrichmentFields schema.S
 	return row, nil
 }
 
-func (c *Focus1_0Table) GetDescription() string {
+func (c *CostUsageFocusTable) GetDescription() string {
 	return "AWS FOCUS 1.0 (Flexible, Optimized, and Comprehensive Usage and Savings) provides a detailed breakdown of AWS service usage and cost optimization opportunities. This table structures billing and usage data, including pricing details, commitment-based discounts, capacity reservations, and SKU-level pricing metrics. It enables cost tracking, commitment analysis, and efficient cloud financial management."
 }

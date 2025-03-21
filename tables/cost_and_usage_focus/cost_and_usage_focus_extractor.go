@@ -1,4 +1,4 @@
-package cost_and_usage_focus_1_0
+package cost_and_usage_focus
 
 import (
 	"bytes"
@@ -14,19 +14,19 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 )
 
-type Focus1_0Extractor struct {
+type CostUsageFocusExtractor struct {
 }
 
 // NewCostUsageReportExtractor creates a new CostUsageReportExtractor
-func NewCostUsageFocus_1_0_Extractor() artifact_source.Extractor {
-	return &Focus1_0Extractor{}
+func NewCostUsageFocusExtractor() artifact_source.Extractor {
+	return &CostUsageFocusExtractor{}
 }
 
-func (m *Focus1_0Extractor) Identifier() string {
-	return "cost_and_usage_focus_1_0_extractor"
+func (m *CostUsageFocusExtractor) Identifier() string {
+	return "cost_and_usage_focus_extractor"
 }
 
-func (c *Focus1_0Extractor) Extract(_ context.Context, a any) ([]any, error) {
+func (c *CostUsageFocusExtractor) Extract(_ context.Context, a any) ([]any, error) {
 	// Assert that 'a' is of type []byte
 	data, ok := a.([]byte)
 	if !ok {
@@ -47,7 +47,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		return nil, fmt.Errorf("error reading CSV header: %v", err)
 	}
 
-	var records []*Focus1_0
+	var records []*CostUsageFocus
 
 	// Read the remaining rows
 	for {
@@ -71,7 +71,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 			}
 		}
 
-		record := &Focus1_0{}
+		record := &CostUsageFocus{}
 		err = record.mapValues(recordMap)
 		if err != nil {
 			return nil, fmt.Errorf("error in mapping the value to struct: %w", err)
@@ -86,7 +86,7 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 }
 
 // Convert a slice of structs to a slice of empty interfaces
-func convertToAny(records []*Focus1_0) []any {
+func convertToAny(records []*CostUsageFocus) []any {
 	res := make([]any, len(records))
 	for i, record := range records {
 		res[i] = record
@@ -95,7 +95,7 @@ func convertToAny(records []*Focus1_0) []any {
 }
 
 // mapValues maps the values from a map[string]string into the Focus1_0 struct
-func (log *Focus1_0) mapValues(row map[string]string) error {
+func (log *CostUsageFocus) mapValues(row map[string]string) error {
 	v := reflect.ValueOf(log).Elem()
 	t := v.Type()
 

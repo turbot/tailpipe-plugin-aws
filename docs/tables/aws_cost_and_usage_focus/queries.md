@@ -9,7 +9,7 @@ select
   date_trunc('day', charge_period_start) as usage_date,
   sum(billed_cost) as daily_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   charge_period_start >= current_date - interval '30' day
 group by
@@ -19,7 +19,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Top 10 Costly Services
@@ -31,7 +31,7 @@ select
   service_name,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   billing_period_start >= current_date - interval '1' month
 group by
@@ -42,7 +42,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Month-over-Month Cost Growth
@@ -56,7 +56,7 @@ with monthly_costs as (
     service_name,
     sum(billed_cost) as monthly_cost
   from
-    aws_cost_and_usage_focus_1_0
+    aws_cost_and_usage_focus
   where
     billing_period_start >= date_trunc('month', current_date) - interval '6' month
   group by
@@ -85,7 +85,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Top Spending Accounts
@@ -97,7 +97,7 @@ select
   sub_account_id as account_id,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   account_id
 order by
@@ -106,7 +106,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ## Detection Examples
@@ -122,7 +122,7 @@ with daily_costs as (
     service_name,
     sum(billed_cost) as total_cost
   from
-    aws_cost_and_usage_focus_1_0
+    aws_cost_and_usage_focus
   where
     charge_period_start >= current_date - interval '7' day
   group by
@@ -147,7 +147,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ## Operational Examples
@@ -162,7 +162,7 @@ select
   count(distinct resource_id) as instance_count,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   billing_period_start >= current_date - interval '30' day
   and service_name = 'Amazon Elastic Compute Cloud'
@@ -187,7 +187,7 @@ select
   charge_description,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   billing_period_start >= current_date - interval '30' day
   and resource_type = 'volume'
@@ -215,7 +215,7 @@ select
   sub_account_id as account_id,
   sum(consumed_quantity) as total_data_transfer_gb
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   x_usage_type like 'DataTransfer-Out%'
 group by
@@ -226,7 +226,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Top 10 Costs by API
@@ -240,7 +240,7 @@ select
   sum(billed_cost) as total_cost,
   count(*) as api_call_count
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   billing_period_start >= current_date - interval '30' day
   and x_operation is not null
@@ -252,7 +252,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ## Baseline Examples
@@ -266,7 +266,7 @@ select
   region_name as region,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   region
 order by
@@ -274,7 +274,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Cost Comparison Across Billing Periods
@@ -284,10 +284,10 @@ Compare costs between the current and previous billing periods.
 ```sql
 select
   service_name,
-  sum(case when billing_period_start = (select max(billing_period_start) from aws_cost_and_usage_focus_1_0) then billed_cost else 0 end) as current_period_cost,
-  sum(case when billing_period_start = (select max(billing_period_start) - interval '1' month from aws_cost_and_usage_focus_1_0) then billed_cost else 0 end) as previous_period_cost
+  sum(case when billing_period_start = (select max(billing_period_start) from aws_cost_and_usage_focus) then billed_cost else 0 end) as current_period_cost,
+  sum(case when billing_period_start = (select max(billing_period_start) - interval '1' month from aws_cost_and_usage_focus) then billed_cost else 0 end) as previous_period_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   service_name
 order by
@@ -295,7 +295,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Cost Breakdown by Service Category
@@ -308,7 +308,7 @@ select
   sum(billed_cost) as "Total Cost",
   count(distinct service_name) as "Number of Services"
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 where
   billing_period_start >= current_date - interval '1' month
 group by
@@ -318,5 +318,5 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```

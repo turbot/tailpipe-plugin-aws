@@ -19,7 +19,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Top 10 Costly Services
@@ -42,7 +42,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Top Spending Accounts
@@ -63,7 +63,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ## Detection Examples
@@ -105,7 +105,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### High Data Transfer Usage
@@ -128,7 +128,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ## Operational Examples
@@ -246,7 +246,7 @@ limit 10;
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ## Baseline Examples
@@ -268,7 +268,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Services with Unexpected Costs
@@ -311,7 +311,7 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```
 
 ### Cost comparison across billing periods
@@ -379,5 +379,5 @@ order by
 ```
 
 ```yaml
-folder: Account
+folder: Cost and Usage Report
 ```

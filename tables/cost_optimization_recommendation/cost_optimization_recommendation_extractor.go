@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -128,17 +129,30 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 			continue
 		}
 
-		// For nested maps like "tags", we need to handle them specially
-		if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map {
-			assignToNestedMap(value, jsonTag, strVal)
-			continue
-		}
-
 		// Get the field value
 		fieldVal := v.Field(i)
 
 		// Ensure the field is settable
 		if !fieldVal.CanSet() {
+			continue
+		}
+
+		// Special handling for map[string]interface{} fields
+		if (jsonTag == "recommended_resource_details" || jsonTag == "current_resource_details") {
+
+			var parsedMap map[string]interface{}
+			err := json.Unmarshal([]byte(strVal), &parsedMap)
+			if err == nil {
+				// Set a pointer to the parsed map
+				fieldVal.Set(reflect.New(field.Type.Elem()))
+				fieldVal.Elem().Set(reflect.ValueOf(parsedMap))
+			}
+			continue
+		}
+
+		// For nested maps like "tags", we need to handle them specially
+		if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map {
+			assignToNestedMap(value, jsonTag, strVal)
 			continue
 		}
 
@@ -188,7 +202,7 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 func initializeNestedMaps(value *CostOptimizationRecommendation) {
 	// Initialize the Tags map if it doesn't exist
 	if value.Tags == nil {
-		tags := make(map[string]interface{})
+		tags := make(map[string]string)
 		value.Tags = &tags
 	}
 }

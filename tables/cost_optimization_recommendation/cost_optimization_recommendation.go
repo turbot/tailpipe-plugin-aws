@@ -11,10 +11,18 @@ import (
 type CostOptimizationRecommendation struct {
 	schema.CommonFields
 
-	AccountID                                *string                 `json:"account_id,omitempty" parquet:"name=account_id"`
-	ActionType                               *string                 `json:"action_type,omitempty" parquet:"name=action_type"`
-	CurrencyCode                             *string                 `json:"currency_code,omitempty" parquet:"name=currency_code"`
-	CurrentResourceDetails                   *string                 `json:"current_resource_details,omitempty" parquet:"name=current_resource_details"`
+	AccountID    *string `json:"account_id,omitempty" parquet:"name=account_id"`
+	ActionType   *string `json:"action_type,omitempty" parquet:"name=action_type"`
+	CurrencyCode *string `json:"currency_code,omitempty" parquet:"name=currency_code"`
+
+	// CurrentResourceDetails Contains metadata about the current resource configuration.
+	// The structure varies depending on the resource type.
+	// For example:
+	// - For EC2: {"InstanceType": "m5.large", "Region": "us-east-1", "Platform": "Linux/UNIX", "Tenancy": "Shared"}
+	// - For Lambda: {"FunctionName": "my-function", "MemorySize": 128, "Region": "us-west-2"}
+	// - For EBS: {"VolumeType": "gp2", "Size": 100, "Region": "us-east-1"}
+	// This field is defined as map[string]interface{} to accommodate these varying shapes.
+	CurrentResourceDetails                   *map[string]interface{} `json:"current_resource_details,omitempty" parquet:"name=current_resource_details"`
 	CurrentResourceSummary                   *string                 `json:"current_resource_summary,omitempty" parquet:"name=current_resource_summary"`
 	CurrentResourceType                      *string                 `json:"current_resource_type,omitempty" parquet:"name=current_resource_type"`
 	EstimatedMonthlyCostAfterDiscount        *float64                `json:"estimated_monthly_cost_after_discount,omitempty" parquet:"name=estimated_monthly_cost_after_discount"`
@@ -28,14 +36,17 @@ type CostOptimizationRecommendation struct {
 	RecommendationID                         *string                 `json:"recommendation_id,omitempty" parquet:"name=recommendation_id"`
 	RecommendationLookbackPeriodInDays       *int                    `json:"recommendation_lookback_period_in_days,omitempty" parquet:"name=recommendation_lookback_period_in_days"`
 	RecommendationSource                     *string                 `json:"recommendation_source,omitempty" parquet:"name=recommendation_source"`
-	RecommendedResourceDetails               *string                 `json:"recommended_resource_details,omitempty" parquet:"name=recommended_resource_details"`
-	RecommendedResourceSummary               *string                 `json:"recommended_resource_summary,omitempty" parquet:"name=recommended_resource_summary"`
-	RecommendedResourceType                  *string                 `json:"recommended_resource_type,omitempty" parquet:"name=recommended_resource_type"`
-	Region                                   *string                 `json:"region,omitempty" parquet:"name=region"`
-	ResourceARN                              *string                 `json:"resource_arn,omitempty" parquet:"name=resource_arn"`
-	RestartNeeded                            *bool                   `json:"restart_needed,omitempty" parquet:"name=restart_needed"`
-	RollbackPossible                         *bool                   `json:"rollback_possible,omitempty" parquet:"name=rollback_possible"`
-	Tags                                     *map[string]interface{} `json:"tags,omitempty" parquet:"name=tags"`
+
+	// RecommendedResourceDetails Contains metadata about the current resource configuration.
+	// The structure varies depending on the resource type. So we don't have a fixed structure.
+	RecommendedResourceDetails *map[string]interface{} `json:"recommended_resource_details,omitempty" parquet:"name=recommended_resource_details"`
+	RecommendedResourceSummary *string                 `json:"recommended_resource_summary,omitempty" parquet:"name=recommended_resource_summary"`
+	RecommendedResourceType    *string                 `json:"recommended_resource_type,omitempty" parquet:"name=recommended_resource_type"`
+	Region                     *string                 `json:"region,omitempty" parquet:"name=region"`
+	ResourceARN                *string                 `json:"resource_arn,omitempty" parquet:"name=resource_arn"`
+	RestartNeeded              *bool                   `json:"restart_needed,omitempty" parquet:"name=restart_needed"`
+	RollbackPossible           *bool                   `json:"rollback_possible,omitempty" parquet:"name=rollback_possible"`
+	Tags                       *map[string]string      `json:"tags,omitempty" parquet:"name=tags"`
 }
 
 func (c *CostOptimizationRecommendation) GetColumnDescriptions() map[string]string {
