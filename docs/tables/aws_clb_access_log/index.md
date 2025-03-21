@@ -1,6 +1,6 @@
 ---
 title: "Tailpipe Table: aws_clb_access_log - Query AWS CLB Access Logs"
-description: "AWS CLB Access logs capture detailed information about requests processed by a Classic Load Balancer, including client information, backend responses, and SSL details. This table provides a structured representation of the log data."
+description: "AWS CLB access logs capture detailed information about requests processed by a Classic Load Balancer, including client information, backend responses, and SSL details. This table provides a structured representation of the log data."
 ---
 
 # Table: aws_clb_access_log - Query AWS CLB access logs

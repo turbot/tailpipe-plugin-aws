@@ -1,6 +1,7 @@
 ## Activity Examples
 
 ### Daily Request Trends
+
 Count requests per day to identify traffic patterns over time. This query helps monitor daily load balancer usage, detect potential traffic spikes, and understand overall system load across different days.
 
 ```sql
@@ -20,6 +21,7 @@ folder: ELB
 ```
 
 ### Top 10 Clients by Request Count
+
 List the top 10 client IP addresses making requests. This query helps identify the most active clients, potential sources of high traffic, and can assist in network security monitoring and capacity planning.
 
 ```sql
@@ -40,6 +42,7 @@ folder: ELB
 ```
 
 ### Request Distribution by Backend
+
 Analyze how requests are distributed across backend instances. Understanding backend request distribution can help optimize resource allocation, identify potential bottlenecks, and ensure balanced load across your infrastructure.
 
 ```sql
@@ -61,6 +64,7 @@ folder: ELB
 ```
 
 ### HTTP Status Code Distribution
+
 Analyze the distribution of HTTP status codes returned by the load balancer. This query provides insights into the overall health of your application, helping you quickly identify error rates and potential issues with your backend services.
 
 ```sql
@@ -83,26 +87,25 @@ folder: ELB
 ## Detection Examples
 
 ### Failed Backend Connections
+
 Identify instances where the load balancer couldn't connect to the backend targets. This query helps detect potential backend infrastructure issues, network problems, or service disruptions that prevent successful request routing.
 
 ```sql
 select
-  tp_timestamp,
+  timestamp,
   elb,
-  tp_index as load_balancer_name,
   client_ip,
   backend_ip,
   request_http_version,
   request_http_method,
-  request_url,
-  backend_status_code
+  request_url
 from
   aws_clb_access_log
 where
   backend_status_code is null
   and elb_status_code = 502
 order by
-  tp_timestamp desc;
+  timestamp desc;
 ```
 
 ```yaml
@@ -110,6 +113,7 @@ folder: ELB
 ```
 
 ### SSL Cipher Vulnerabilities
+
 Detect usage of deprecated or insecure SSL ciphers. This query helps identify outdated SSL/TLS protocols that may pose security risks, allowing you to upgrade and maintain robust encryption standards.
 
 ```sql
@@ -133,6 +137,7 @@ folder: ELB
 ```
 
 ### Suspicious User Agents
+
 Identify potentially suspicious user agents making requests. This query helps detect potential bot traffic, automated scanning tools, or unusual client behaviors that might indicate security probing or potential threats.
 
 ```sql
@@ -160,13 +165,13 @@ folder: ELB
 ## Operational Examples
 
 ### Slow Response Times
-Top 10 requests with unusually high processing times. This query helps identify performance bottlenecks by highlighting requests that take longer than expected, which can guide optimization efforts and improve overall system responsiveness.
+
+Find requests with unusually high processing times. This query helps identify performance bottlenecks by highlighting requests that take longer than expected, which can guide optimization efforts and improve overall system responsiveness.
 
 ```sql
 select
   timestamp,
   elb,
-  tp_index as load_balancer_name,
   request_http_version,
   request_http_method,
   request_url,
@@ -179,10 +184,9 @@ select
 from
   aws_clb_access_log
 where
-  (request_processing_time + backend_processing_time + response_processing_time) > 1
+  total_time > 1
 order by
   total_time desc
-limit 10;
 ```
 
 ```yaml
@@ -190,6 +194,7 @@ folder: ELB
 ```
 
 ### HTTP Request Method Distribution
+
 Analyze the distribution of HTTP request methods. This query helps understand the types of requests being made to your load balancer, which can provide insights into application usage patterns and potential areas for optimization.
 
 ```sql
@@ -209,6 +214,7 @@ folder: ELB
 ```
 
 ### Backend Health Issues
+
 Identify backend instances that are returning a high number of errors. This query helps pinpoint specific backend servers experiencing consistent issues, enabling targeted troubleshooting and potential infrastructure improvements.
 
 ```sql
@@ -236,6 +242,7 @@ folder: ELB
 ## Volume Examples
 
 ### High Traffic Periods
+
 Detect periods of unusually high request volume. This query helps identify peak traffic times, potential Denial of Service (DoS) attacks, or unexpected usage patterns that might require infrastructure scaling or further investigation.
 
 ```sql
@@ -259,13 +266,13 @@ folder: ELB
 ```
 
 ### Large Response Sizes
+
 Track requests generating unusually large responses. This query helps identify potential data transfer bottlenecks, content delivery issues, or unusual data transfer patterns that might impact system performance.
 
 ```sql
 select
-  tp_timestamp,
+  timestamp,
   elb,
-  tp_index as load_balancer_name,
   request_http_version,
   request_http_method,
   request_url,

@@ -72,5 +72,5 @@ func (c *S3ServerAccessLogTable) EnrichRow(row *S3ServerAccessLog, sourceEnrichm
 }
 
 func (c *S3ServerAccessLogTable) GetDescription() string {
-	return "AWS S3 Server Access logs capture detailed information about the requests that are made to a bucket. This table provides a structured representation of the log data."
+	return "AWS S3 server access logs capture detailed information about the requests that are made to a bucket. This table provides a structured representation of the log data."
 }

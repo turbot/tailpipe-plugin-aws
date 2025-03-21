@@ -70,5 +70,5 @@ func (c *ClbAccessLogTable) EnrichRow(row *ClbAccessLog, sourceEnrichmentFields 
 }
 
 func (c *ClbAccessLogTable) GetDescription() string {
-	return "AWS CLB Access logs capture detailed information about requests processed by a Classic Load Balancer, including client information, backend responses, and SSL details."
+	return "AWS CLB access logs capture detailed information about requests processed by a Classic Load Balancer, including client information, backend responses, and SSL details."
 }
