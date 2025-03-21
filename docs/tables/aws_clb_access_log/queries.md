@@ -87,15 +87,14 @@ Identify instances where the load balancer couldn't connect to the backend targe
 
 ```sql
 select
-  timestamp,
+  tp_timestamp,
   elb,
-  tp_index as account_id,
+  tp_index as load_balancer_name,
   client_ip,
   backend_ip,
   request_http_version,
   request_http_method,
   request_url,
-  elb_status_code,
   backend_status_code
 from
   aws_clb_access_log
@@ -103,7 +102,7 @@ where
   backend_status_code is null
   and elb_status_code = 502
 order by
-  timestamp desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -167,7 +166,7 @@ Top 10 requests with unusually high processing times. This query helps identify 
 select
   timestamp,
   elb,
-  tp_index as account_id,
+  tp_index as load_balancer_name,
   request_http_version,
   request_http_method,
   request_url,
@@ -264,9 +263,9 @@ Track requests generating unusually large responses. This query helps identify p
 
 ```sql
 select
-  timestamp,
+  tp_timestamp,
   elb,
-  tp_index as account_id,
+  tp_index as load_balancer_name,
   request_http_version,
   request_http_method,
   request_url,
