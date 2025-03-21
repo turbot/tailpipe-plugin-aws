@@ -75,7 +75,7 @@ The following tables define their own default values for certain source argument
 - **[aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_s3_bucket)**
 - **[aws_nlb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_nlb_access_log#aws_s3_bucket)**
 - **[aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log#aws_s3_bucket)**
-- **[aws_cost_and_usage_focus_1_0](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_focus_1_0#aws_s3_bucket)**
+- **[aws_cost_and_usage_focus](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_focus#aws_s3_bucket)**
 - **[aws_cost_and_usage_report](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_report#aws_s3_bucket)**
 - **[aws_cost_optimization_recommendation](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_optimization_recommendation#aws_s3_bucket)**
 - **[aws_vpc_flow_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log#aws_s3_bucket)**
