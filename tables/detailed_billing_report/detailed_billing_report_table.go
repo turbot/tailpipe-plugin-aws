@@ -1,7 +1,6 @@
 package detailed_billing_report
 
 import (
-	"log/slog"
 	"strings"
 	"time"
 
@@ -73,8 +72,6 @@ func (t *DetailedBillingReportTable) EnrichRow(row *DetailedBillingReport, sourc
 	} else if row.BillingPeriodEnd != nil {
 		row.TpTimestamp = *row.BillingPeriodEnd
 		row.TpDate = row.BillingPeriodEnd.Truncate(24 * time.Hour)
-	} else {
-		slog.Error("Timestamp is not available for the record ID:", row.RecordID)
 	}
 
 	if row.ResourceId != nil && strings.HasPrefix(*row.ResourceId, "arn:") {
