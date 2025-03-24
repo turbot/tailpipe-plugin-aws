@@ -56,8 +56,6 @@ func (t *DetailedBillingReportTable) EnrichRow(row *DetailedBillingReport, sourc
 		row.TpIndex = *row.LinkedAccountId
 	} else if typehelpers.SafeString(row.PayerAccountId) != "" {
 		row.TpIndex = *row.PayerAccountId
-	} else {
-		row.TpIndex = schema.DefaultIndex
 	}
 
 	if row.UsageStartDate != nil {
