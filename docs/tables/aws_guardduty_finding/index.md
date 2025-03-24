@@ -99,8 +99,8 @@ select
   severity,
   account_id,
   region,
-  resource->>'resource_type' as resource_type,
-  resource->>'resource_details' as resource_details
+  resource ->> 'resource_type' as resource_type,
+  resource ->> 'resource_details' as resource_details
 from
   aws_guardduty_finding
 where

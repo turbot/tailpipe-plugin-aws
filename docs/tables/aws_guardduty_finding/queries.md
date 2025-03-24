@@ -128,7 +128,7 @@ select
   type,
   severity,
   description,
-  resource->>'resource_type' as resource_type
+  resource ->> 'resource_type' as resource_type
 from
   aws_guardduty_finding
 where
@@ -183,9 +183,9 @@ select
   title,
   type,
   severity,
-  service->>'feature_name' as feature_name,
-  resource->>'resource_type' as resource_type,
-  resource->>'resource_details' as resource_details
+  service ->> 'feature_name' as feature_name,
+  resource ->> 'resource_type' as resource_type,
+  resource ->> 'resource_details' as resource_details
 from
   aws_guardduty_finding
 where
@@ -214,11 +214,11 @@ select
   type,
   severity,
   description,
-  resource->>'resource_type' as resource_type
+  resource ->> 'resource_type' as resource_type
 from
   aws_guardduty_finding
 where
-  service->>'feature_name' = 'RuntimeMonitoring'
+  service ->> 'feature_name' = 'RuntimeMonitoring'
 order by
   created_at desc;
 ```
@@ -239,11 +239,11 @@ select
   title,
   type,
   severity,
-  resource->>'access_key_details' as access_key_details
+  resource ->> 'access_key_details' as access_key_details
 from
   aws_guardduty_finding
 where
-  resource->>'resource_type' = 'AccessKey'
+  resource ->> 'resource_type' = 'AccessKey'
 order by
   severity desc,
   created_at desc;
@@ -341,7 +341,7 @@ select
   type,
   severity,
   description,
-  resource->>'resource_type' as resource_type
+  resource ->> 'resource_type' as resource_type
 from
   aws_guardduty_finding
 where
