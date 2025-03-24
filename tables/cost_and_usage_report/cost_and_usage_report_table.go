@@ -1,6 +1,7 @@
 package cost_and_usage_report
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rs/xid"
@@ -82,13 +83,13 @@ func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentF
 	}
 
 	// TpIndex
-	switch {
-	case typehelpers.SafeString(row.LineItemUsageAccountId) != "":
+	if row.LineItemUsageAccountId != nil {
 		row.TpIndex = typehelpers.SafeString(row.LineItemUsageAccountId)
-	case typehelpers.SafeString(row.BillPayerAccountId) != "":
-		row.TpIndex = typehelpers.SafeString(row.BillPayerAccountId)
-	default:
-		row.TpIndex = schema.DefaultIndex
+	} else if row.LineItemResourceId != nil {
+		splitResourceId := strings.Split(*row.LineItemResourceId, ":")
+		if len(splitResourceId) > 4 {
+			row.TpIndex = splitResourceId[4]
+		}
 	}
 
 	return row, nil

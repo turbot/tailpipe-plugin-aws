@@ -57,20 +57,13 @@ func (t *CostOptimizationRecommendationsTable) EnrichRow(row *CostOptimizationRe
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
-
-	if row.LastRefreshTimestamp != nil {
-		row.TpTimestamp = *row.LastRefreshTimestamp
-		// convert to date in format yyyy-mm-dd
-		row.TpDate = row.LastRefreshTimestamp.Truncate(24 * time.Hour)
-	}
+	
+	row.TpTimestamp = *row.LastRefreshTimestamp
+	// convert to date in format yyyy-mm-dd
+	row.TpDate = row.LastRefreshTimestamp.Truncate(24 * time.Hour)
 
 	// TpIndex
-	switch {
-	case typehelpers.SafeString(row.AccountID) != "":
-		row.TpIndex = typehelpers.SafeString(row.AccountID)
-	default:
-		row.TpIndex = schema.DefaultIndex
-	}
+	row.TpIndex = typehelpers.SafeString(row.AccountID)
 
 	if row.ResourceARN != nil {
 		row.TpAkas = append(row.TpAkas, *row.ResourceARN)
