@@ -5,6 +5,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-aws/tables/alb_access_log"
+	"github.com/turbot/tailpipe-plugin-aws/tables/clb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/cloudtrail_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/nlb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
@@ -30,6 +31,7 @@ func init() {
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
 	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
+	table.RegisterTable[*clb_access_log.ClbAccessLog, *clb_access_log.ClbAccessLogTable]()
 	table.RegisterTable[*guardduty_finding_log.GuardDutyFinding, *guardduty_finding_log.GuardDutyFindingTable]()
 
 	// register sources
