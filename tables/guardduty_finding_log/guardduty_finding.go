@@ -115,3 +115,27 @@ type AccessKeyDetails struct {
 	UserName    *string `json:"user_name,omitempty"`
 	UserType    *string `json:"user_type,omitempty"`
 }
+
+func (c *GuardDutyFinding) GetColumnDescriptions() map[string]string {
+	return map[string]string{
+		"account_id":     "The AWS account ID where the finding was generated.",
+		"arn":            "The Amazon Resource Name (ARN) of the finding.",
+		"description":    "A detailed description of the security finding, including what was detected and its potential impact.",
+		"id":             "The unique identifier for the finding.",
+		"partition":      "The AWS partition where the finding was generated (e.g., aws, aws-cn, aws-gov).",
+		"region":         "The AWS region where the finding was generated.",
+		"schema_version": "The version of the GuardDuty finding format schema.",
+		"severity":       "The severity level of the finding, ranging from 0.1 to 8.9, where higher values indicate higher severity.",
+		"title":          "A short human-readable title for the finding that describes the type of activity detected.",
+		"type":           "The type of finding, indicating the category of security issue detected.",
+		"created_at":     "The timestamp when the finding was first created.",
+		"updated_at":     "The timestamp when the finding was last updated.",
+		"service":        "Details about the GuardDuty service that generated the finding, including actions, additional information, and detection details.",
+		"resource":       "Information about the AWS resource that was targeted.",
+
+		// Tailpipe-specific metadata fields
+		"tp_akas":      "The Amazon Resource Names (ARNs) associated with the finding.",
+		"tp_index":     "The AWS account ID where the finding was generated, used for indexing.",
+		"tp_usernames": "Usernames associated with the finding, including IAM users and access key IDs.",
+	}
+}

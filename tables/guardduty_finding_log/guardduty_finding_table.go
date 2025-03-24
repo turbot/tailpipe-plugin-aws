@@ -76,3 +76,7 @@ func (c *GuardDutyFindingTable) EnrichRow(row *GuardDutyFinding, sourceEnrichmen
 
 	return row, nil
 }
+
+func (c *GuardDutyFindingTable) GetDescription() string {
+	return "AWS GuardDuty findings provide detailed security alerts about potential threats and suspicious activities detected in your AWS environment. This table captures comprehensive information about each finding, including threat details, affected resources, and severity levels to help security teams identify and respond to potential security issues."
+}
