@@ -25,7 +25,7 @@ func (t *DetailedBillingReportTable) Identifier() string {
 
 func (t *DetailedBillingReportTable) GetSourceMetadata() []*table.SourceMetadata[*DetailedBillingReport] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:billing_period}/%{DATA:assembly_id}/%{DATA}.csv.(?:gz|zip)"),
+		FileLayout: utils.ToStringPointer("%{DATA}.csv"),
 	}
 
 	return []*table.SourceMetadata[*DetailedBillingReport]{

@@ -141,7 +141,7 @@ You can also collect AWS DBR files from local files.
 partition "aws_detailed_billing_report" "local_dbr" {
   source "file"  {
     paths       = ["/Users/myuser/aws_dbr"]
-    file_layout = "%{DATA}.csv.gz"
+    file_layout = "%{DATA}.csv"
   }
 }
 ```
@@ -170,7 +170,7 @@ partition "aws_detailed_billing_report" "org_dbr" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.billing_account
     bucket      = "aws-dbr-org-bucket"
-    file_layout = "%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"
+    file_layout = "%{DATA}.csv"
   }
 }
 ```
@@ -181,6 +181,6 @@ partition "aws_detailed_billing_report" "org_dbr" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument    | Default                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------ | ----- |
-| file_layout | `%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.(?:gz | zip)` |
+| Argument    | Default       |
+| ----------- | ------------- |
+| file_layout | `%{DATA}.csv` |
