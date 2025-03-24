@@ -96,8 +96,8 @@ Monitor and detect potential privilege escalation activities that could indicate
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
@@ -108,7 +108,7 @@ from
 where
   type like 'PrivilegeEscalation:%'
 order by
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -121,14 +121,14 @@ Detect potential cryptojacking attempts and unauthorized cryptocurrency mining o
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
   severity,
   description,
-  resource ->> 'resource_type' as resource_type
+  (resource ->> 'resource_type') as resource_type
 from
   aws_guardduty_finding
 where
@@ -137,7 +137,7 @@ where
   or title like '%mining%'
 order by
   severity desc,
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -150,8 +150,8 @@ Track unauthorized, discovery-oriented, and stealthy API calls that may indicate
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
@@ -164,7 +164,7 @@ where
   or type like 'Discovery:IAMUser%'
   or type like 'Stealth:IAMUser%'
 order by
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -177,22 +177,22 @@ Monitor EC2 instances for malware detections using GuardDuty's Malware Protectio
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
   severity,
-  service ->> 'feature_name' as feature_name,
-  resource ->> 'resource_type' as resource_type,
-  resource ->> 'resource_details' as resource_details
+  (service ->> 'feature_name') as feature_name,
+  (resource ->> 'resource_type') as resource_type,
+  (resource ->> 'resource_details') as resource_details
 from
   aws_guardduty_finding
 where
   (service ->> 'feature_name') = 'MalwareProtection'
   and (resource ->> 'resource_type') = 'Instance'
 order by
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -207,20 +207,20 @@ Investigate security events related to runtime behavior in containerized (EKS) a
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
   severity,
   description,
-  resource ->> 'resource_type' as resource_type
+  (resource ->> 'resource_type') as resource_type
 from
   aws_guardduty_finding
 where
-  service ->> 'feature_name' = 'RuntimeMonitoring'
+  (service ->> 'feature_name') = 'RuntimeMonitoring'
 order by
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -233,20 +233,20 @@ Track potential compromises or misuse of IAM credentials by analyzing AccessKey-
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
   severity,
-  resource ->> 'access_key_details' as access_key_details
+  (resource ->> 'access_key_details') as access_key_details
 from
   aws_guardduty_finding
 where
-  resource ->> 'resource_type' = 'AccessKey'
+  (resource ->> 'resource_type') = 'AccessKey'
 order by
   severity desc,
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -334,14 +334,14 @@ Identify high-severity (>=5) behavioral anomalies, backdoors, and trojan activit
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
   severity,
   description,
-  resource ->> 'resource_type' as resource_type
+  (resource ->> 'resource_type') as resource_type
 from
   aws_guardduty_finding
 where
@@ -349,7 +349,7 @@ where
   and severity >= 5
 order by
   severity desc,
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml
@@ -362,19 +362,21 @@ Perform detailed analysis of process-level activities detected by GuardDuty, inc
 
 ```sql
 select
-  created_at,
+  tp_timestamp,
+  tp_index as account_id,
+  region,
   title,
   severity,
-  service->'runtime_details' -> 'process' ->> 'name' as process_name,
-  service->'runtime_details' -> 'process' ->> 'executable_path' as executable_path,
-  service->'runtime_details' -> 'process' ->> 'command_line_example' as command_line
+  (service -> 'runtime_details' -> 'process' ->> 'name') as process_name,
+  (service -> 'runtime_details' -> 'process' ->> 'executable_path') as executable_path,
+  (service -> 'runtime_details' -> 'process' ->> 'command_line_example') as command_line
 from
   aws_guardduty_finding
 where
   (service -> 'runtime_details' -> 'process') is not null
 order by
   severity desc,
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ```yaml

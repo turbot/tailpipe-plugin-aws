@@ -52,8 +52,8 @@ List all high severity security findings to prioritize your security response.
 
 ```sql
 select
-  created_at,
-  account_id,
+  tp_timestamp,
+  tp_index as account_id,
   region,
   title,
   type,
@@ -65,7 +65,7 @@ where
   severity >= 7.0
 order by
   severity desc,
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ### Findings by Type
@@ -93,20 +93,20 @@ Examine recent security findings along with details of the affected resources.
 
 ```sql
 select
-  created_at,
+  tp_timestamp,
+  tp_index as account_id,
+  region,
   title,
   type,
   severity,
-  account_id,
-  region,
-  resource ->> 'resource_type' as resource_type,
-  resource ->> 'resource_details' as resource_details
+  (resource ->> 'resource_type') as resource_type,
+  (resource ->> 'resource_details') as resource_details
 from
   aws_guardduty_finding
 where
   created_at > current_date - interval '7 days'
 order by
-  created_at desc;
+  tp_timestamp desc;
 ```
 
 ## Example Configurations
