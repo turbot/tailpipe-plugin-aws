@@ -52,7 +52,7 @@ Retrieve the total cost for each month, grouped by AWS account.
 
 ```sql
 select
-  date_trunc('month', billing_period_start) as billing_month,
+  date_trunc('month', usage_start_date) as billing_month,
   linked_account_id as account_id,
   sum(total_cost) as total_cost
 from
@@ -80,25 +80,7 @@ order by
 limit 10;
 ```
 
-### Usage by Resource Type
-
-Identify the highest usage by resource type.
-
-```sql
-select
-  usage_type,
-  sum(usage_quantity) as total_usage,
-  sum(total_cost) as total_cost
-from
-  aws_detailed_billing_report
-group by
-  usage_type
-order by
-  total_cost desc
-limit 20;
-```
-
-### Usage by Operation
+### Cost by Operation
 
 Analyze costs by operation type.
 
@@ -202,7 +184,3 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument    | Default                                                                                                |
 | ----------- | ------------------------------------------------------------------------------------------------------ | ----- |
 | file_layout | `%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.(?:gz | zip)` |
-
-## Schema
-
-The `aws_detailed_billing_report` table schema is based on the AWS Detailed Billing Report CSV header format, which includes fields such as invoice_id, payer_account_id, linked_account_id, record_type, product_name, usage_type, operation, resource_id, total_cost, and more.

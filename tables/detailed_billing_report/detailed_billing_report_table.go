@@ -1,7 +1,6 @@
 package detailed_billing_report
 
 import (
-	"strings"
 	"time"
 
 	"github.com/rs/xid"
@@ -52,6 +51,7 @@ func (t *DetailedBillingReportTable) EnrichRow(row *DetailedBillingReport, sourc
 	row.TpIngestTimestamp = time.Now()
 
 	// Fallbacks for TpIndex and TpTimestamp
+	// If the report is for the payer account itself, we will not have the linked account ID for it.
 	if typehelpers.SafeString(row.LinkedAccountId) != "" {
 		row.TpIndex = *row.LinkedAccountId
 	} else if typehelpers.SafeString(row.PayerAccountId) != "" {
@@ -63,19 +63,6 @@ func (t *DetailedBillingReportTable) EnrichRow(row *DetailedBillingReport, sourc
 	if row.UsageStartDate != nil {
 		row.TpTimestamp = *row.UsageStartDate
 		row.TpDate = row.UsageStartDate.Truncate(24 * time.Hour)
-	} else if row.UsageEndDate != nil {
-		row.TpTimestamp = *row.UsageEndDate
-		row.TpDate = row.UsageEndDate.Truncate(24 * time.Hour)
-	} else if row.BillingPeriodStart != nil {
-		row.TpTimestamp = *row.BillingPeriodStart
-		row.TpDate = row.BillingPeriodStart.Truncate(24 * time.Hour)
-	} else if row.BillingPeriodEnd != nil {
-		row.TpTimestamp = *row.BillingPeriodEnd
-		row.TpDate = row.BillingPeriodEnd.Truncate(24 * time.Hour)
-	}
-
-	if row.ResourceId != nil && strings.HasPrefix(*row.ResourceId, "arn:") {
-		row.TpAkas = append(row.TpAkas, *row.ResourceId)
 	}
 
 	return row, nil

@@ -114,9 +114,16 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		records = append(records, record)
 	}
 
-	result := make([]any, len(records))
-	for i, r := range records {
-		result[i] = r
+	var result []any
+	for _, r := range records {
+		// Skip summary-level records that do not represent individual usage or cost line items.
+		// These records include totals and rounding adjustments (e.g., StatementTotal, InvoiceTotal, CBRounding, AccountTotal).
+		// We only want to collect detailed line item costs per account.
+		if *r.RecordType == "StatementTotal" || *r.RecordType == "InvoiceTotal" || *r.RecordType == "CBRounding" || *r.RecordType == "AccountTotal" {
+			continue
+		}
+
+		result = append(result, r)
 	}
 	return result, nil
 }
@@ -135,8 +142,6 @@ func mapToStruct(data map[string]string, target *DetailedBillingReport) error {
 	v := reflect.ValueOf(target).Elem()
 	t := v.Type()
 
-	tags := make(map[string]string)
-
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		jsonKey := trimOmitempty(field.Tag.Get("json"))
@@ -145,19 +150,6 @@ func mapToStruct(data map[string]string, target *DetailedBillingReport) error {
 		}
 
 		fieldVal := v.Field(i)
-
-		// Handle tag fields (e.g., aws:*, user:*) dynamically from data map keys
-		if field.Name == "Tags" && field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Map {
-			for k, v := range data {
-				if strings.Contains(k, ":") && v != "" {
-					tags[k] = v
-				}
-			}
-			if len(tags) > 0 && fieldVal.CanSet() {
-				fieldVal.Set(reflect.ValueOf(&tags))
-			}
-			continue
-		}
 
 		// Match normal struct fields by json key
 		value, exists := data[jsonKey]
@@ -191,7 +183,6 @@ func mapToStruct(data map[string]string, target *DetailedBillingReport) error {
 
 	return nil
 }
-
 
 func trimOmitempty(tag string) string {
 	if idx := len(tag) - len(",omitempty"); idx > 0 && tag[idx:] == ",omitempty" {
