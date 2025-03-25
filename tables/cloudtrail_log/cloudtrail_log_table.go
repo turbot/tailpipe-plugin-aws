@@ -1,10 +1,12 @@
 package cloudtrail_log
 
 import (
-	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"strings"
 	"time"
+
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch"
+	"github.com/turbot/tailpipe-plugin-aws/tables"
 
 	"github.com/rs/xid"
 
@@ -42,6 +44,10 @@ func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*CloudT
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithArtifactExtractor(NewCloudTrailLogExtractor()),
 			},
+		},
+		{
+			SourceName: cloudwatch.AwsCloudwatchSourceIdentifier,
+			Mapper:     &CloudTrailMapper{},
 		},
 	}
 }
