@@ -3,7 +3,6 @@ package cloudwatch
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -87,8 +86,6 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 		} else {
 			startTime = s.FromTime.Unix()
 		}
-
-		slog.Error("Timestamp value: ", fmt.Sprintf("%s", time.Unix(startTime, 0).UTC().Format(time.RFC3339)))
 
 		// To ensure smoother execution, we have set the value to 1000, even though the maximum allowable limit is 10000.
 		// https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_GetLogEvents.html#API_GetLogEvents_RequestSyntax
