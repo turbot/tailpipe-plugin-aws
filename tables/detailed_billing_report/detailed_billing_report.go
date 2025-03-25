@@ -75,6 +75,6 @@ func (c *DetailedBillingReport) GetColumnDescriptions() map[string]string {
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "The list of ARNs associated with this billing record.",
 		"tp_index":     "The account ID used for indexing the record.",
-		"tp_timestamp": "Timestamp of the billing entry based on usage or billing period.",
+		"tp_timestamp": "Timestamp of the billing entry based on the usage start time.",
 	}
 }
