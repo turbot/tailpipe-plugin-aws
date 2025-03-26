@@ -63,7 +63,11 @@ func (t *CostOptimizationRecommendationsTable) EnrichRow(row *CostOptimizationRe
 	row.TpDate = row.LastRefreshTimestamp.Truncate(24 * time.Hour)
 
 	// TpIndex
-	row.TpIndex = typehelpers.SafeString(row.AccountID)
+	if typehelpers.SafeString(row.AccountID) != "" {
+		row.TpIndex = typehelpers.SafeString(row.AccountID)
+	} else {
+		row.TpIndex = schema.DefaultIndex
+	}
 
 	if row.ResourceARN != nil {
 		row.TpAkas = append(row.TpAkas, *row.ResourceARN)

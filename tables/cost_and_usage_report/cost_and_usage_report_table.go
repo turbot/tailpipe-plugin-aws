@@ -90,6 +90,8 @@ func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentF
 		if len(splitResourceId) > 4 {
 			row.TpIndex = splitResourceId[4]
 		}
+	} else {
+		row.TpIndex = schema.DefaultIndex
 	}
 
 	return row, nil

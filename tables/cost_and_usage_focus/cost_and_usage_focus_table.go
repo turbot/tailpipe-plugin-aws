@@ -55,20 +55,28 @@ func (c *CostUsageFocusTable) EnrichRow(row *CostUsageFocus, sourceEnrichmentFie
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 
-	// If the user does not include SubAccountId when creating the data export,
-	// the cost data will be aggregated at the BillingAccountId (payer account) level.
-	// In such cases, we need to check if SubAccountId is empty, and if so,
-	// fall back to using BillingAccountId as the indexing key.
+
 	// TpIndex
 	switch {
 	case typehelpers.SafeString(row.SubAccountId) != "":
 		row.TpIndex = typehelpers.SafeString(row.SubAccountId)
-	case typehelpers.SafeString(row.BillingAccountId) != "":
-		row.TpIndex = typehelpers.SafeString(row.BillingAccountId)
+	default:
+		row.TpIndex = schema.DefaultIndex
 	}
 
-	row.TpTimestamp = *row.ChargePeriodStart
-	row.TpDate = row.ChargePeriodStart.Truncate(24 * time.Hour)
+	if row.ChargePeriodStart != nil {
+		row.TpTimestamp = *row.ChargePeriodStart
+		row.TpDate = row.ChargePeriodStart.Truncate(24 * time.Hour)
+	} else if row.ChargePeriodEnd != nil {
+		row.TpTimestamp = *row.ChargePeriodEnd
+		row.TpDate = row.ChargePeriodEnd.Truncate(24 * time.Hour)
+	} else if row.BillingPeriodStart != nil {
+		row.TpTimestamp = *row.BillingPeriodStart
+		row.TpDate = row.BillingPeriodStart.Truncate(24 * time.Hour)
+	} else if row.BillingPeriodEnd != nil {
+		row.TpTimestamp = *row.BillingPeriodEnd
+		row.TpDate = row.BillingPeriodEnd.Truncate(24 * time.Hour)
+	}
 
 	if row.ResourceId != nil && strings.HasPrefix(*row.ResourceId, "arn:") {
 		row.TpAkas = append(row.TpAkas, *row.ResourceId)
