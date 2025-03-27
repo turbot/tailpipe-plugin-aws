@@ -70,7 +70,8 @@ Evaluate the query against each of these specific criteria sets:
 6. STRUCT type columns should use dot notation when accessing properties.
 7. JSON type columns should use `->` and `->>` operators when accessing properties.
 8. JSON type columns using `->` and `->>` operators should be wrapped in parenthesis to avoid operator precedence issues.
-9. SQL query syntax uses valid DuckDB syntax.
+9. There should be a space before and after each `->` and `->>`.
+10. SQL query syntax uses valid DuckDB syntax.
 
 # Title and description checks
 1. The query's title should use title case.
@@ -85,10 +86,11 @@ Evaluate the query against each of these specific criteria sets:
 
 # Column selection checks
 1. For aggregated queries, the `tp_index` and `tp_timestamp` (or other log timestamp related columns) should not be included.
-2. For non-aggregated queries, the `tp_timestamp` column should be the first column in the `SELECT` statement.
-3. For non-aggregated queries, the table's primary index (usually `tp_index`) must be included.
-4. For non-aggregated queries, if the log contains information on where resources exist (e.g., `account_id` for AWS logs, `subscription_id` for Azure logs), include those columns.
-5. If the query's `WHERE` clause contains a specific value lookup, e.g., `where elb_status_code = 502`, do not include that column in the `SELECT` statement to avoid including redundant information.
+2. For non-aggregated queries, the first column in the `SELECT` statement should be `tp_timestamp`.
+3. For non-aggregated queries, if the log contains information on where resources exist (e.g., `account_id` and `region` for AWS CloudTrail logs, `subscription_id` and `resource_group_name` for Azure activity logs), include those columns.
+4. For non-aggregated queries, the columns related to where the resources exist should be the last columns in the `SELECT` statement.
+5. For non-aggregated queries, the `tp_index` should only be included if the index information is not in another column, e.g., do not include `tp_index` in `aws_cloudtrail_log` queries since they use `account_id` instead.
+6. If the query's `WHERE` clause contains a specific value lookup, e.g., `where elb_status_code = 502`, do not include that column in the `SELECT` statement to avoid including redundant information.
 
 # Sorting strategy checks
 1. For non-aggregated queries, the default ordering should be `tp_timestamp desc` so the most recent log data is returned first.
@@ -124,6 +126,7 @@ You MUST provide ONLY the following output format, with no additional text:
 | STRUCT type columns use dot notation | [MARK] | [SUGGESTION] |
 | JSON type columns use `->` and `->>` operators | [MARK] | [SUGGESTION] |
 | JSON type columns are wrapped in parenthesis | [MARK] | [SUGGESTION] |
+| Space before and after each `->` and `->>` | [MARK] | [SUGGESTION] |
 | SQL query syntax uses valid DuckDB syntax | [MARK] | [SUGGESTION] |
 
 </details>
@@ -153,10 +156,11 @@ You MUST provide ONLY the following output format, with no additional text:
 
 | Criteria | Pass/Fail | Suggestions |
 |----------|-----------|-------------|
-| Aggregated queries should not include tp_index/tp_timestamp | [MARK] | [SUGGESTION] |
-| Non-aggregated queries should have tp_timestamp first | [MARK] | [SUGGESTION] |
-| Non-aggregated queries should include tp_index | [MARK] | [SUGGESTION] |
-| Include resource location columns when available | [MARK] | [SUGGESTION] |
+| Aggregated queries should not include `tp_index`/`tp_timestamp` | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should have `tp_timestamp` as the first column | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should include columns related to where the resources exist | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should place columns related to where the resources exist last | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should only include tp_index if missing index information in other columns | [MARK] | [SUGGESTION] |
 | Avoid selecting columns with fixed values in WHERE clause | [MARK] | [SUGGESTION] |
 
 </details>
@@ -165,7 +169,7 @@ You MUST provide ONLY the following output format, with no additional text:
 
 | Criteria | Pass/Fail | Suggestions |
 |----------|-----------|-------------|
-| Non-aggregated queries default to tp_timestamp desc | [MARK] | [SUGGESTION] |
+| Non-aggregated queries default to `tp_timestamp desc` | [MARK] | [SUGGESTION] |
 | Aggregated queries ordered by count desc or time asc | [MARK] | [SUGGESTION] |
 
 </details>

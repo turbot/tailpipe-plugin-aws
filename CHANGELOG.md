@@ -1,3 +1,19 @@
+## v0.7.0 [2025-03-21]
+
+_What's new?_
+
+- New tables added:
+  - [aws_clb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_clb_access_log) ([#88](https://github.com/turbot/tailpipe-plugin-aws/pull/88))
+
+_Dependencies_
+
+- Bumped github.com/aws/aws-sdk-go-v2/config from 1.29.6 to 1.29.9. ([#120](https://github.com/turbot/tailpipe-plugin-aws/pull/120))
+- Bumped github.com/aws/aws-sdk-go-v2/feature/s3/manager. ([#124](https://github.com/turbot/tailpipe-plugin-aws/pull/124))
+- Bumped github.com/aws/aws-sdk-go-v2/service/s3 from 1.77.1 to 1.78.2. ([#125](https://github.com/turbot/tailpipe-plugin-aws/pull/125))
+- Bumped github.com/containerd/containerd from 1.7.18 to 1.7.27. ([#126](https://github.com/turbot/tailpipe-plugin-aws/pull/126))
+- Bumped golang.org/x/net from 0.33.0 to 0.36.0. ([#122](https://github.com/turbot/tailpipe-plugin-aws/pull/122))
+- Bumped golang.org/x/sync from 0.11.0 to 0.12.0. ([#117](https://github.com/turbot/tailpipe-plugin-aws/pull/117))
+
 ## v0.6.0 [2025-03-07]
 
 _What's new?_
@@ -10,9 +26,9 @@ _What's new?_
 
 _Dependencies_
 
-- Bumped github.com/aws/aws-sdk-go-v2 from 1.36.2 to 1.36.3 ([#110](https://github.com/turbot/tailpipe-plugin-aws/pull/110))
-- Bumped github.com/aws/aws-sdk-go-v2/credentials from 1.17.59 to 1.17.61 ([#111](https://github.com/turbot/tailpipe-plugin-aws/pull/111))
-- Bumped github.com/turbot/pipe-fittings/v2 from 2.1.1 to 2.2.0 ([#100](https://github.com/turbot/tailpipe-plugin-aws/pull/100))
+- Bumped github.com/aws/aws-sdk-go-v2 from 1.36.2 to 1.36.3. ([#110](https://github.com/turbot/tailpipe-plugin-aws/pull/110))
+- Bumped github.com/aws/aws-sdk-go-v2/credentials from 1.17.59 to 1.17.61. ([#111](https://github.com/turbot/tailpipe-plugin-aws/pull/111))
+- Bumped github.com/turbot/pipe-fittings/v2 from 2.1.1 to 2.2.0. ([#100](https://github.com/turbot/tailpipe-plugin-aws/pull/100))
 
 ## v0.5.0 [2025-03-03]
 

@@ -184,12 +184,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.9
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.66
+	github.com/aws/aws-sdk-go-v2/service/guardduty v1.54.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.2
 	github.com/elastic/go-grok v0.3.1
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.6.0
-	github.com/turbot/go-kit v1.1.0
+	github.com/turbot/go-kit v1.2.0
 	github.com/turbot/pipe-fittings/v2 v2.2.0
 	golang.org/x/sync v0.12.0
 )
