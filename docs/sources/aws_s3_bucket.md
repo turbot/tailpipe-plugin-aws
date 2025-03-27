@@ -74,6 +74,7 @@ The following tables define their own default values for certain source argument
 - **[aws_alb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_alb_access_log#aws_s3_bucket)**
 - **[aws_clb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_clb_access_log#aws_s3_bucket)**
 - **[aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_s3_bucket)**
+- **[aws_guardduty_finding](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_guardduty_finding#aws_s3_bucket)**
 - **[aws_nlb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_nlb_access_log#aws_s3_bucket)**
 - **[aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log#aws_s3_bucket)**
 - **[aws_vpc_flow_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log#aws_s3_bucket)**
