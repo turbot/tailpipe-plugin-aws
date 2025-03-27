@@ -1,4 +1,4 @@
-package guardduty_finding_log
+package guardduty_finding
 
 import (
 	"context"
@@ -75,7 +75,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 	// service
 	if finding.Service != nil {
-		row.Service = &GuardDutyFindingService{
+		row.Service = &Service{
 			Archived:             finding.Service.Archived,
 			Count:                finding.Service.Count,
 			Detection:            finding.Service.Detection,

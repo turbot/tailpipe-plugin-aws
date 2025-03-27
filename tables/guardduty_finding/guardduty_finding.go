@@ -1,4 +1,4 @@
-package guardduty_finding_log
+package guardduty_finding
 
 import (
 	"time"
@@ -22,11 +22,11 @@ type GuardDutyFinding struct {
 	Type          *string                   `json:"type"`
 	CreatedAt     time.Time                 `json:"created_at"`
 	UpdatedAt     *time.Time                `json:"updated_at"`
-	Service       *GuardDutyFindingService  `json:"service,omitempty"`
+	Service       *Service                  `json:"service,omitempty"`
 	Resource      *GuardDutyFindingResource `json:"resource,omitempty"`
 }
 
-type GuardDutyFindingService struct {
+type Service struct {
 	Action               *GuardDutyFindingAction              `json:"action,omitempty"`
 	AdditionalInfo       *GuardDutyFindingServiceAdditionInfo `json:"additional_info,omitempty"`
 	Archived             *bool                                `json:"archived,omitempty"`
@@ -135,7 +135,7 @@ func (c *GuardDutyFinding) GetColumnDescriptions() map[string]string {
 
 		// Tailpipe-specific metadata fields
 		"tp_akas":      "The Amazon Resource Names (ARNs) associated with the finding.",
-		"tp_index":     "The AWS account ID where the finding was generated, used for indexing.",
+		"tp_index":     "The AWS account ID where the finding was generated.",
 		"tp_usernames": "Usernames associated with the finding, including IAM users and access key IDs.",
 	}
 }

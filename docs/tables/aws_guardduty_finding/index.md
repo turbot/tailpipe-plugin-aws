@@ -53,12 +53,12 @@ List all high severity security findings to prioritize your security response.
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
-  description
+  description,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
@@ -94,13 +94,13 @@ Examine recent security findings along with details of the affected resources.
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
-  (resource ->> 'resource_type') as resource_type,
-  (resource ->> 'resource_details') as resource_details
+  resource.resource_type as resource_type,
+  resource.resource_details as resource_details,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where

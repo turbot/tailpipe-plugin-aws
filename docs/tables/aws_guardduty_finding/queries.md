@@ -97,12 +97,12 @@ Monitor and detect potential privilege escalation activities that could indicate
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
-  description
+  description,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
@@ -122,13 +122,13 @@ Detect potential cryptojacking attempts and unauthorized cryptocurrency mining o
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
   description,
-  (resource ->> 'resource_type') as resource_type
+  resource.resource_type as resource_type,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
@@ -151,12 +151,12 @@ Track unauthorized, discovery-oriented, and stealthy API calls that may indicate
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
-  description
+  description,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
@@ -178,20 +178,48 @@ Monitor EC2 instances for malware detections using GuardDuty's Malware Protectio
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
-  (service ->> 'feature_name') as feature_name,
-  (resource ->> 'resource_type') as resource_type,
-  (resource ->> 'resource_details') as resource_details
+  service.feature_name as feature_name,
+  resource.resource_type as resource_type,
+  resource.resource_details as resource_details,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
-  (service ->> 'feature_name') = 'MalwareProtection'
-  and (resource ->> 'resource_type') = 'Instance'
+  service.feature_name = 'MalwareProtection'
+  and resource.resource_type = 'Instance'
 order by
+  tp_timestamp desc;
+```
+
+```yaml
+folder: GuardDuty
+```
+
+### Abnormal Resource Behavior
+
+Identify high-severity (>=5) behavioral anomalies, backdoors, and trojan activities that could indicate compromised AWS resources. This query focuses on critical threats requiring immediate investigation.
+
+```sql
+select
+  tp_timestamp,
+  title,
+  type,
+  severity,
+  description,
+  resource.resource_type as resource_type,
+  tp_index as account_id,
+  region
+from
+  aws_guardduty_finding
+where
+  (type like 'Behavior:%' or type like 'Backdoor:%' or type like 'Trojan:%')
+  and severity >= 5
+order by
+  severity desc,
   tp_timestamp desc;
 ```
 
@@ -208,17 +236,17 @@ Investigate security events related to runtime behavior in containerized (EKS) a
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
   description,
-  (resource ->> 'resource_type') as resource_type
+  resource.resource_type as resource_type,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
-  (service ->> 'feature_name') = 'RuntimeMonitoring'
+  service.feature_name = 'RuntimeMonitoring'
 order by
   tp_timestamp desc;
 ```
@@ -234,16 +262,43 @@ Track potential compromises or misuse of IAM credentials by analyzing AccessKey-
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   type,
   severity,
-  (resource ->> 'access_key_details') as access_key_details
+  resource.access_key_details as access_key_details,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
-  (resource ->> 'resource_type') = 'AccessKey'
+  resource.resource_type = 'AccessKey'
+order by
+  severity desc,
+  tp_timestamp desc;
+```
+
+```yaml
+folder: GuardDuty
+```
+
+### Process Analysis for Runtime Threats
+
+Perform detailed analysis of process-level activities detected by GuardDuty, including process names, paths, and command lines. This deep inspection helps security teams understand attack techniques and malicious process behaviors.
+
+```sql
+select
+  tp_timestamp,
+  title,
+  severity,
+  service.runtime_details.process.name as process_name,
+  service.runtime_details.process.executable_path as executable_path,
+  service.runtime_details.process.command_line_example as command_line,
+  tp_index as account_id,
+  region
+from
+  aws_guardduty_finding
+where
+  service.runtime_details.process is not null
 order by
   severity desc,
   tp_timestamp desc;
@@ -263,12 +318,12 @@ Identify AWS accounts experiencing unusually high numbers of security findings (
 select
   account_id,
   count(*) as finding_count,
-  date_trunc('day', created_at) as finding_day
+  date_trunc('day', created_at) as date
 from
   aws_guardduty_finding
 group by
   account_id,
-  finding_day
+  date
 having
   count(*) > 50
 order by
@@ -328,34 +383,6 @@ order by
 folder: GuardDuty
 ```
 
-### Abnormal Resource Behavior
-
-Identify high-severity (>=5) behavioral anomalies, backdoors, and trojan activities that could indicate compromised AWS resources. This query focuses on critical threats requiring immediate investigation.
-
-```sql
-select
-  tp_timestamp,
-  tp_index as account_id,
-  region,
-  title,
-  type,
-  severity,
-  description,
-  (resource ->> 'resource_type') as resource_type
-from
-  aws_guardduty_finding
-where
-  (type like 'Behavior:%' or type like 'Backdoor:%' or type like 'Trojan:%')
-  and severity >= 5
-order by
-  severity desc,
-  tp_timestamp desc;
-```
-
-```yaml
-folder: GuardDuty
-```
-
 ### Process Analysis for Runtime Threats
 
 Perform detailed analysis of process-level activities detected by GuardDuty, including process names, paths, and command lines. This deep inspection helps security teams understand attack techniques and malicious process behaviors.
@@ -363,17 +390,17 @@ Perform detailed analysis of process-level activities detected by GuardDuty, inc
 ```sql
 select
   tp_timestamp,
-  tp_index as account_id,
-  region,
   title,
   severity,
-  (service -> 'runtime_details' -> 'process' ->> 'name') as process_name,
-  (service -> 'runtime_details' -> 'process' ->> 'executable_path') as executable_path,
-  (service -> 'runtime_details' -> 'process' ->> 'command_line_example') as command_line
+  service.runtime_details.process.name as process_name,
+  service.runtime_details.process.executable_path as executable_path,
+  service.runtime_details.process.command_line_example as command_line,
+  tp_index as account_id,
+  region
 from
   aws_guardduty_finding
 where
-  (service -> 'runtime_details' -> 'process') is not null
+  service.runtime_details.process is not null
 order by
   severity desc,
   tp_timestamp desc;

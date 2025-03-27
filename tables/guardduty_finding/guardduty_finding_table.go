@@ -1,4 +1,4 @@
-package guardduty_finding_log
+package guardduty_finding
 
 import (
 	"time"
