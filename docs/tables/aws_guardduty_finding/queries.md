@@ -1,6 +1,6 @@
 ## Activity Examples
 
-### Daily Finding Trends
+### Daily Activity Trends
 
 Analyze the daily distribution of GuardDuty findings to identify security patterns and potential attack campaigns over time. This temporal analysis helps establish baseline activity and detect anomalous spikes in security events.
 
@@ -101,7 +101,7 @@ select
   type,
   severity,
   description,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -127,7 +127,7 @@ select
   severity,
   description,
   resource.resource_type as resource_type,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -155,7 +155,7 @@ select
   type,
   severity,
   description,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -184,7 +184,7 @@ select
   service.feature_name as feature_name,
   resource.resource_type as resource_type,
   resource.resource_details as resource_details,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -211,7 +211,7 @@ select
   severity,
   description,
   resource.resource_type as resource_type,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -241,7 +241,7 @@ select
   severity,
   description,
   resource.resource_type as resource_type,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -266,7 +266,7 @@ select
   type,
   severity,
   resource.access_key_details as access_key_details,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -293,7 +293,7 @@ select
   service.runtime_details.process.name as process_name,
   service.runtime_details.process.executable_path as executable_path,
   service.runtime_details.process.command_line_example as command_line,
-  tp_index as account_id,
+  account_id,
   region
 from
   aws_guardduty_finding
@@ -382,30 +382,3 @@ order by
 ```yaml
 folder: GuardDuty
 ```
-
-### Process Analysis for Runtime Threats
-
-Perform detailed analysis of process-level activities detected by GuardDuty, including process names, paths, and command lines. This deep inspection helps security teams understand attack techniques and malicious process behaviors.
-
-```sql
-select
-  tp_timestamp,
-  title,
-  severity,
-  service.runtime_details.process.name as process_name,
-  service.runtime_details.process.executable_path as executable_path,
-  service.runtime_details.process.command_line_example as command_line,
-  tp_index as account_id,
-  region
-from
-  aws_guardduty_finding
-where
-  service.runtime_details.process is not null
-order by
-  severity desc,
-  tp_timestamp desc;
-```
-
-```yaml
-folder: GuardDuty
-``` 

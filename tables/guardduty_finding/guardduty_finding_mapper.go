@@ -93,7 +93,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 		// service.action
 		if finding.Service.Action != nil {
-			row.Service.Action = &GuardDutyFindingAction{
+			row.Service.Action = &Action{
 				ActionType: finding.Service.Action.ActionType,
 			}
 
@@ -124,7 +124,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 		// service.additionInfo
 		if finding.Service.AdditionalInfo != nil {
-			row.Service.AdditionalInfo = &GuardDutyFindingServiceAdditionInfo{
+			row.Service.AdditionalInfo = &ServiceAdditionInfo{
 				Type:  finding.Service.AdditionalInfo.Type,
 				Value: finding.Service.AdditionalInfo.Value,
 			}
@@ -132,11 +132,11 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 		// service.runtimeDetails
 		if finding.Service.RuntimeDetails != nil {
-			var runtimeDetails GuardDutyFindingRuntimeDetails
+			var runtimeDetails RuntimeDetails
 
 			// service.runtimeDetails.context
 			if finding.Service.RuntimeDetails.Context != nil {
-				runtimeDetails.Context = &GuardDutyFindingRuntimeDetailsContext{
+				runtimeDetails.Context = &RuntimeDetailsContext{
 					AddressFamily:      finding.Service.RuntimeDetails.Context.AddressFamily,
 					CommandLineExample: finding.Service.RuntimeDetails.Context.CommandLineExample,
 					FileSystemType:     finding.Service.RuntimeDetails.Context.FileSystemType,
@@ -164,7 +164,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 				// service.runtimeDetails.context.modifyingProcess
 				if finding.Service.RuntimeDetails.Context.ModifyingProcess != nil {
-					runtimeDetails.Context.ModifyingProcess = &GuardDutyFindingsProcessDetails{
+					runtimeDetails.Context.ModifyingProcess = &ProcessDetails{
 						Euid:             finding.Service.RuntimeDetails.Context.ModifyingProcess.Euid,
 						ExecutablePath:   finding.Service.RuntimeDetails.Context.ModifyingProcess.ExecutablePath,
 						ExecutableSha256: finding.Service.RuntimeDetails.Context.ModifyingProcess.ExecutableSha256,
@@ -182,7 +182,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 				// service.runtimeDetails.context.targetProcess
 				if finding.Service.RuntimeDetails.Context.TargetProcess != nil {
-					runtimeDetails.Context.TargetProcess = &GuardDutyFindingsProcessDetails{
+					runtimeDetails.Context.TargetProcess = &ProcessDetails{
 						Euid:             finding.Service.RuntimeDetails.Context.TargetProcess.Euid,
 						ExecutablePath:   finding.Service.RuntimeDetails.Context.TargetProcess.ExecutablePath,
 						ExecutableSha256: finding.Service.RuntimeDetails.Context.TargetProcess.ExecutableSha256,
@@ -201,7 +201,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 			// service.runtimeDetails.process
 			if finding.Service.RuntimeDetails.Process != nil {
-				runtimeDetails.Process = &GuardDutyFindingsProcessDetails{
+				runtimeDetails.Process = &ProcessDetails{
 					Euid:             finding.Service.RuntimeDetails.Process.Euid,
 					ExecutablePath:   finding.Service.RuntimeDetails.Process.ExecutablePath,
 					ExecutableSha256: finding.Service.RuntimeDetails.Process.ExecutableSha256,
@@ -223,7 +223,7 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...table.MapOption[*Gu
 
 	// resource
 	if finding.Resource != nil {
-		row.Resource = &GuardDutyFindingResource{
+		row.Resource = &Resource{
 			ResourceType: finding.Resource.ResourceType,
 		}
 
