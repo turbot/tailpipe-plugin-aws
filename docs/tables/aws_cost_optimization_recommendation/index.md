@@ -195,7 +195,8 @@ partition "aws_cost_optimization_recommendation" "org_recommendations" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.billing_account
     bucket      = "aws-cost-optimization-recommendations-bucket"
-    file_layout = "%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"
+    prefix      = "reports"
+    file_layout = "%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"
   }
 }
 ```

@@ -29,7 +29,7 @@ func (t *CostUsageReportTable) Identifier() string {
 
 func (t *CostUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageReport] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:timestamp}/%{DATA}.csv.(?:gz|zip)"),
+		FileLayout: utils.ToStringPointer("%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"),
 	}
 
 	return []*table.SourceMetadata[*CostUsageReport]{
@@ -83,6 +83,15 @@ func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentF
 	}
 
 	// TpIndex
+	// Set TpIndex for the row to help uniquely identify the resource owner or origin account.
+	// Priority:
+	//   1. Use LineItemUsageAccountId if available (typically the owning AWS account).
+	//   2. If not, attempt to extract the 5th element from LineItemResourceId ARN (e.g., the account ID).
+	//   3. If both are missing, fall back to a default value.
+	//
+	// Example:
+	//   For LineItemResourceId: "arn:aws:ec2:us-east-1:123456789012:volume/vol-0abcd1234efgh5678"
+	//   → TpIndex will be set to "123456789012".
 	if row.LineItemUsageAccountId != nil {
 		row.TpIndex = typehelpers.SafeString(row.LineItemUsageAccountId)
 	} else if row.LineItemResourceId != nil {

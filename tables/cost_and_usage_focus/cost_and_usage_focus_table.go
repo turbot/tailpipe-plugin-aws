@@ -26,7 +26,7 @@ func (c *CostUsageFocusTable) Identifier() string {
 
 func (c *CostUsageFocusTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageFocus] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("%{DATA:prefix}/%{DATA:export_name}/%{DATA:folder_name}/%{DATA:billing_period}/%{DATA:assembly_id}/%{DATA}.csv.(?:gz|zip)"),
+		FileLayout: utils.ToStringPointer("%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"),
 	}
 
 	return []*table.SourceMetadata[*CostUsageFocus]{

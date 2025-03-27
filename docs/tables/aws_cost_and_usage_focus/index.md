@@ -2,6 +2,7 @@
 title: "Tailpipe Table: aws_cost_and_usage_focus_1_0 - Query AWS Cost and Usage Reports (Focus 1.0)"
 description: "AWS Cost and Usage Reports provide a detailed breakdown of cost, usage, and billing details for your AWS account."
 ---
+
 # Table: aws_cost_and_usage_focus_1_0 - Query AWS Cost and Usage Reports (Focus 1.0)
 
 The `aws_cost_and_usage_focus_1_0` table enables querying AWS Cost and Usage Report (CUR) data using the Focus 1.0 schema. This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
@@ -170,8 +171,8 @@ partition "aws_cost_and_usage_focus_1_0" "compute_costs" {
   filter = "service_category = 'Compute'"
 
   source "aws_s3_bucket" {
-    connection = connection.aws.billing_account
-    bucket     = "aws-cur-billing-bucket"
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cur-billing-bucket"
   }
 }
 ```
@@ -185,7 +186,8 @@ partition "aws_cost_and_usage_focus_1_0" "org_cur" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-org-bucket"
-    file_layout = "%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.gz"
+    prefix      = "reports"
+    file_layout = "%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"
   }
 }
 ```
@@ -196,6 +198,6 @@ partition "aws_cost_and_usage_focus_1_0" "org_cur" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument      | Default |
-|--------------|---------|
-| file_layout  | `%{DATA:prefix}/%{DATA:exportName}/%{DATA:data}/%{DATA:folderPath}/%{DATA:timestamp}/%{DATA}.csv.gz` |
+| Argument    | Default                                                                                                                                                                                 |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| file_layout | `%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip | gz)` |
