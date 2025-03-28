@@ -46,7 +46,7 @@ tailpipe collect aws_cost_optimization_recommendation.my_recommendations
 
 **[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_optimization_recommendation)**
 
-### Top Cost-Saving Recommendations
+### Top cost-saving recommendations
 
 Identify the recommendations with the highest potential monthly savings.
 
@@ -67,7 +67,7 @@ order by
 limit 10;
 ```
 
-### Easy to Implement Recommendations
+### Easy to implement recommendations
 
 Find recommendations that are easy to implement and don't require restarts.
 
@@ -89,7 +89,7 @@ order by
   savings_amount desc;
 ```
 
-### Recommendations by Service Type
+### Recommendations by service type
 
 Group recommendations by resource type to focus optimization efforts.
 
@@ -107,7 +107,7 @@ order by
   total_potential_savings desc;
 ```
 
-### Regional Optimization Opportunities
+### Regional optimization opportunities
 
 Analyze cost-saving opportunities by AWS region.
 
@@ -127,7 +127,7 @@ order by
 
 ## Example Configurations
 
-### Collect Recommendations from an S3 Bucket
+### Collect recommendations from an S3 bucket
 
 Collect AWS cost optimization recommendations stored in an S3 bucket.
 
@@ -144,7 +144,7 @@ partition "aws_cost_optimization_recommendation" "my_recommendations" {
 }
 ```
 
-### Collect Recommendations from an S3 Bucket with a Prefix
+### Collect recommendations from an S3 bucket with a prefix
 
 Collect AWS cost optimization recommendations stored in an S3 bucket using a prefix.
 
@@ -158,7 +158,7 @@ partition "aws_cost_optimization_recommendation" "my_recommendations_prefix" {
 }
 ```
 
-### Collect Recommendations from Local Files
+### Collect recommendations from local files
 
 You can also collect AWS cost optimization recommendations from local files.
 
@@ -171,7 +171,7 @@ partition "aws_cost_optimization_recommendation" "local_recommendations" {
 }
 ```
 
-### Filter Only High-Value Recommendations
+### Filter only high-value recommendations
 
 Use the filter argument in your partition to collect only high-value recommendations.
 
@@ -186,7 +186,7 @@ partition "aws_cost_optimization_recommendation" "high_value_recommendations" {
 }
 ```
 
-### Collect Recommendations for All Accounts in an AWS Organization
+### Collect recommendations for all accounts in an AWS organization
 
 For a specific AWS Organization, collect recommendation data for all accounts.
 

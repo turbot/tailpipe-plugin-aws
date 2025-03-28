@@ -46,7 +46,7 @@ tailpipe collect aws_cost_and_usage_focus.my_cur
 
 **[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_focus)**
 
-### Monthly Cost Breakdown
+### Monthly cost breakdown
 
 Retrieve the total cost for each month, grouped by AWS account.
 
@@ -63,7 +63,7 @@ order by
   billing_month desc;
 ```
 
-### Top 10 Most Expensive AWS Services
+### Top 10 most expensive services
 
 List the top 10 AWS services with the highest costs.
 
@@ -80,7 +80,7 @@ order by
 limit 10;
 ```
 
-### High-Volume Resource Consumption
+### High-Volume resource consumption
 
 Identify resources with the highest usage quantity.
 
@@ -99,7 +99,7 @@ order by
 limit 10;
 ```
 
-### Cost Breakdown by Region
+### Cost breakdown by region
 
 Get a breakdown of cost and usage by AWS region.
 
@@ -118,7 +118,7 @@ order by
 
 ## Example Configurations
 
-### Collect Cost and Usage Reports from an S3 Bucket
+### Collect cost and usage reports from an s3 bucket
 
 Collect AWS CUR files stored in an S3 bucket.
 
@@ -135,7 +135,7 @@ partition "aws_cost_and_usage_focus" "my_cur" {
 }
 ```
 
-### Collect Reports from an S3 Bucket with a Prefix
+### Collect reports from an s3 bucket with a prefix
 
 Collect AWS CUR files stored in an S3 bucket using a prefix.
 
@@ -149,7 +149,7 @@ partition "aws_cost_and_usage_focus" "my_cur_prefix" {
 }
 ```
 
-### Collect Reports from Local Files
+### Collect reports from local files
 
 You can also collect AWS CUR files from local files.
 
@@ -162,7 +162,7 @@ partition "aws_cost_and_usage_focus" "local_cur" {
 }
 ```
 
-### Filter Only Compute Costs
+### Filter only compute costs
 
 Use the filter argument in your partition to collect only compute-related costs.
 
@@ -177,7 +177,7 @@ partition "aws_cost_and_usage_focus" "compute_costs" {
 }
 ```
 
-### Collect Reports for All Accounts in an AWS Organization
+### Collect reports for all accounts in an AWS organization
 
 For a specific AWS Organization, collect CUR data for all accounts.
 
