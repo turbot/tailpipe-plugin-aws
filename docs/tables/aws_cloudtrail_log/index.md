@@ -5,7 +5,7 @@ description: "AWS CloudTrail logs capture API activity and user actions within y
 
 # Table: aws_cloudtrail_log - Query AWS CloudTrail Logs
 
-The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
+The `aws_cloudtrail_log` table allows you to query data from [AWS CloudTrail logs](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-working-with-log-files.html). This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
 
 ## Configure
 

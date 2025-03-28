@@ -5,7 +5,7 @@ description: "AWS WAF traffic logs capture detailed information about web reques
 
 # Table: aws_waf_traffic_log - Query AWS WAF Traffic Logs
 
-The `aws_waf_traffic_log` table allows you to query data from AWS WAF traffic logs. This table provides detailed insights into incoming web requests, including the request source, matched WAF rules, rule actions, and threat indicators. Use this data to monitor traffic patterns, detect anomalies, and fine-tune WAF rules.
+The `aws_waf_traffic_log` table allows you to query data from [AWS WAF traffic logs](https://docs.aws.amazon.com/waf/latest/developerguide/logging.html). This table provides detailed insights into incoming web requests, including the request source, matched WAF rules, rule actions, and threat indicators. Use this data to monitor traffic patterns, detect anomalies, and fine-tune WAF rules.
 
 ## Configure
 

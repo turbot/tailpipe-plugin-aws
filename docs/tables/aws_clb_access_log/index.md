@@ -5,7 +5,7 @@ description: "AWS CLB access logs capture detailed information about requests pr
 
 # Table: aws_clb_access_log - Query AWS CLB access logs
 
-The `aws_clb_access_log` table allows you to query AWS Classic Load Balancer (CLB) access logs. This table provides detailed information about requests processed by your load balancers, including client and backend details, processing times, and SSL parameters.
+The `aws_clb_access_log` table allows you to query [AWS Classic Load Balancer (CLB) access logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html). This table provides detailed information about requests processed by your load balancers, including client and backend details, processing times, and SSL parameters.
 
 ## Configure
 

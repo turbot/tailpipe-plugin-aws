@@ -2,12 +2,13 @@ package tables
 
 import (
 	"strings"
+
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 )
 
 // Caller identity data includes:
-// Account ID 
+// Account ID
 // Arn
 // UserId
 func GetCallerIdentityData() (*sts.GetCallerIdentityOutput, error) {
