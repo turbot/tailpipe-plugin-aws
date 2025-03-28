@@ -1,15 +1,15 @@
 ---
-title: "Tailpipe Table: aws_cost_and_usage_focus_1_0 - Query AWS Cost and Usage Reports (Focus 1.0)"
-description: "AWS Cost and Usage Reports provide a detailed breakdown of cost, usage, and billing details for your AWS account."
+title: "Tailpipe Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (Focus 1.0)"
+description: "AWS Cost and Usage FOCUS report contains your cost and usage data formatted with FinOps Open Cost and Usage Specification (FOCUS) 1.0."
 ---
 
-# Table: aws_cost_and_usage_focus_1_0 - Query AWS Cost and Usage Reports (Focus 1.0)
+# Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (Focus 1.0)
 
-The `aws_cost_and_usage_focus_1_0` table enables querying AWS Cost and Usage Report (CUR) data using the Focus 1.0 schema. This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
+The `aws_cost_and_usage_focus` table enables querying AWS Cost and Usage Report (CUR) data using the Focus 1.0 schema. This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
 
 ## Configure
 
-Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cost_and_usage_focus_1_0` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_focus_1_0#example-configurations)):
+Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cost_and_usage_focus` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_focus#example-configurations)):
 
 ```sh
 vi ~/.tailpipe/config/aws.tpc
@@ -20,7 +20,7 @@ connection "aws" "billing_account" {
   profile = "my-billing-account"
 }
 
-partition "aws_cost_and_usage_focus_1_0" "my_cur" {
+partition "aws_cost_and_usage_focus" "my_cur" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
@@ -30,21 +30,21 @@ partition "aws_cost_and_usage_focus_1_0" "my_cur" {
 
 ## Collect
 
-[Collect](https://tailpipe.io/docs/manage/collection) data for all `aws_cost_and_usage_focus_1_0` partitions:
+[Collect](https://tailpipe.io/docs/manage/collection) data for all `aws_cost_and_usage_focus` partitions:
 
 ```sh
-tailpipe collect aws_cost_and_usage_focus_1_0
+tailpipe collect aws_cost_and_usage_focus
 ```
 
 Or for a single partition:
 
 ```sh
-tailpipe collect aws_cost_and_usage_focus_1_0.my_cur
+tailpipe collect aws_cost_and_usage_focus.my_cur
 ```
 
 ## Query
 
-**[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_focus_1_0)**
+**[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_focus)**
 
 ### Monthly Cost Breakdown
 
@@ -56,7 +56,7 @@ select
   sub_account_id as account_id,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   billing_month, account_id
 order by
@@ -72,7 +72,7 @@ select
   service_name,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   service_name
 order by
@@ -91,7 +91,7 @@ select
   sum(consumed_quantity) as total_usage,
   sum(billed_cost) as total_cost
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   resource_id, resource_name
 order by
@@ -109,7 +109,7 @@ select
   sum(billed_cost) as total_cost,
   sum(consumed_quantity) as total_usage
 from
-  aws_cost_and_usage_focus_1_0
+  aws_cost_and_usage_focus
 group by
   region_name
 order by
@@ -127,7 +127,7 @@ connection "aws" "billing_account" {
   profile = "my-billing-account"
 }
 
-partition "aws_cost_and_usage_focus_1_0" "my_cur" {
+partition "aws_cost_and_usage_focus" "my_cur" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
@@ -140,7 +140,7 @@ partition "aws_cost_and_usage_focus_1_0" "my_cur" {
 Collect AWS CUR files stored in an S3 bucket using a prefix.
 
 ```hcl
-partition "aws_cost_and_usage_focus_1_0" "my_cur_prefix" {
+partition "aws_cost_and_usage_focus" "my_cur_prefix" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
@@ -154,7 +154,7 @@ partition "aws_cost_and_usage_focus_1_0" "my_cur_prefix" {
 You can also collect AWS CUR files from local files.
 
 ```hcl
-partition "aws_cost_and_usage_focus_1_0" "local_cur" {
+partition "aws_cost_and_usage_focus" "local_cur" {
   source "file"  {
     paths       = ["/Users/myuser/aws_cur"]
     file_layout = "%{DATA}.csv.gz"
@@ -167,7 +167,7 @@ partition "aws_cost_and_usage_focus_1_0" "local_cur" {
 Use the filter argument in your partition to collect only compute-related costs.
 
 ```hcl
-partition "aws_cost_and_usage_focus_1_0" "compute_costs" {
+partition "aws_cost_and_usage_focus" "compute_costs" {
   filter = "service_category = 'Compute'"
 
   source "aws_s3_bucket" {
@@ -182,7 +182,7 @@ partition "aws_cost_and_usage_focus_1_0" "compute_costs" {
 For a specific AWS Organization, collect CUR data for all accounts.
 
 ```hcl
-partition "aws_cost_and_usage_focus_1_0" "org_cur" {
+partition "aws_cost_and_usage_focus" "org_cur" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-org-bucket"

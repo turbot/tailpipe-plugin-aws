@@ -132,7 +132,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/stevenle/topsort v0.2.0 // indirect
-	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
@@ -190,6 +189,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.6.0
+	github.com/stoewer/go-strcase v1.3.0
 	github.com/turbot/go-kit v1.2.0
 	github.com/turbot/pipe-fittings/v2 v2.2.0
 	golang.org/x/sync v0.12.0
