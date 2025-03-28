@@ -173,7 +173,7 @@ folder: Cost Optimization Hub
 
 ## Volume Examples
 
-### High Value Recommendations by Resource Type
+### Top 10 High Value Recommendations by Resource Type
 
 Identify which resource types offer the highest saving potential.
 
@@ -199,34 +199,6 @@ folder: Cost Optimization Hub
 ```
 
 ## Baseline Examples
-
-### Tagged Resources with Recommendations
-
-Find optimization opportunities for resources with specific tags.
-
-```sql
-select
-  tp_timestamp,
-  resource_arn,
-  current_resource_type,
-  tags,
-  estimated_monthly_savings_after_discount as savings_amount,
-  estimated_savings_percentage_after_discount as savings_percentage,
-  tp_index
-from
-  aws_cost_optimization_recommendation
-where
-  tags is not null
-  and tags != '{}'
-order by
-  tp_timestamp,
-  savings_amount desc
-limit 20;
-```
-
-```yaml
-folder: Cost Optimization Hub
-```
 
 ### Projected Annual Savings
 

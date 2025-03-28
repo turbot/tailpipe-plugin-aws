@@ -81,14 +81,15 @@ from
 where
   monthly_cost > 10
 order by
-  month desc, monthly_cost desc;
+  month desc,
+  monthly_cost desc;
 ```
 
 ```yaml
 folder: Cost and Usage Report
 ```
 
-### Top Spending Accounts
+### Top 10 Spending Accounts
 
 Find AWS accounts that have the highest spending.
 
@@ -111,7 +112,7 @@ folder: Cost and Usage Report
 
 ## Detection Examples
 
-### Daily Cost Variations
+### Top 10 Services With Daily Cost Variations
 
 Detect services with significant daily cost variations over the past week.
 
@@ -176,7 +177,7 @@ order by
 folder: EC2
 ```
 
-### EBS Volumes with High Costs
+### Top 10 EBS Volumes by Cost
 
 Identify expensive Amazon EBS volumes.
 
@@ -206,7 +207,7 @@ folder: EBS
 
 ## Volume Examples
 
-### High Data Transfer Usage
+### Top 10 Accounts by Data Transfer Usage
 
 Find accounts with the highest outbound data transfer usage.
 

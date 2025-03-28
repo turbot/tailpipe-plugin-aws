@@ -54,7 +54,7 @@ tailpipe collect aws_cost_and_usage_focus.my_cur_focus
 
 ## Query
 
-**[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_focus)**
+**[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_focus)**
 
 ### Monthly Cost Breakdown
 

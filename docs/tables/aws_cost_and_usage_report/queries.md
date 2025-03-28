@@ -45,7 +45,7 @@ limit 10;
 folder: Cost and Usage Report
 ```
 
-### Top Spending Accounts
+### Top 10 Spending Accounts
 
 Determine which AWS accounts are generating the highest costs.
 
@@ -108,7 +108,7 @@ order by
 folder: Cost and Usage Report
 ```
 
-### High Data Transfer Usage
+### Top 10 Accounts by Data Transfer Usage
 
 Find accounts with high outbound data transfer usage.
 
@@ -158,7 +158,7 @@ order by
 folder: EC2
 ```
 
-### EBS Volumes with High Costs
+### Top 10 EBS Volumes by Volume Usage
 
 Identify expensive Amazon EBS volumes.
 
@@ -174,7 +174,7 @@ where
   and line_item_product_code = 'AmazonEC2'
   and line_item_usage_type like '%EBS:VolumeUsage%'
 group by
-  line_item_resource_id, 
+  line_item_resource_id,
   line_item_product_code
 order by
   total_cost desc
@@ -226,7 +226,7 @@ from
 folder: EC2
 ```
 
-### High-Volume API Calls
+### Top 10 High-Volume API Calls
 
 Detect AWS services generating a high volume of API calls.
 
@@ -314,7 +314,7 @@ order by
 folder: Cost and Usage Report
 ```
 
-### Cost comparison across billing periods
+### Cost Comparison Across Billing Periods
 
 Compare costs between the current and previous billing period.
 
