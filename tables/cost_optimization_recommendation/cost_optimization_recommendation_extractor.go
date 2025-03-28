@@ -37,8 +37,37 @@ func (c *CostOptimizationRecommendationExtractor) Extract(_ context.Context, a a
 		return nil, fmt.Errorf("expected []byte, got %T", a)
 	}
 
+	// Validate CSV structure
+	if err := validateCSV(bytes.NewReader(data)); err != nil {
+		return nil, nil
+	}
+
 	// If not a ZIP, assume it is a raw CSV
 	return extractFromCSV(bytes.NewReader(data))
+}
+
+// Validate that the input can be parsed as a CSV file
+func validateCSV(reader io.Reader) error {
+	csvReader := csv.NewReader(reader)
+
+	// Try to read headers
+	headers, err := csvReader.Read()
+	if err != nil {
+		return fmt.Errorf("failed to read CSV headers: %v", err)
+	}
+
+	// Optionally: try to read the first data row (to confirm it's not header-only)
+	_, err = csvReader.Read()
+	if err != nil && err != io.EOF {
+		return fmt.Errorf("failed to read CSV data row: %v", err)
+	}
+
+	// Also optionally: check headers are not empty
+	if len(headers) == 0 {
+		return fmt.Errorf("CSV header is empty")
+	}
+
+	return nil
 }
 
 // Extract data from a CSV reader
@@ -138,7 +167,7 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 		}
 
 		// Special handling for map[string]interface{} fields
-		if (jsonTag == "recommended_resource_details" || jsonTag == "current_resource_details") {
+		if jsonTag == "recommended_resource_details" || jsonTag == "current_resource_details" {
 
 			var parsedMap map[string]interface{}
 			err := json.Unmarshal([]byte(strVal), &parsedMap)

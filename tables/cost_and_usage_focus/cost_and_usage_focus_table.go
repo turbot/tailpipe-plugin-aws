@@ -26,7 +26,7 @@ func (c *CostUsageFocusTable) Identifier() string {
 
 func (c *CostUsageFocusTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageFocus] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"),
+		FileLayout: utils.ToStringPointer("%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"),
 	}
 
 	return []*table.SourceMetadata[*CostUsageFocus]{
@@ -54,7 +54,6 @@ func (c *CostUsageFocusTable) EnrichRow(row *CostUsageFocus, sourceEnrichmentFie
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
-
 
 	// TpIndex
 	switch {

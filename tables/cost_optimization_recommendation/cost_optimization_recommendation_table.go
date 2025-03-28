@@ -27,7 +27,7 @@ func (t *CostOptimizationRecommendationsTable) Identifier() string {
 // GetSourceMetadata implements table.Table
 func (t *CostOptimizationRecommendationsTable) GetSourceMetadata() []*table.SourceMetadata[*CostOptimizationRecommendation] {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"),
+		FileLayout: utils.ToStringPointer("%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"),
 	}
 
 	return []*table.SourceMetadata[*CostOptimizationRecommendation]{

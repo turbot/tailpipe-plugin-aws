@@ -29,6 +29,36 @@ func (t *CostUsageReportTable) Identifier() string {
 
 func (t *CostUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageReport] {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
+		// Grok pattern to match AWS CUR legacy, and CUR 2.0 report file paths in Amazon S3.
+		//
+		// Pattern:
+		// %{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)
+		//
+		// This pattern supports both "Create new" and "Overwrite" file naming conventions used by AWS CUR reports:
+		// - "Create new" layout: <export-name>/data/<partition>/<timestamp>-<execution-id>/<export-name>-<chunk-number>.csv.gz
+		// - "Overwrite" layout: <export-name>/data/<partition>/<export-name>-<chunk-number>.csv.gz
+		//
+		// Additionally, it supports the legacy CUR layout:
+		// - Legacy layout: <export-name>/<from_date>-<to_date>/<timestamp>/<export-name>-<chunk-number>.csv.zip
+		//
+		// Notes:
+		// - `partition` captures CUR 2.0 and FOCUS 1.0 partition values (e.g., BILLING_PERIOD=YYYY-MM) and cost optimization format (e.g., date=YYYY-MM-DD).
+		// - `from_date` and `to_date` are used in legacy CUR exports (e.g., 20250301-20250401).
+		// - `assembly_id` and `execution_id` are optional identifiers that vary by report version.
+		// - `timestamp` is a string like 20250307T053621Z.
+		// - The pattern deliberately omits the S3 prefix, as it is handled by the `prefix` argument in `aws_s3_bucket` sources.
+		//
+		// Example S3 keys matched:
+		// - cur-2-0-daily-csv/data/BILLING_PERIOD=2025-03/cur-2-0-daily-csv-00003.csv.gz
+		// - report-name/20250101-20250201/assembly123/report-name-00001.csv.zip
+		// - report-name/20250101-20250201/report-name-00001.csv.gz
+		// - export/data/PARTITION1/20250307T053621Z-exec123/export-00001.csv.zip
+		// - export/data/PARTITION1/export-00002.csv.gz
+		// - cost-usage-legacy-export/20250301-20250401/20250307T053621Z/cost-usage-legacy-export-00001.csv.zip
+		//
+		// References:
+		// - AWS Export Delivery Formats CUR 2.0: https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html
+		// - AWS Report Versioning CUR legacy: https://docs.aws.amazon.com/cur/latest/userguide/understanding-report-versions.html
 		FileLayout: utils.ToStringPointer("%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"),
 	}
 

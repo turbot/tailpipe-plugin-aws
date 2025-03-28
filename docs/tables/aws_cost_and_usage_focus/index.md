@@ -187,7 +187,7 @@ partition "aws_cost_and_usage_focus" "org_cur" {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-org-bucket"
     prefix      = "reports"
-    file_layout = "%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"
+    file_layout = "%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
   }
 }
 ```
@@ -200,4 +200,4 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 
 | Argument    | Default                                                                                                                                                                                 |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| file_layout | `%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip | gz)` |
+| file_layout | `%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz` |

@@ -196,7 +196,7 @@ partition "aws_cost_optimization_recommendation" "org_recommendations" {
     connection  = connection.aws.billing_account
     bucket      = "aws-cost-optimization-recommendations-bucket"
     prefix      = "reports"
-    file_layout = "%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)"
+    file_layout = "%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
   }
 }
 ```
@@ -209,4 +209,4 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 
 | Argument      | Default |
 |--------------|---------|
-| file_layout  | `%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip\|gz)` |
+| file_layout  | `%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz`|
