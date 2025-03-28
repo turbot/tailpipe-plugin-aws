@@ -1,3 +1,9 @@
+## v0.8.1 [2025-03-28]
+
+_Bug fixes_
+
+- Fixed configuration examples for `aws_cost_and_usage_focus`, `aws_cost_and_usage_report`, and `aws_cost_optimization_recommendation` tables.
+
 ## v0.8.0 [2025-03-28]
 
 _What's new?_
