@@ -198,6 +198,6 @@ partition "aws_cost_and_usage_focus" "org_cur" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument    | Default                                                                                                                                                                                 |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| Argument    | Default     |
+| ----------- | ----------- |
 | file_layout | `%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz` |
