@@ -133,15 +133,31 @@ order by
 
 ## Example Configurations
 
-### Collect for a specific CUR 2.0 export
+### Collect reports from an S3 bucket
 
-For a specific export (`my-cur-2-0-export` in this example), collect Cost and Usage 2.0 reports.
+Collect Cost and Usage reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
+
+**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage reports. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 
 ```hcl
 connection "aws" "billing_account" {
   profile = "my-billing-account"
 }
 
+partition "aws_cost_and_usage_report" "my_cur" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.billing_account
+    bucket     = "aws-cur-billing-bucket"
+    prefix     = "my/prefix/"
+  }
+}
+```
+
+### Collect for a specific CUR 2.0 export
+
+For a specific export (`my-cur-2-0-export` in this example), collect Cost and Usage 2.0 reports.
+
+```hcl
 partition "aws_cost_and_usage_report" "specific_cur_2_0" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.billing_account
@@ -163,22 +179,6 @@ partition "aws_cost_and_usage_report" "specific_cur_legacy" {
     bucket      = "aws-cur-billing-bucket"
     prefix      = "my/prefix/"
     file_layout = "my-cur-legacy-export/%{INT:from_date}-%{INT:to_date}/(?:%{DATA:assembly_id}/)?%{DATA:file_name}.csv.zip"
-  }
-}
-```
-
-### Collect reports from an S3 bucket
-
-Collect Cost and Usage reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
-
-**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage reports. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
-
-```hcl
-partition "aws_cost_and_usage_report" "my_cur" {
-  source "aws_s3_bucket" {
-    connection = connection.aws.billing_account
-    bucket     = "aws-cur-billing-bucket"
-    prefix     = "my/prefix/"
   }
 }
 ```

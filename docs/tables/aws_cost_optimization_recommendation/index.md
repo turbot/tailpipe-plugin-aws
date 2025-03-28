@@ -132,25 +132,6 @@ order by
 
 ## Example Configurations
 
-### Collect for a specific export
-
-For a specific export (`my-recommendations-export` in this example), collect cost optimization recommendations.
-
-```hcl
-connection "aws" "billing_account" {
-  profile = "my-billing-account"
-}
-
-partition "aws_cost_optimization_recommendation" "specific_recommendations" {
-  source "aws_s3_bucket" {
-    connection  = connection.aws.billing_account
-    bucket      = "aws-cost-optimization-recommendations-bucket"
-    prefix      = "my/prefix/"
-    file_layout = "my-recommendations-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
-  }
-}
-```
-
 ### Collect recommendations from an S3 bucket
 
 Collect cost optimization recommendations stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
@@ -167,6 +148,21 @@ partition "aws_cost_optimization_recommendation" "my_recommendations" {
     connection = connection.aws.billing_account
     bucket     = "aws-cost-optimization-recommendations-bucket"
     prefix     = "my/prefix/"
+  }
+}
+```
+
+### Collect for a specific export
+
+For a specific export (`my-recommendations-export` in this example), collect cost optimization recommendations.
+
+```hcl
+partition "aws_cost_optimization_recommendation" "specific_recommendations" {
+  source "aws_s3_bucket" {
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cost-optimization-recommendations-bucket"
+    prefix      = "my/prefix/"
+    file_layout = "my-recommendations-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
   }
 }
 ```

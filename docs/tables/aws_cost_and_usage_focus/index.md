@@ -129,25 +129,6 @@ order by
 
 ## Example Configurations
 
-### Collect for a specific export
-
-For a specific export (`my-focus-export` in this example), collect Cost and Usage FOCUS reports.
-
-```hcl
-connection "aws" "billing_account" {
-  profile = "my-billing-account"
-}
-
-partition "aws_cost_and_usage_focus" "specific_cur_focus" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.billing_account
-    bucket      = "aws-cur-org-bucket"
-    prefix      = "my/prefix/"
-    file_layout = "my-focus-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
-  }
-}
-```
-
 ### Collect reports from an S3 bucket
 
 Collect Cost and Usage FOCUS reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
@@ -155,11 +136,30 @@ Collect Cost and Usage FOCUS reports stored in an S3 bucket that use the [defaul
 **Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage FOCUS reports. If other reports, like the Cost and Usage Report 2.0, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 
 ```hcl
+connection "aws" "billing_account" {
+  profile = "my-billing-account"
+}
+
 partition "aws_cost_and_usage_focus" "my_cur_focus" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
     prefix     = "my/prefix/"
+  }
+}
+```
+
+### Collect for a specific export
+
+For a specific export (`my-focus-export` in this example), collect Cost and Usage FOCUS reports.
+
+```hcl
+partition "aws_cost_and_usage_focus" "specific_cur_focus" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cur-org-bucket"
+    prefix      = "my/prefix/"
+    file_layout = "my-focus-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
   }
 }
 ```
