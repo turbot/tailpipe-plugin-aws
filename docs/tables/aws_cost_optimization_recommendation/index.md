@@ -143,9 +143,10 @@ connection "aws" "billing_account" {
 
 partition "aws_cost_optimization_recommendation" "specific_recommendations" {
   source "aws_s3_bucket" {
-    connection = connection.aws.billing_account
-    bucket     = "aws-cost-optimization-recommendations-bucket"
-    prefix     = "my/prefix/my-recommendations-export/"
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cost-optimization-recommendations-bucket"
+    prefix      = "my/prefix/"
+    file_layout = "my-recommendations-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
   }
 }
 ```

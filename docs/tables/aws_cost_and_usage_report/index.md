@@ -133,7 +133,7 @@ order by
 
 ## Example Configurations
 
-### Collect for a specific export
+### Collect for a specific CUR 2.0 export
 
 For a specific export (`my-cur-2-0-export` in this example), collect Cost and Usage 2.0 reports.
 
@@ -144,9 +144,25 @@ connection "aws" "billing_account" {
 
 partition "aws_cost_and_usage_report" "specific_cur_2_0" {
   source "aws_s3_bucket"  {
-    connection = connection.aws.billing_account
-    bucket     = "aws-cur-billing-bucket"
-    prefix     = "my/prefix/my-cur-2-0-export/"
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cur-billing-bucket"
+    prefix      = "my/prefix/"
+    file_layout = "my-cur-2-0-export/data/%{DATA:partition}/?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.gz"
+  }
+}
+```
+
+### Collect for a specific Legacy CUR export
+
+For a specific export (`my-cur-legacy-export` in this example), collect Legacy Cost and Usage reports.
+
+```hcl
+partition "aws_cost_and_usage_report" "specific_cur_legacy" {
+  source "aws_s3_bucket"  {
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cur-billing-bucket"
+    prefix      = "my/prefix/"
+    file_layout = "my-cur-legacy-export/%{INT:from_date}-%{INT:to_date}/(?:%{DATA:assembly_id}/)?%{DATA:file_name}.csv.zip"
   }
 }
 ```
@@ -180,7 +196,7 @@ partition "aws_cost_and_usage_report" "local_cur" {
 }
 ```
 
-### Collect onlty compute service costs
+### Collect only compute service costs
 
 Use the filter argument in your partition to collect only compute product family costs.
 

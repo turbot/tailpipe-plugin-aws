@@ -140,9 +140,10 @@ connection "aws" "billing_account" {
 
 partition "aws_cost_and_usage_focus" "specific_cur_focus" {
   source "aws_s3_bucket"  {
-    connection = connection.aws.billing_account
-    bucket     = "aws-cur-org-bucket"
-    prefix     = "my/prefix/my-focus-export/"
+    connection  = connection.aws.billing_account
+    bucket      = "aws-cur-org-bucket"
+    prefix      = "my/prefix/"
+    file_layout = "my-focus-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
   }
 }
 ```
