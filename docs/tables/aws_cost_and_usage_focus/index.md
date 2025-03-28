@@ -1,11 +1,21 @@
 ---
-title: "Tailpipe Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (Focus 1.0)"
+title: "Tailpipe Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (FOCUS 1.0)"
 description: "AWS Cost and Usage FOCUS report contains your cost and usage data formatted with FinOps Open Cost and Usage Specification (FOCUS) 1.0."
 ---
 
-# Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (Focus 1.0)
+# Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (FOCUS 1.0)
 
-The `aws_cost_and_usage_focus` table enables querying AWS Cost and Usage Report (CUR) data using the Focus 1.0 schema. This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
+The `aws_cost_and_usage_focus` table enables querying AWS Cost and Usage Report (CUR) data using the FOCUS 1.0 schema. This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
+
+Limitations and notes:
+- This table currently supports collecting from `.gzip` files only.
+- When determining each log's timestamp, the table uses the following order of precedence:
+  - `ChargePeriodStart`
+  - `ChargePeriodEnd`
+  - `BillingPeriodStart`
+  - `BillingPeriodEnd`
+- If none of the columns above are present, then Tailpipe will be unable to collect logs from that export.
+- If the export does not include the `SubAccountId` column, logs will still collected, but all rows will be indexed under `default` instead of an AWS account ID.
 
 ## Configure
 
@@ -20,7 +30,7 @@ connection "aws" "billing_account" {
   profile = "my-billing-account"
 }
 
-partition "aws_cost_and_usage_focus" "my_cur" {
+partition "aws_cost_and_usage_focus" "my_cur_focus" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
@@ -39,14 +49,14 @@ tailpipe collect aws_cost_and_usage_focus
 Or for a single partition:
 
 ```sh
-tailpipe collect aws_cost_and_usage_focus.my_cur
+tailpipe collect aws_cost_and_usage_focus.my_cur_focus
 ```
 
 ## Query
 
 **[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_focus)**
 
-### Monthly cost breakdown
+### Monthly Cost Breakdown
 
 Retrieve the total cost for each month, grouped by AWS account.
 
@@ -58,12 +68,13 @@ select
 from
   aws_cost_and_usage_focus
 group by
-  billing_month, account_id
+  billing_month,
+  account_id
 order by
   billing_month desc;
 ```
 
-### Top 10 most expensive services
+### Top 10 Most Expensive Services
 
 List the top 10 AWS services with the highest costs.
 
@@ -80,7 +91,7 @@ order by
 limit 10;
 ```
 
-### High-Volume resource consumption
+### High-Volume Resource Consumption
 
 Identify resources with the highest usage quantity.
 
@@ -99,7 +110,7 @@ order by
 limit 10;
 ```
 
-### Cost breakdown by region
+### Cost Breakdown by Region
 
 Get a breakdown of cost and usage by AWS region.
 
@@ -118,29 +129,32 @@ order by
 
 ## Example Configurations
 
-### Collect cost and usage reports from an s3 bucket
+### Collect for a specific export
 
-Collect AWS CUR files stored in an S3 bucket.
+For a specific export (`my-focus-export` in this example), collect Cost and Usage FOCUS reports.
 
 ```hcl
 connection "aws" "billing_account" {
   profile = "my-billing-account"
 }
 
-partition "aws_cost_and_usage_focus" "my_cur" {
-  source "aws_s3_bucket" {
+partition "aws_cost_and_usage_focus" "specific_cur_focus" {
+  source "aws_s3_bucket"  {
     connection = connection.aws.billing_account
-    bucket     = "aws-cur-billing-bucket"
+    bucket     = "aws-cur-org-bucket"
+    prefix     = "my/prefix/my-focus-export/"
   }
 }
 ```
 
-### Collect reports from an s3 bucket with a prefix
+### Collect reports from an S3 bucket
 
-Collect AWS CUR files stored in an S3 bucket using a prefix.
+Collect Cost and Usage FOCUS reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html).
+
+**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage FOCUS reports. If other reports, like the Cost and Usage Report 2.0, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 
 ```hcl
-partition "aws_cost_and_usage_focus" "my_cur_prefix" {
+partition "aws_cost_and_usage_focus" "my_cur_focus" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
@@ -151,10 +165,10 @@ partition "aws_cost_and_usage_focus" "my_cur_prefix" {
 
 ### Collect reports from local files
 
-You can also collect AWS CUR files from local files.
+You can also collect reports from local files.
 
 ```hcl
-partition "aws_cost_and_usage_focus" "local_cur" {
+partition "aws_cost_and_usage_focus" "local_cur_focus" {
   source "file"  {
     paths       = ["/Users/myuser/aws_cur"]
     file_layout = "%{DATA}.csv.gz"
@@ -162,32 +176,18 @@ partition "aws_cost_and_usage_focus" "local_cur" {
 }
 ```
 
-### Filter only compute costs
+### Collect only compute service costs
 
-Use the filter argument in your partition to collect only compute-related costs.
+Use the filter argument in your partition to collect only compute service category costs.
 
 ```hcl
 partition "aws_cost_and_usage_focus" "compute_costs" {
   filter = "service_category = 'Compute'"
 
   source "aws_s3_bucket" {
-    connection  = connection.aws.billing_account
-    bucket      = "aws-cur-billing-bucket"
-  }
-}
-```
-
-### Collect reports for all accounts in an AWS organization
-
-For a specific AWS Organization, collect CUR data for all accounts.
-
-```hcl
-partition "aws_cost_and_usage_focus" "org_cur" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.billing_account
-    bucket      = "aws-cur-org-bucket"
-    prefix      = "reports"
-    file_layout = "%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
+    connection = connection.aws.billing_account
+    prefix     = "my/prefix/"
+    bucket     = "aws-cur-billing-bucket"
   }
 }
 ```

@@ -7,6 +7,11 @@ description: "AWS Cost Optimization Recommendations provide insights into potent
 
 The `aws_cost_optimization_recommendation` table allows you to query cost optimization recommendations for your AWS resources. These recommendations identify potential savings opportunities based on usage patterns, resource configurations, and AWS pricing options.
 
+Limitations and notes:
+- This table currently supports collecting from `.gzip` files only.
+- If the export does not include the `last_refresh_timestamp` column, the logs will **not** be collected since this is the only timestamp related column in the report.
+- If the export does not include the `account_ID` column, logs will still collected, but all rows will be indexed under `default` instead of an AWS account ID.
+
 ## Configure
 
 Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cost_optimization_recommendation` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_optimization_recommendation#example-configurations)):
@@ -46,7 +51,7 @@ tailpipe collect aws_cost_optimization_recommendation.my_recommendations
 
 **[Explore 10+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_optimization_recommendation)**
 
-### Top cost-saving recommendations
+### Top Cost-Saving Recommendations
 
 Identify the recommendations with the highest potential monthly savings.
 
@@ -67,7 +72,7 @@ order by
 limit 10;
 ```
 
-### Easy to implement recommendations
+### Low Effort Recommendations
 
 Find recommendations that are easy to implement and don't require restarts.
 
@@ -89,7 +94,7 @@ order by
   savings_amount desc;
 ```
 
-### Recommendations by service type
+### Recommendations by Service Type
 
 Group recommendations by resource type to focus optimization efforts.
 
@@ -107,7 +112,7 @@ order by
   total_potential_savings desc;
 ```
 
-### Regional optimization opportunities
+### Regional Optimization Opportunities
 
 Analyze cost-saving opportunities by AWS region.
 
@@ -127,9 +132,29 @@ order by
 
 ## Example Configurations
 
+### Collect for a specific export
+
+For a specific export (`my-recommendations-export` in this example), collect cost optimization recommendations.
+
+```hcl
+connection "aws" "billing_account" {
+  profile = "my-billing-account"
+}
+
+partition "aws_cost_optimization_recommendation" "specific_recommendations" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.billing_account
+    bucket     = "aws-cost-optimization-recommendations-bucket"
+    prefix     = "my/prefix/my-recommendations-export/"
+  }
+}
+```
+
 ### Collect recommendations from an S3 bucket
 
-Collect AWS cost optimization recommendations stored in an S3 bucket.
+Collect cost optimization recommendations stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html).
+
+**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage reports. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 
 ```hcl
 connection "aws" "billing_account" {
@@ -137,19 +162,6 @@ connection "aws" "billing_account" {
 }
 
 partition "aws_cost_optimization_recommendation" "my_recommendations" {
-  source "aws_s3_bucket" {
-    connection = connection.aws.billing_account
-    bucket     = "aws-cost-optimization-recommendations-bucket"
-  }
-}
-```
-
-### Collect recommendations from an S3 bucket with a prefix
-
-Collect AWS cost optimization recommendations stored in an S3 bucket using a prefix.
-
-```hcl
-partition "aws_cost_optimization_recommendation" "my_recommendations_prefix" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cost-optimization-recommendations-bucket"
@@ -171,7 +183,7 @@ partition "aws_cost_optimization_recommendation" "local_recommendations" {
 }
 ```
 
-### Filter only high-value recommendations
+### Collect only high-value recommendations
 
 Use the filter argument in your partition to collect only high-value recommendations.
 
@@ -182,21 +194,7 @@ partition "aws_cost_optimization_recommendation" "high_value_recommendations" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cost-optimization-recommendations-bucket"
-  }
-}
-```
-
-### Collect recommendations for all accounts in an AWS organization
-
-For a specific AWS Organization, collect recommendation data for all accounts.
-
-```hcl
-partition "aws_cost_optimization_recommendation" "org_recommendations" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.billing_account
-    bucket      = "aws-cost-optimization-recommendations-bucket"
-    prefix      = "reports"
-    file_layout = "%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
+    prefix     = "my/prefix/"
   }
 }
 ```

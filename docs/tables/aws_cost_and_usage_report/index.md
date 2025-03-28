@@ -6,6 +6,21 @@ description: "AWS Cost and Usage Reports contain the most comprehensive set of c
 
 The `aws_cost_and_usage_report` table allows you to query AWS Cost and Usage Report (CUR) data from AWS. This table provides insights into your AWS billing, usage, cost categories, and discounts.
 
+Limitations and notes:
+- This table currently supports collecting from `.gzip` files only.
+- Legacy CUR and CUR 2.0 reports can be collected by this table.
+- When determining each log's timestamp, the table uses the following order of precedence:
+  - `line_item_usage_start_date`
+  - `line_item_usage_end_date`
+  - `billing_period_start`
+  - `billing_period_end`
+  - If none of the columns above are present, then Tailpipe will be unable to collect logs from that export.
+- When determining each log's index, the table uses the following order of precedence:
+  - `line_item_usage_account_id`
+  - `line_item_resource_id` (if the resource ID is an ARN)
+    - This column is only included if **Include resource IDs** was selected
+  - If none of the columns above are present, the log uses `default` as the index instead of an AWS account ID.
+
 ## Configure
 
 Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_cost_and_usage_report` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_report#example-configurations)):
@@ -45,7 +60,7 @@ tailpipe collect aws_cost_and_usage_report.my_cur
 
 **[Explore 12+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cost_and_usage_report)**
 
-### monthly cost breakdown
+### Monthly Cost Breakdown
 
 Retrieve the total cost for each month, grouped by AWS account.
 
@@ -57,12 +72,13 @@ select
 from
   aws_cost_and_usage_report
 group by
-  billing_month, account_id
+  billing_month,
+  account_id
 order by
   billing_month desc;
 ```
 
-### Top 10 most expensive services
+### Top 10 Most Expensive Services
 
 List the top 10 AWS services with the highest costs.
 
@@ -79,7 +95,7 @@ order by
 limit 10;
 ```
 
-### High-Volume data transfer usage
+### High-Volume Data Transfer Usage
 
 Identify accounts with high outbound data transfer usage.
 
@@ -98,7 +114,7 @@ order by
 limit 10;
 ```
 
-### Usage by region
+### Usage by Region
 
 Get a breakdown of usage and cost by AWS region.
 
@@ -117,29 +133,32 @@ order by
 
 ## Example Configurations
 
-### Collect cost and usage reports from an S3 bucket
+### Collect for a specific export
 
-Collect AWS CUR files stored in an S3 bucket.
+For a specific export (`my-cur-2-0-export` in this example), collect Cost and Usage 2.0 reports.
 
 ```hcl
 connection "aws" "billing_account" {
   profile = "my-billing-account"
 }
 
-partition "aws_cost_and_usage_report" "my_cur" {
-  source "aws_s3_bucket" {
+partition "aws_cost_and_usage_report" "specific_cur_2_0" {
+  source "aws_s3_bucket"  {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
+    prefix     = "my/prefix/my-cur-2-0-export/"
   }
 }
 ```
 
-### Collect reports from an S3 bucket with a prefix
+### Collect reports from an S3 bucket
 
-Collect AWS CUR files stored in an S3 bucket using a prefix.
+Collect Cost and Usage reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html).
+
+**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage reports. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 
 ```hcl
-partition "aws_cost_and_usage_report" "my_cur_prefix" {
+partition "aws_cost_and_usage_report" "my_cur" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
@@ -150,7 +169,7 @@ partition "aws_cost_and_usage_report" "my_cur_prefix" {
 
 ### Collect reports from local files
 
-You can also collect AWS CUR files from local files.
+You can also reports from local files.
 
 ```hcl
 partition "aws_cost_and_usage_report" "local_cur" {
@@ -161,9 +180,9 @@ partition "aws_cost_and_usage_report" "local_cur" {
 }
 ```
 
-### Filter only compute costs
+### Collect onlty compute service costs
 
-Use the filter argument in your partition to collect only compute-related costs.
+Use the filter argument in your partition to collect only compute product family costs.
 
 ```hcl
 partition "aws_cost_and_usage_report" "compute_costs" {
@@ -172,21 +191,7 @@ partition "aws_cost_and_usage_report" "compute_costs" {
   source "aws_s3_bucket" {
     connection = connection.aws.billing_account
     bucket     = "aws-cur-billing-bucket"
-  }
-}
-```
-
-### Collect reports for all accounts in an AWS organization
-
-For a specific AWS Organization, collect CUR data for all accounts.
-
-```hcl
-partition "aws_cost_and_usage_report" "org_cur" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.billing_account
-    bucket      = "aws-cur-org-bucket"
-    prefix      = "reports"
-    file_layout = "%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip\|gz)"
+    prefix     = "my/prefix/"
   }
 }
 ```
