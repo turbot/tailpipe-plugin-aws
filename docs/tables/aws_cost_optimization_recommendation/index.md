@@ -5,7 +5,7 @@ description: "AWS Cost Optimization Recommendations provide insights into potent
 
 # Table: aws_cost_optimization_recommendation - Query AWS Cost Optimization Recommendations
 
-The `aws_cost_optimization_recommendation` table allows you to query [cost optimization recommendations](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cor.html) for your AWS resources. These recommendations identify potential savings opportunities based on usage patterns, resource configurations, and AWS pricing options.
+The `aws_cost_optimization_recommendation` table allows you to query [AWS cost optimization recommendations](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cor.html) for your AWS resources. These recommendations identify potential savings opportunities based on usage patterns, resource configurations, and AWS pricing options.
 
 Limitations and notes:
 - This table currently supports collecting from `.gzip` files only.
@@ -152,9 +152,9 @@ partition "aws_cost_optimization_recommendation" "specific_recommendations" {
 
 ### Collect recommendations from an S3 bucket
 
-Collect cost optimization recommendations stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html).
+Collect cost optimization recommendations stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
 
-**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage reports. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
+**Note**: We only recommend using the default log file name format if the bucket and prefix combination contains cost optimization recommendations. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 
 ```hcl
 connection "aws" "billing_account" {

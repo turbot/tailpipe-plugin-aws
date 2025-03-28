@@ -149,7 +149,7 @@ partition "aws_cost_and_usage_focus" "specific_cur_focus" {
 
 ### Collect reports from an S3 bucket
 
-Collect Cost and Usage FOCUS reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html).
+Collect Cost and Usage FOCUS reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
 
 **Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage FOCUS reports. If other reports, like the Cost and Usage Report 2.0, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 

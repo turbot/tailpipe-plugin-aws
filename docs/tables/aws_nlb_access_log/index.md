@@ -5,7 +5,7 @@ description: "AWS NLB access logs capture detailed information about the request
 
 # Table: aws_nlb_access_log - Query AWS NLB Access Logs
 
-The `aws_nlb_access_log` table allows you to query AWS Network Load Balancer (NLB) access logs. This table provides detailed information about connections processed by your load balancers, including client and destination details, connection times, TLS parameters, and network traffic statistics.
+The `aws_nlb_access_log` table allows you to query [AWS Network Load Balancer (NLB) access logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-access-logs.html). This table provides detailed information about connections processed by your load balancers, including client and destination details, connection times, TLS parameters, and network traffic statistics.
 
 ## Configure
 

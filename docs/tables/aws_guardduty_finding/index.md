@@ -5,7 +5,7 @@ description: "AWS GuardDuty findings provide alerts and intelligence about poten
 
 # Table: aws_guardduty_finding - Query AWS GuardDuty Findings
 
-The `aws_guardduty_finding` table allows you to query data from AWS GuardDuty findings. This table provides detailed information about potential security threats detected within your AWS environment, including the affected resources, severity levels, finding types, and contextual details to help you investigate and respond to security issues.
+The `aws_guardduty_finding` table allows you to query data from [AWS GuardDuty findings](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_findings.html). This table provides detailed information about potential security threats detected within your AWS environment, including the affected resources, severity levels, finding types, and contextual details to help you investigate and respond to security issues.
 
 ## Configure
 
@@ -221,4 +221,3 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument      | Default |
 |--------------|---------|
 | file_layout  | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/GuardDuty/%{DATA:region_path}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz` |
-``` 

@@ -4,7 +4,7 @@ description: "AWS Cost and Usage Reports contain the most comprehensive set of c
 ---
 # Table: aws_cost_and_usage_report - Query AWS Cost and Usage Reports
 
-The `aws_cost_and_usage_report` table allows you to query AWS [Cost and Usage Report (CUR)](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2.html) data from AWS. This table provides insights into your AWS billing, usage, cost categories, and discounts.
+The `aws_cost_and_usage_report` table allows you to query [AWS Cost and Usage Report (CUR)](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2.html) data. This table provides insights into your AWS billing, usage, cost categories, and discounts.
 
 Limitations and notes:
 - This table currently supports collecting from `.gzip` files only.
@@ -18,8 +18,7 @@ Limitations and notes:
 - When determining each log's index, the table uses the following order of precedence:
   - `line_item_usage_account_id` (CUR 2.0)/`lineItem/UsageAccountId` (Legacy CUR)
   - `line_item_resource_id` (CUR 2.0)/`lineItem/ResourceId` (Legacy CUR)
-    - This column is used if the resource ID is an ARN.
-    - This column is only included in reports if **Include resource IDs** was selected during export creation.
+    - This column is used if the resource ID is an ARN and is only included in reports if **Include resource IDs** was selected during export creation.
   - If none of the columns above are present, the log will use `default` as the index instead of an AWS account ID.
 
 ## Configure
@@ -154,7 +153,7 @@ partition "aws_cost_and_usage_report" "specific_cur_2_0" {
 
 ### Collect reports from an S3 bucket
 
-Collect Cost and Usage reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html).
+Collect Cost and Usage reports stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/cur/latest/userguide/dataexports-export-delivery.html#export-summary).
 
 **Note**: We only recommend using the default log file name format if the bucket and prefix combination contains Cost and Usage reports. If other reports, like the Cost and Usage FOCUS report, are stored in the same S3 bucket with the same prefix, Tailpipe will attempt to collect from these too, resulting in errors.
 

@@ -5,7 +5,7 @@ description: "AWS ALB access logs capture detailed information about the request
 
 # Table: aws_alb_access_log - Query AWS ALB Access Logs
 
-The `aws_alb_access_log` table allows you to query AWS Application Load Balancer (ALB) access logs. This table provides detailed information about requests processed by your load balancers, including client and target details, processing times, and security parameters.
+The `aws_alb_access_log` table allows you to query [AWS Application Load Balancer (ALB) access logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html). This table provides detailed information about requests processed by your load balancers, including client and target details, processing times, and security parameters.
 
 ## Configure
 

@@ -5,7 +5,7 @@ description: "AWS S3 server access logs provide detailed information about reque
 
 # Table: aws_s3_server_access_log - Query AWS S3 Server Access Logs
 
-The `aws_s3_server_access_log` table allows you to query AWS S3 server access logs. This table captures detailed request and access information for S3 buckets, helping to analyze access patterns, troubleshoot issues, and enhance security monitoring.
+The `aws_s3_server_access_log` table allows you to query [AWS S3 server access logs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html). This table captures detailed request and access information for S3 buckets, helping to analyze access patterns, troubleshoot issues, and enhance security monitoring.
 
 ## Configure
 
