@@ -76,9 +76,10 @@ Evaluate the query against each of these specific criteria sets:
 # Title and description checks
 1. The query's title should use title case.
 2. The query's title should accurately describe what the query does.
-3. The first sentence of the query description should explain what the query does.
-4. The second sentence of the query description should explain why a user would want to run the query.
-5. Each sentence in the query description should be concise.
+3. If the query contains `limit X`, that number should reflected in the title, e.g., `Top 10 Expensive Services` with `limit 10`.
+4. The first sentence of the query description should explain what the query does.
+5. The second sentence of the query description should explain why a user would want to run the query.
+6. Each sentence in the query description should be concise.
 
 # Query relevance to logs checks
 1. The query should provide useful insights for the specific log type it analyzes.
@@ -137,6 +138,7 @@ You MUST provide ONLY the following output format, with no additional text:
 |----------|-----------|-------------|
 | Title uses title case | [MARK] | [SUGGESTION] |
 | Title accurately describes the query | [MARK] | [SUGGESTION] |
+| Title contains limit value if in query | [MARK] | [SUGGESTION] |
 | Description explains what the query does | [MARK] | [SUGGESTION] |
 | Description explains why a user would run the query | [MARK] | [SUGGESTION] |
 | Description is concise | [MARK] | [SUGGESTION] |
