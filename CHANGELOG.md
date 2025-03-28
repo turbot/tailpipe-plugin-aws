@@ -1,3 +1,17 @@
+## v0.8.0 [2025-03-28]
+
+_What's new?_
+
+- New tables added:
+  - [aws_cost_and_usage_focus](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_focus) ([#115](https://github.com/turbot/tailpipe-plugin-aws/pull/115))
+  - [aws_cost_and_usage_report](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_report) ([#115](https://github.com/turbot/tailpipe-plugin-aws/pull/115))
+  - [aws_cost_optimization_recommendation](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_optimization_recommendation) ([#115](https://github.com/turbot/tailpipe-plugin-aws/pull/115))
+  - [aws_guardduty_finding](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_guardduty_finding) ([#130](https://github.com/turbot/tailpipe-plugin-aws/pull/130))
+
+_Dependencies_
+
+- Bumped github.com/turbot/go-kit from 1.1.0 to 1.2.0. ([#128](https://github.com/turbot/tailpipe-plugin-aws/pull/128))
+
 ## v0.7.0 [2025-03-21]
 
 _What's new?_
