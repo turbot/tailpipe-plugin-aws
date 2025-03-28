@@ -1,11 +1,7 @@
 package tables
 
 import (
-	"encoding/json"
-	"fmt"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -74,31 +70,4 @@ func NilIfDash(field *string) *string {
 		return nil
 	}
 	return field
-}
-// StringToFloat converts a string to a float64 and handles errors
-func StringToFloat(s string) (float64, error) {
-	f, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return 0, fmt.Errorf("failed to convert string to float: %v", err)
-	}
-	return f, nil
-}
-
-// StringToTimestamp converts a string to time.Time
-func StringToTimestamp(dateStr string, format string) (time.Time, error) {
-	parsedTime, err := time.Parse(format, dateStr)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("failed to parse timestamp from string '%s' using format '%s': %w", dateStr, format, err)
-	}
-	return parsedTime, nil
-}
-
-// StringToMap safely converts a JSON string to map[string]string
-func StringToMap(jsonStr string) (map[string]string, error) {
-	var result map[string]string
-	err := json.Unmarshal([]byte(jsonStr), &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert string to map: %w", err)
-	}
-	return result, nil
 }

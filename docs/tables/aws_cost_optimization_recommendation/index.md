@@ -207,6 +207,6 @@ partition "aws_cost_optimization_recommendation" "org_recommendations" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument    | Default                                                                                   |
-| ----------- | ----------------------------------------------------------------------------------------- | ----- |
-| file_layout | `%{DATA:prefix}/%{DATA:exportName}/%{DATA:folderName}/%{DATA:timestamp}/%{DATA}.csv.(?:gz | zip)` |
+| Argument      | Default |
+|--------------|---------|
+| file_layout  | `%{DATA:export_name}/(?:data/%{DATA:partition}/)?(?:%{INT:from_date}-%{INT:to_date}/)?(?:%{DATA:assembly_id}/)?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.(?:zip|gz)` |
