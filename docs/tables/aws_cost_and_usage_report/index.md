@@ -4,22 +4,23 @@ description: "AWS Cost and Usage Reports contain the most comprehensive set of c
 ---
 # Table: aws_cost_and_usage_report - Query AWS Cost and Usage Reports
 
-The `aws_cost_and_usage_report` table allows you to query AWS Cost and Usage Report (CUR) data from AWS. This table provides insights into your AWS billing, usage, cost categories, and discounts.
+The `aws_cost_and_usage_report` table allows you to query AWS [Cost and Usage Report (CUR)](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2.html) data from AWS. This table provides insights into your AWS billing, usage, cost categories, and discounts.
 
 Limitations and notes:
 - This table currently supports collecting from `.gzip` files only.
-- Legacy CUR and CUR 2.0 reports can be collected by this table.
+- [CUR 2.0](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2.html) and [Legacy CUR](https://docs.aws.amazon.com/cur/latest/userguide/what-is-cur.html) data can be collected by this table.
 - When determining each log's timestamp, the table uses the following order of precedence:
   - `line_item_usage_start_date`
   - `line_item_usage_end_date`
   - `billing_period_start`
   - `billing_period_end`
-  - If none of the columns above are present, then Tailpipe will be unable to collect logs from that export.
+  - If none of the columns above are present, logs will not be collected, and Tailpipe will report these as errors.
 - When determining each log's index, the table uses the following order of precedence:
-  - `line_item_usage_account_id`
-  - `line_item_resource_id` (if the resource ID is an ARN)
-    - This column is only included if **Include resource IDs** was selected
-  - If none of the columns above are present, the log uses `default` as the index instead of an AWS account ID.
+  - `line_item_usage_account_id` (CUR 2.0)/`lineItem/UsageAccountId` (Legacy CUR)
+  - `line_item_resource_id` (CUR 2.0)/`lineItem/ResourceId` (Legacy CUR)
+    - This column is used if the resource ID is an ARN.
+    - This column is only included in reports if **Include resource IDs** was selected during export creation.
+  - If none of the columns above are present, the log will use `default` as the index instead of an AWS account ID.
 
 ## Configure
 

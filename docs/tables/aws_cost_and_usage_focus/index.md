@@ -5,7 +5,7 @@ description: "AWS Cost and Usage FOCUS report contains your cost and usage data 
 
 # Table: aws_cost_and_usage_focus - Query AWS Cost and Usage Reports (FOCUS 1.0)
 
-The `aws_cost_and_usage_focus` table enables querying AWS Cost and Usage Report (CUR) data using the FOCUS 1.0 schema. This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
+The `aws_cost_and_usage_focus` table enables querying AWS Cost and Usage Report (CUR) data using the [FOCUS 1.0 schema](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-focus-1-0-aws.html). This table provides granular insights into AWS billing, cost allocation, discounts, pricing, and resource-level usage.
 
 Limitations and notes:
 - This table currently supports collecting from `.gzip` files only.
@@ -14,8 +14,8 @@ Limitations and notes:
   - `ChargePeriodEnd`
   - `BillingPeriodStart`
   - `BillingPeriodEnd`
-- If none of the columns above are present, then Tailpipe will be unable to collect logs from that export.
-- If the export does not include the `SubAccountId` column, logs will still collected, but all rows will be indexed under `default` instead of an AWS account ID.
+  - If none of the columns above are present, logs will not be collected, and Tailpipe will report these as errors.
+- If the export does not include the `SubAccountId` column, logs will be collected, but all rows will be indexed under `default` instead of an AWS account ID.
 
 ## Configure
 

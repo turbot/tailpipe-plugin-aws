@@ -5,12 +5,12 @@ description: "AWS Cost Optimization Recommendations provide insights into potent
 
 # Table: aws_cost_optimization_recommendation - Query AWS Cost Optimization Recommendations
 
-The `aws_cost_optimization_recommendation` table allows you to query cost optimization recommendations for your AWS resources. These recommendations identify potential savings opportunities based on usage patterns, resource configurations, and AWS pricing options.
+The `aws_cost_optimization_recommendation` table allows you to query [cost optimization recommendations](https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cor.html) for your AWS resources. These recommendations identify potential savings opportunities based on usage patterns, resource configurations, and AWS pricing options.
 
 Limitations and notes:
 - This table currently supports collecting from `.gzip` files only.
-- If the export does not include the `last_refresh_timestamp` column, the logs will **not** be collected since this is the only timestamp related column in the report.
-- If the export does not include the `account_ID` column, logs will still collected, but all rows will be indexed under `default` instead of an AWS account ID.
+- If the export does not include the `last_refresh_timestamp` column, logs will **not** be collected since this is the only timestamp related column in the report.
+- If the export does not include the `account_ID` column, logs will be collected, but all rows will be indexed under `default` instead of an AWS account ID.
 
 ## Configure
 
