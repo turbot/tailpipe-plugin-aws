@@ -118,8 +118,8 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 		}
 
 		// For incremental collection, start from the last collected event time
-		if s.state.GetToTimeForStream(*ls.LogStreamName).UnixMilli() > startTimeMillis {
-			input.StartTime = aws.Int64(s.state.GetToTimeForStream(*ls.LogStreamName).UnixMilli())
+		if s.state.GetEndTimeForStream(*ls.LogStreamName).UnixMilli() > startTimeMillis {
+			input.StartTime = aws.Int64(s.state.GetEndTimeForStream(*ls.LogStreamName).UnixMilli())
 		}
 
 		var (
@@ -234,12 +234,12 @@ func (s *AwsCloudWatchSource) getLogStreamsToCollect(ctx context.Context, logGro
 // getClient initializes and returns an AWS CloudWatch Logs client
 // It uses the provided region or falls back to the default region
 func (s *AwsCloudWatchSource) getClient(ctx context.Context) (*cloudwatchlogs.Client, error) {
-	tempRegion := defaultCloudwatchRegion
+	region := defaultCloudwatchRegion
 	if s.Config != nil && s.Config.Region != nil {
-		tempRegion = *s.Config.Region
+		region = *s.Config.Region
 	}
 
-	cfg, err := s.Connection.GetClientConfiguration(ctx, &tempRegion)
+	cfg, err := s.Connection.GetClientConfiguration(ctx, &region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client configuration, %w", err)
 	}

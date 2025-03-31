@@ -176,17 +176,12 @@ func (s *CloudWatchCollectionState) OnCollected(logStreamName string, timestamp 
 // This represents the earliest point in time from which we have collected events.
 func (s *CloudWatchCollectionState) GetFromTime() time.Time {
 	var earliestTime time.Time
-	isFirst := true
 
 	for _, state := range s.LogStreams {
-		if isFirst {
-			earliestTime = state.GetStartTime()
-			isFirst = false
-			continue
-		}
+		startTime := state.GetStartTime()
 
-		if state.GetStartTime().Before(earliestTime) {
-			earliestTime = state.GetStartTime()
+		if earliestTime.IsZero() || startTime.Before(earliestTime) {
+			earliestTime = startTime
 		}
 	}
 
@@ -197,17 +192,12 @@ func (s *CloudWatchCollectionState) GetFromTime() time.Time {
 // This represents the most recent point in time up to which we have collected events.
 func (s *CloudWatchCollectionState) GetToTime() time.Time {
 	var latestTime time.Time
-	isFirst := true
 
 	for _, state := range s.LogStreams {
-		if isFirst {
-			latestTime = state.GetEndTime()
-			isFirst = false
-			continue
-		}
+		endTime := state.GetEndTime()
 
-		if state.GetEndTime().After(latestTime) {
-			latestTime = state.GetEndTime()
+		if latestTime.IsZero() || endTime.After(latestTime) {
+			latestTime = endTime
 		}
 	}
 
@@ -223,18 +213,18 @@ func (s *CloudWatchCollectionState) ShouldCollect(id string, timestamp time.Time
 	return true
 }
 
-// GetFromTimeForStream returns the start time for a specific log stream.
+// GetStartTimeForStream returns the start time for a specific log stream.
 // If the stream doesn't exist in the state, returns zero time.
-func (s *CloudWatchCollectionState) GetFromTimeForStream(logStreamName string) time.Time {
+func (s *CloudWatchCollectionState) GetStartTimeForStream(logStreamName string) time.Time {
 	if state, exists := s.LogStreams[logStreamName]; exists {
 		return state.GetStartTime()
 	}
 	return time.Time{}
 }
 
-// GetToTimeForStream returns the end time for a specific log stream.
+// GetEndTimeForStream returns the end time for a specific log stream.
 // If the stream doesn't exist in the state, returns zero time.
-func (s *CloudWatchCollectionState) GetToTimeForStream(logStreamName string) time.Time {
+func (s *CloudWatchCollectionState) GetEndTimeForStream(logStreamName string) time.Time {
 	if state, exists := s.LogStreams[logStreamName]; exists {
 		return state.GetEndTime()
 	}

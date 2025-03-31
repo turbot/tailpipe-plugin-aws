@@ -20,7 +20,7 @@ type AwsCloudWatchSourceConfig struct {
 // It ensures that the required LogGroupName field is provided and not empty.
 func (c *AwsCloudWatchSourceConfig) Validate() error {
 	if c.LogGroupName == "" {
-		return fmt.Errorf("log group is required and cannot be empty")
+		return fmt.Errorf("log_group_name is required and cannot be empty")
 	}
 	return nil
 }
