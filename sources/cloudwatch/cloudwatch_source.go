@@ -71,8 +71,15 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
+	slog.Info("Starting collection", "total_streams", len(logStreamCollection))
+
 	// collect events from each log stream
 	for _, ls := range logStreamCollection {
+		if ls.LogStreamName == nil {
+			continue
+		}
+
+		slog.Info("Processing stream", "stream", *ls.LogStreamName)
 		sourceEnrichmentFields := &schema.SourceEnrichment{
 			CommonFields: schema.CommonFields{
 				TpSourceType:     AwsCloudwatchSourceIdentifier,
@@ -81,40 +88,35 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 			},
 		}
 
-		// Get the start time for this stream from the collection state
-		var startTime, endTime int64
-		if fromTime := s.state.GetFromTimeForStream(*ls.LogStreamName); !fromTime.IsZero() {
-			startTime = fromTime.Unix()
-		} else {
-			startTime = s.FromTime.Unix()
-		}
-
-		if toTime := s.state.GetToTimeForStream(*ls.LogStreamName); !toTime.IsZero() {
-			endTime = toTime.Unix()
-		} else {
-			endTime = time.Now().UnixMilli()
-		}
-
-		// To ensure smoother execution, we have set the value to 1000, even though the maximum allowable limit is 10000.
-		// https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_GetLogEvents.html#API_GetLogEvents_RequestSyntax
-		var pageSize int32 = 1000
-		var nextToken *string
+		// Convert Unix seconds to milliseconds for CloudWatch API
+		startTimeMillis := s.FromTime.UnixMilli()
+		endTimeMillis := time.Now().UnixMilli()
 
 		input := &cloudwatchlogs.GetLogEventsInput{
 			LogGroupName:  &s.Config.LogGroupName,
 			LogStreamName: ls.LogStreamName,
 			StartFromHead: aws.Bool(true),
-			StartTime:     &startTime,
-			EndTime:       &endTime,
-			Limit:         &pageSize,
+			StartTime:     aws.Int64(startTimeMillis),
+			EndTime:       aws.Int64(endTimeMillis),
+			Limit:         aws.Int32(10000),
 		}
+
+		var (
+			nextToken   *string
+			totalEvents int
+		)
 
 		paginator := cloudwatchlogs.NewGetLogEventsPaginator(s.client, input)
 		for paginator.HasMorePages() {
-			// var output *cloudwatchlogs.GetLogEventsOutput
 			output, err := paginator.NextPage(ctx)
 			if err != nil {
-				return fmt.Errorf("failed to get log events, %w", err)
+				return fmt.Errorf("failed to get log events for stream %s: %w", *ls.LogStreamName, err)
+			}
+
+			// Break if no events in this page
+			if len(output.Events) == 0 {
+				slog.Debug("No events in page", "stream", *ls.LogStreamName)
+				break
 			}
 
 			for _, event := range output.Events {
@@ -122,13 +124,13 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 					continue
 				}
 
-				// build time from unix millis
-				unixMillis := *event.Timestamp
-				timestamp := time.Unix(0, unixMillis*int64(time.Millisecond))
+				timestamp := time.UnixMilli(*event.Timestamp)
 
 				// Skip this event if we've already collected it
 				if !s.state.ShouldCollect(*ls.LogStreamName, timestamp) {
-					slog.Debug("Skipping already collected event", "stream", *ls.LogStreamName, "timestamp", timestamp)
+					slog.Debug("Skipping already collected event",
+						"stream", *ls.LogStreamName,
+						"timestamp", timestamp.Format(time.RFC3339))
 					continue
 				}
 
@@ -138,20 +140,24 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 				}
 
 				// update collection state
-				err := s.state.OnCollected(*ls.LogStreamName, timestamp)
-				if err != nil {
-					return fmt.Errorf("failed to update collection state, %w", err)
+				if err := s.state.OnCollected(*ls.LogStreamName, timestamp); err != nil {
+					return fmt.Errorf("failed to update collection state: %w", err)
 				}
 
 				if err := s.OnRow(ctx, row); err != nil {
 					return fmt.Errorf("error processing row: %w", err)
 				}
+
+				totalEvents++
 			}
 
-			if (nextToken != nil && *nextToken == *output.NextForwardToken) || output.NextForwardToken == nil {
+			// Break if token hasn't changed (to avoid infinite loop)
+			if nextToken != nil && *output.NextForwardToken == *nextToken {
+				slog.Debug("Stopping: NextForwardToken hasn't changed",
+					"stream", *ls.LogStreamName,
+					"total_events", totalEvents)
 				break
 			}
-
 			nextToken = output.NextForwardToken
 		}
 	}
