@@ -90,6 +90,7 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 	// Process each log stream
 	for _, ls := range logStreamCollection {
 		if ls.LogStreamName == nil {
+			s.errorList = append(s.errorList, fmt.Errorf("skipping stream with nil name in log group %s", s.Config.LogGroupName))
 			continue
 		}
 
@@ -132,7 +133,8 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 		for paginator.HasMorePages() {
 			output, err := paginator.NextPage(ctx)
 			if err != nil {
-				return fmt.Errorf("failed to get log events for stream %s: %w", *ls.LogStreamName, err)
+				s.errorList = append(s.errorList, fmt.Errorf("failed to get log events for stream %s: %w", *ls.LogStreamName, err))
+				break // Skip to next stream on error
 			}
 
 			// Break if no events in this page
@@ -144,6 +146,7 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 			// Process each event in the page
 			for _, event := range output.Events {
 				if event.Message == nil || *event.Message == "" {
+					s.errorList = append(s.errorList, fmt.Errorf("empty or nil message in stream %s at timestamp %d", *ls.LogStreamName, *event.Timestamp))
 					continue
 				}
 
@@ -165,12 +168,14 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 
 				// Update collection state with the processed event
 				if err := s.state.OnCollected(*ls.LogStreamName, timestamp); err != nil {
-					return fmt.Errorf("failed to update collection state: %w", err)
+					s.errorList = append(s.errorList, fmt.Errorf("failed to update collection state for stream %s: %w", *ls.LogStreamName, err))
+					continue
 				}
 
 				// Send the row for processing
 				if err := s.OnRow(ctx, row); err != nil {
-					return fmt.Errorf("error processing row: %w", err)
+					s.errorList = append(s.errorList, fmt.Errorf("error processing row in stream %s: %w", *ls.LogStreamName, err))
+					continue
 				}
 
 				totalEvents++
@@ -185,6 +190,11 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 			}
 			nextToken = output.NextForwardToken
 		}
+	}
+
+	// Return collected errors if any
+	if len(s.errorList) > 0 {
+		return fmt.Errorf("encountered %d errors during log collection: %v", len(s.errorList), s.errorList)
 	}
 
 	return nil
