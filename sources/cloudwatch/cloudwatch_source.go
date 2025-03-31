@@ -101,6 +101,11 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 			Limit:         aws.Int32(10000),
 		}
 
+		// Check if event already collected for a log stream.
+		if s.state.GetToTimeForStream(*ls.LogStreamName).UnixMilli() > startTimeMillis {
+			input.StartTime = aws.Int64(s.state.GetToTimeForStream(*ls.LogStreamName).UnixMilli())
+		}
+
 		var (
 			nextToken   *string
 			totalEvents int
