@@ -52,7 +52,7 @@ Analyze traffic by protocol to understand the distribution of network traffic.
 
 ```sql
 select
-  event ->> 'proto' as protocol,
+  (event ->> 'proto') as protocol,
   count(*) as traffic_count
 from
   aws_network_firewall_log
@@ -68,12 +68,12 @@ Identify the most commonly accessed destination ports to understand traffic patt
 
 ```sql
 select
-  event ->> 'dest_port' as destination_port,
+  (event ->> 'dest_port') as destination_port,
   count(*) as connection_count
 from
   aws_network_firewall_log
 where
-  event ->> 'dest_port' is not null
+  (event ->> 'dest_port') is not null
 group by
   destination_port
 order by
@@ -87,7 +87,7 @@ Analyze traffic by application protocol to understand what types of applications
 
 ```sql
 select
-  event ->> 'app_proto' as app_protocol,
+  (event ->> 'app_proto') as app_protocol,
   count(*) as connection_count
 from
   aws_network_firewall_log
@@ -95,6 +95,28 @@ group by
   app_protocol
 order by
   connection_count desc;
+```
+
+### Recent Firewall Logs
+
+View the most recent firewall logs to analyze recent network traffic.
+
+```sql
+select
+  event_timestamp,
+  (event ->> 'src_ip') as source_ip,
+  (event ->> 'src_port') as source_port,
+  (event ->> 'dest_ip') as destination_ip, 
+  (event ->> 'dest_port') as destination_port,
+  (event ->> 'proto') as protocol,
+  (event ->> 'app_proto') as app_protocol,
+  firewall_name,
+  availability_zone
+from
+  aws_network_firewall_log
+order by
+  event_timestamp desc
+limit 20;
 ```
 
 ## Example Configurations
