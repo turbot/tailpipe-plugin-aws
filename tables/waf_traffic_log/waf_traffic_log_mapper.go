@@ -25,6 +25,8 @@ func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTraff
 		jsonBytes = v
 	case string:
 		jsonBytes = []byte(v)
+	case *string:
+		jsonBytes = []byte(*v)
 	default:
 		return nil, fmt.Errorf("expected byte[] or string, got %T", a)
 	}

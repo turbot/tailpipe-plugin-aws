@@ -7,6 +7,7 @@ import (
 	"github.com/rs/xid"
 
 	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-aws/tables"
 
@@ -38,6 +39,10 @@ func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*WafTra
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithRowPerLine(),
 			},
+		},
+		{
+			SourceName: cloudwatch.AwsCloudwatchSourceIdentifier,
+			Mapper:     &WafMapper{},
 		},
 		{
 			// any artifact source
