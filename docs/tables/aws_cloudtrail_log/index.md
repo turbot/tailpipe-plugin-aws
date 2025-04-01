@@ -234,3 +234,12 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument      | Default |
 |---------------|---------|
 | file_layout   | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
+
+### aws_waf_traffic_log
+
+This table sets the following defaults for the [aws_waf_traffic_log source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_waf_traffic_log#arguments):
+
+| Argument      | Default |
+|---------------|---------|
+| log_group_name | `/aws/waf/logs/vpc-flow-logs` |
+| log_stream_prefix | `vpc-flow-logs` |
