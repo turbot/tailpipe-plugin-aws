@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/turbot/tailpipe-plugin-sdk/table"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type CloudTrailMapper struct {
@@ -15,7 +15,7 @@ func (m *CloudTrailMapper) Identifier() string {
 	return "cloudtrail_mapper"
 }
 
-func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...table.MapOption[*CloudTrailLog]) (*CloudTrailLog, error) {
+func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*CloudTrailLog]) (*CloudTrailLog, error) {
 	var log CloudTrailLog
 	var jsonBytes []byte
 	var err error

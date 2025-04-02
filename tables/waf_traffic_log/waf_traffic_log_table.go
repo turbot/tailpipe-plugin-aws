@@ -10,7 +10,6 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-aws/tables"
-
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -24,7 +23,7 @@ const WafTrafficLogTableIdentifier = "aws_waf_traffic_log"
 // WafTrafficLogTable - table for Waf traffic logs
 type WafTrafficLogTable struct{}
 
-func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*WafTrafficLog] {
+func (c *WafTrafficLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*WafTrafficLog], error) {
 	// the default file layout for Waf traffic logs in S3
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:cloudfront_or_region}/%{DATA:cloudfront_name_or_resource_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.log.gz"),
@@ -50,7 +49,7 @@ func (c *WafTrafficLogTable) GetSourceMetadata() []*table.SourceMetadata[*WafTra
 			Mapper:     &WafMapper{},
 			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
 		},
-	}
+	}, nil
 }
 
 func (c *WafTrafficLogTable) Identifier() string {

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -25,7 +26,7 @@ func (t *CostOptimizationRecommendationsTable) Identifier() string {
 }
 
 // GetSourceMetadata implements table.Table
-func (t *CostOptimizationRecommendationsTable) GetSourceMetadata() []*table.SourceMetadata[*CostOptimizationRecommendation] {
+func (t *CostOptimizationRecommendationsTable) GetSourceMetadata() ([]*table.SourceMetadata[*CostOptimizationRecommendation], error) {
 	defaultArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"),
 	}
@@ -46,7 +47,7 @@ func (t *CostOptimizationRecommendationsTable) GetSourceMetadata() []*table.Sour
 				artifact_source.WithArtifactExtractor(NewCostOptimizationRecommendationExtractor()),
 			},
 		},
-	}
+	}, nil
 }
 
 // EnrichRow implements table.Table
@@ -57,7 +58,7 @@ func (t *CostOptimizationRecommendationsTable) EnrichRow(row *CostOptimizationRe
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
-	
+
 	row.TpTimestamp = *row.LastRefreshTimestamp
 	// convert to date in format yyyy-mm-dd
 	row.TpDate = row.LastRefreshTimestamp.Truncate(24 * time.Hour)
@@ -76,6 +77,6 @@ func (t *CostOptimizationRecommendationsTable) EnrichRow(row *CostOptimizationRe
 	return row, nil
 }
 
-func (c *CostOptimizationRecommendationsTable) GetDescription() string {
+func (t *CostOptimizationRecommendationsTable) GetDescription() string {
 	return "AWS Cost Optimization Recommendations provide insights into opportunities to reduce AWS spending through various actions such as rightsizing, reserved instances, savings plans, and idle resource cleanup."
 }

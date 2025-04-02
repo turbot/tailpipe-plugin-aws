@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -27,7 +27,7 @@ func (t *CostUsageReportTable) Identifier() string {
 	return CostUsageReportTableIdentifier
 }
 
-func (t *CostUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageReport] {
+func (t *CostUsageReportTable) GetSourceMetadata() ([]*table.SourceMetadata[*CostUsageReport], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		// Grok pattern to match AWS CUR legacy, and CUR 2.0 report file paths in Amazon S3.
 		//
@@ -78,7 +78,7 @@ func (t *CostUsageReportTable) GetSourceMetadata() []*table.SourceMetadata[*Cost
 				artifact_source.WithArtifactExtractor(NewCostUsageReportExtractor()),
 			},
 		},
-	}
+	}, nil
 }
 
 // EnrichRow implements table.Table
@@ -136,6 +136,6 @@ func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentF
 	return row, nil
 }
 
-func (c *CostUsageReportTable) GetDescription() string {
+func (t *CostUsageReportTable) GetDescription() string {
 	return "AWS Cost and Usage Reports (CUR) provide a comprehensive breakdown of AWS service costs and usage. This table offers a structured view of billing data, including service charges, account-level spending, resource consumption, discounts, and pricing details. It enables cost analysis, budget tracking, and optimization insights across AWS accounts."
 }

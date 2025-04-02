@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
@@ -24,7 +25,7 @@ func (c *CostUsageFocusTable) Identifier() string {
 	return CostUsageFocusTableIdentifier
 }
 
-func (c *CostUsageFocusTable) GetSourceMetadata() []*table.SourceMetadata[*CostUsageFocus] {
+func (c *CostUsageFocusTable) GetSourceMetadata() ([]*table.SourceMetadata[*CostUsageFocus], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("%{DATA:export_name}/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"),
 	}
@@ -45,7 +46,7 @@ func (c *CostUsageFocusTable) GetSourceMetadata() []*table.SourceMetadata[*CostU
 				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
 			},
 		},
-	}
+	}, nil
 }
 
 func (c *CostUsageFocusTable) EnrichRow(row *CostUsageFocus, sourceEnrichmentFields schema.SourceEnrichment) (*CostUsageFocus, error) {
