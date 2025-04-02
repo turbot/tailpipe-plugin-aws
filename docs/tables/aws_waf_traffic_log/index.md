@@ -138,6 +138,33 @@ partition "aws_waf_traffic_log" "my_logs_prefix" {
 }
 ```
 
+### Collect logs from a CloudWatch log group
+
+Collect CloudTrail logs stored in a CloudWatch log group.
+
+```hcl
+partition "aws_waf_traffic_log" "my_logs" {
+  source "aws_cloudwatch_log_group" {
+    connection = connection.aws.logging_account
+    log_group_name = "aws-waf-log-group"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group with a log stream prefix
+
+Collect CloudTrail logs stored in a CloudWatch log group with a log stream prefix.
+
+```hcl
+partition "aws_waf_traffic_log" "my_logs_prefix" {
+  source "aws_cloudwatch_log_group" {
+    connection = connection.aws.logging_account
+    log_group_name = "aws-waf-log-group"
+    log_stream_prefix = "us-east-1-"
+  }
+}
+```
+
 ### Collect logs from local files
 
 You can also collect AWS WAF logs from local files.
@@ -217,11 +244,11 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:cloudfront_or_region}/%{DATA:cloudfront_name_or_resource_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.gz` |
 
-### aws_waf_traffic_log
+### aws_cloudwatch_log_group
 
-This table sets the following defaults for the [aws_waf_traffic_log source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_waf_traffic_log#arguments):
+This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
 
 | Argument      | Default |
 |---------------|---------|
-| log_group_name | `/aws/waf/logs/vpc-flow-logs` |
-| log_stream_prefix | `vpc-flow-logs` |
+| log_group_name | `/aws/waf/logs` |
+| log_stream_prefix | `waf-logs-` |
