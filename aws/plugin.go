@@ -38,11 +38,10 @@ func init() {
 	table.RegisterTable[*guardduty_finding.GuardDutyFinding, *guardduty_finding.GuardDutyFindingTable]()
 	table.RegisterTable[*nlb_access_log.NlbAccessLog, *nlb_access_log.NlbAccessLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
-	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
 
-	// regiister custom table
-	// table.RegisterCustomTable[*vpc_flow_log.VpcFlowLogTable]()
+	// register custom table
+	table.RegisterCustomTable[*vpc_flow_log.VpcFlowLogTable]()
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
