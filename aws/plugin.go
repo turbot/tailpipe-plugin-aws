@@ -41,6 +41,9 @@ func init() {
 	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
 
+	// regiister custom table
+	// table.RegisterCustomTable[*vpc_flow_log.VpcFlowLogTable]()
+
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
 	row_source.RegisterRowSource[*cloudwatch_log_group.AwsCloudWatchLogGroupSource]()

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	helper "github.com/turbot/tailpipe-plugin-aws/tables"
-
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
