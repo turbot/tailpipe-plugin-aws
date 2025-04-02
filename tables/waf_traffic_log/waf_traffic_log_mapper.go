@@ -7,7 +7,8 @@ import (
 	"time"
 
 	helper "github.com/turbot/tailpipe-plugin-aws/tables"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
+
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type WafMapper struct {
@@ -17,7 +18,7 @@ func (c *WafMapper) Identifier() string {
 	return "aws_waf_traffic_log_mapper"
 }
 
-func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTrafficLog]) (*WafTrafficLog, error) {
+func (c *WafMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*WafTrafficLog]) (*WafTrafficLog, error) {
 	var jsonBytes []byte
 
 	switch v := a.(type) {
