@@ -1,14 +1,17 @@
 package vpc_flow_log
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/rs/xid"
 
 	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch_log_group"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
+	"github.com/turbot/tailpipe-plugin-sdk/formats"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
 	"github.com/turbot/tailpipe-plugin-sdk/schema"
 	"github.com/turbot/tailpipe-plugin-sdk/table"
@@ -16,14 +19,32 @@ import (
 
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 
+const vpcFlowLogFormat = `$version $account-id $interface-id $srcaddr $dstaddr $srcport $dstport $protocol $packets $bytes $start $end $action $log-status`
+
 // VpcFlowLogTable - table for VPC Flow Logs
-type VpcFlowLogTable struct{}
+type VpcFlowLogTable struct {
+	table.CustomTableImpl
+}
+
+func (c *VpcFlowLogTable) GetDefaultFormat() formats.Format {
+	return defaultVPCFlowLogTableFormat
+}
 
 func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*VpcFlowLog], error) {
 
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz"),
 	}
+
+	format := NewVPCFlowLogTableFormat()
+
+	// // ask our CustomTableImpl for the mapper
+	// mapper, err := c.Format.GetMapper()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	slog.Error("mapper ===>>> ", "regex", format.GetProperties())
 
 	return []*table.SourceMetadata[*VpcFlowLog]{
 		{
@@ -32,6 +53,14 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*VpcFlowL
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithArtifactExtractor(NewVPCFlowLogExtractor()),
+			},
+		},
+		{
+			// CloudWatch source
+			SourceName: cloudwatch_log_group.AwsCloudwatchSourceIdentifier,
+			Mapper:     &VPCFlowLogMapper{},
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithRowPerLine(),
 			},
 		},
 	}, nil
