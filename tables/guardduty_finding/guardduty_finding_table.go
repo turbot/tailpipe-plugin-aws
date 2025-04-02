@@ -7,7 +7,6 @@ import (
 
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -25,7 +24,7 @@ func (c *GuardDutyFindingTable) Identifier() string {
 	return GuardDutyFindingTableIdentifier
 }
 
-func (c *GuardDutyFindingTable) GetSourceMetadata() []*table.SourceMetadata[*GuardDutyFinding] {
+func (c *GuardDutyFindingTable) GetSourceMetadata() ([]*table.SourceMetadata[*GuardDutyFinding], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/GuardDuty/%{DATA:region_path}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz"),
 	}
@@ -47,7 +46,7 @@ func (c *GuardDutyFindingTable) GetSourceMetadata() []*table.SourceMetadata[*Gua
 				artifact_source.WithRowPerLine(),
 			},
 		},
-	}
+	}, nil
 }
 
 func (c *GuardDutyFindingTable) EnrichRow(row *GuardDutyFinding, sourceEnrichmentFields schema.SourceEnrichment) (*GuardDutyFinding, error) {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -26,7 +27,7 @@ func (c *NlbAccessLogTable) Identifier() string {
 	return NlbAccessLogTableIdentifier
 }
 
-func (c *NlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*NlbAccessLog] {
+func (c *NlbAccessLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*NlbAccessLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_net.%{DATA}.log.gz"),
 	}
@@ -47,7 +48,7 @@ func (c *NlbAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*NlbAcce
 				artifact_source.WithRowPerLine(),
 			},
 		},
-	}
+	}, nil
 }
 
 func (c *NlbAccessLogTable) EnrichRow(row *NlbAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*NlbAccessLog, error) {

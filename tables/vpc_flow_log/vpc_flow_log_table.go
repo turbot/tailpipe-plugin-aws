@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -18,7 +19,7 @@ const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 // VpcFlowLogTable - table for VPC Flow Logs
 type VpcFlowLogTable struct{}
 
-func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*VpcFlowLog] {
+func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*VpcFlowLog], error) {
 
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz"),
@@ -33,7 +34,7 @@ func (c *VpcFlowLogTable) GetSourceMetadata() []*table.SourceMetadata[*VpcFlowLo
 				artifact_source.WithArtifactExtractor(NewVPCFlowLogExtractor()),
 			},
 		},
-	}
+	}, nil
 }
 
 // Identifier implements table.Table
