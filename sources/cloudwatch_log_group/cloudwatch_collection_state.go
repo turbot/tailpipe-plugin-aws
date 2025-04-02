@@ -1,5 +1,5 @@
 // Package cloudwatch provides functionality to collect logs from AWS CloudWatch Log Groups
-package cloudwatch
+package cloudwatch_log_group
 
 import (
 	"encoding/json"
