@@ -2,7 +2,6 @@ package vpc_flow_log
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/turbot/tailpipe-plugin-sdk/formats"
@@ -24,6 +23,18 @@ func NewVPCFlowLogTableFormat() formats.Format {
 }
 
 func (a *VPCFlowLogTableFormat) Validate() error {
+	var invalid []string
+	layoutParts := strings.Fields(a.Layout)
+	for _, part := range layoutParts {
+		if _, exists := getValidTokensAndColumnNames()[part]; !exists {
+			invalid = append(invalid, part)
+		}
+	}
+
+	if len(invalid) > 0 {
+		return fmt.Errorf("the following tokens are not valid: %s", strings.Join(invalid, ", "))
+	}
+
 	return nil
 }
 
@@ -35,7 +46,6 @@ func (a *VPCFlowLogTableFormat) Identifier() string {
 
 // GetName returns the format instance name
 func (a *VPCFlowLogTableFormat) GetName() string {
-	// format name is same as table name
 	return a.Name
 }
 
@@ -59,41 +69,22 @@ func (a *VPCFlowLogTableFormat) GetMapper() (mappers.Mapper[*types.DynamicRow], 
 }
 
 func (a *VPCFlowLogTableFormat) GetRegex() (string, error) {
-	format := regexp.QuoteMeta(a.Layout)
-	var unsupportedTokens []string
-
-	// regex to grab tokens
-	re := regexp.MustCompile(`\\\$\w+`)
-
-	// check for concatenated tokens (e.g. $body_bytes$status)
-	tokens := re.FindAllStringIndex(format, -1)
-	for i := 1; i < len(tokens); i++ {
-		// With QuoteMeta, tokens will be 2 characters further apart due to the backslash escape
-		if tokens[i][0]-tokens[i-1][1] < 1 {
-			return "", fmt.Errorf("concatenated tokens detected in format '%s', this is currently unsupported in this format, if this is a requirement a Regex format can be used", a.Layout)
-		}
+	// validate checks all tokens in layout are valid else returns error
+	err := a.Validate()
+	if err != nil {
+		return "", err
 	}
 
-	// replace tokens with regex patterns
-	format = re.ReplaceAllStringFunc(format, func(match string) string {
-		if pattern, exists := getRegexForSegment(match); exists {
-			return pattern
-		} else {
-			unsupportedTokens = append(unsupportedTokens, strings.TrimPrefix(match, `\`))
-		}
+	tokens := strings.Fields(a.Layout)
+	var segments []string
 
-		return match
-	})
-
-	if len(unsupportedTokens) > 0 {
-		return "", fmt.Errorf("the following tokens are not currently supported in this format: %s", strings.Join(unsupportedTokens, ", "))
+	// get the regex segment for each token
+	for _, token := range tokens {
+		segments = append(segments, getRegexForSegment(token))
 	}
 
-	if len(format) > 0 {
-		format = fmt.Sprintf("^%s", format)
-	}
-
-	return format, nil
+	// return the regex pattern (space separated)
+	return strings.Join(segments, " "), nil
 }
 
 func (a *VPCFlowLogTableFormat) GetProperties() map[string]string {
@@ -102,57 +93,57 @@ func (a *VPCFlowLogTableFormat) GetProperties() map[string]string {
 	}
 }
 
-func getRegexForSegment(segment string) (string, bool) {
-	const defaultRegexFormat = `(?P<%s>[^ ]*)`
+func getRegexForSegment(segment string) string {
+	const defaultRegexFormat = "(?P<%s>[^ ]*)"
 
-	if _, exists := getValidTokenMap()[segment]; !exists {
-		return segment, false
+	if columnName, exists := getValidTokensAndColumnNames()[segment]; exists {
+		return fmt.Sprintf(defaultRegexFormat, columnName)
 	}
 
-	return fmt.Sprintf(defaultRegexFormat, strings.TrimPrefix(segment, `\$`)), true
+	return segment
 }
 
-func getValidTokenMap() map[string]struct{} {
-	return map[string]struct{}{
-		`\$account-id`:                 {},
-		`\$action`:                     {},
-		`\$az-id`:                      {},
-		`\$bytes`:                      {},
-		`\$dstaddr`:                    {},
-		`\$dstport`:                    {},
-		`\$end`:                        {},
-		`\$flow-direction`:             {},
-		`\$instance-id`:                {},
-		`\$interface-id`:               {},
-		`\$log-status`:                 {},
-		`\$packets`:                    {},
-		`\$pkt-dst-aws-service`:        {},
-		`\$pkt-dstaddr`:                {},
-		`\$pkt-src-aws-service`:        {},
-		`\$pkt-srcaddr`:                {},
-		`\$protocol`:                   {},
-		`\$region`:                     {},
-		`\$reject-reason`:              {},
-		`\$srcaddr`:                    {},
-		`\$srcport`:                    {},
-		`\$start`:                      {},
-		`\$sublocation-id`:             {},
-		`\$sublocation-type`:           {},
-		`\$subnet-id`:                  {},
-		`\$tcp-flags`:                  {},
-		`\$traffic-path`:               {},
-		`\$type`:                       {},
-		`\$version`:                    {},
-		`\$vpc-id`:                     {},
-		`\$ecs-cluster-name`:           {},
-		`\$ecs-cluster-arn`:            {},
-		`\$ecs-container-instance-id`:  {},
-		`\$ecs-container-instance-arn`: {},
-		`\$ecs-service-name`:           {},
-		`\$ecs-task-definition-arn`:    {},
-		`\$ecs-task-id`:                {},
-		`\$ecs-task-arn`:               {},
-		`\$ecs-container-id`:           {},
-		`\$ecs-second-container-id`:    {},
+func getValidTokensAndColumnNames() map[string]string {
+	return map[string]string{
+		"version":                    "version",
+		"account-id":                 "account_id",
+		"interface-id":               "interface_id",
+		"srcaddr":                    "src_addr",
+		"dstaddr":                    "dst_addr",
+		"srcport":                    "src_port",
+		"dstport":                    "dst_port",
+		"protocol":                   "protocol",
+		"packets":                    "packets",
+		"bytes":                      "bytes",
+		"start":                      "start_time",
+		"end":                        "end_time",
+		"action":                     "action",
+		"log-status":                 "log_status",
+		"vpc-id":                     "vpc_id",
+		"subnet-id":                  "subnet_id",
+		"instance-id":                "instance_id",
+		"tcp-flags":                  "tcp_flags",
+		"type":                       "type",
+		"pkt-srcaddr":                "pkt_src_addr",
+		"pkt-dstaddr":                "pkt_dst_addr",
+		"region":                     "region",
+		"az-id":                      "az_id",
+		"sublocation-type":           "sublocation_type",
+		"sublocation-id":             "sublocation_id",
+		"pkt-src-aws-service":        "pkt_src_aws_service",
+		"pkt-dst-aws-service":        "pkt_dst_aws_service",
+		"flow-direction":             "flow_direction",
+		"traffic-path":               "traffic_path",
+		"ecs-cluster-arn":            "ecs_cluster_arn",
+		"ecs-cluster-name":           "ecs_cluster_name",
+		"ecs-container-instance-arn": "ecs_container_instance_arn",
+		"ecs-container-instance-id":  "ecs_container_instance_id",
+		"ecs-container-id":           "ecs_container_id",
+		"ecs-second-container-id":    "ecs_second_container_id",
+		"ecs-service-name":           "ecs_service_name",
+		"ecs-task-definition-arn":    "ecs_task_definition_arn",
+		"ecs-task-arn":               "ecs_task_arn",
+		"ecs-task-id":                "ecs_task_id",
+		"reject-reason":              "reject_reason",
 	}
 }
