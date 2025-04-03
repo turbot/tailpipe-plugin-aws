@@ -102,22 +102,49 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			switch {
 			case finding.Service.Action.AwsApiCallAction != nil:
 				details, err = convertToMap(finding.Service.Action.AwsApiCallAction)
+				if err != nil {
+					return nil, fmt.Errorf("error converting AwsApiCallAction: %w", err)
+				}
 			case finding.Service.Action.DnsRequestAction != nil:
 				details, err = convertToMap(finding.Service.Action.DnsRequestAction)
+				if err != nil {
+					return nil, fmt.Errorf("error converting DnsRequestAction: %w", err)
+				}
 			case finding.Service.Action.NetworkConnectionAction != nil:
 				details, err = convertToMap(finding.Service.Action.NetworkConnectionAction)
+				if err != nil {
+					return nil, fmt.Errorf("error converting NetworkConnectionAction: %w", err)
+				}
 			case finding.Service.Action.PortProbeAction != nil:
 				details, err = convertToMap(finding.Service.Action.PortProbeAction)
+				if err != nil {
+					return nil, fmt.Errorf("error converting PortProbeAction: %w", err)
+				}
 			case finding.Service.Action.KubernetesApiCallAction != nil:
 				details, err = convertToMap(finding.Service.Action.KubernetesApiCallAction)
+				if err != nil {
+					return nil, fmt.Errorf("error converting KubernetesApiCallAction: %w", err)
+				}
 			case finding.Service.Action.KubernetesPermissionCheckedDetails != nil:
 				details, err = convertToMap(finding.Service.Action.KubernetesPermissionCheckedDetails)
+				if err != nil {
+					return nil, fmt.Errorf("error converting KubernetesPermissionCheckedDetails: %w", err)
+				}
 			case finding.Service.Action.KubernetesRoleDetails != nil:
 				details, err = convertToMap(finding.Service.Action.KubernetesRoleDetails)
+				if err != nil {
+					return nil, fmt.Errorf("error converting KubernetesRoleDetails: %w", err)
+				}
 			case finding.Service.Action.KubernetesRoleBindingDetails != nil:
 				details, err = convertToMap(finding.Service.Action.KubernetesRoleBindingDetails)
+				if err != nil {
+					return nil, fmt.Errorf("error converting KubernetesRoleBindingDetails: %w", err)
+				}
 			case finding.Service.Action.RdsLoginAttemptAction != nil:
 				details, err = convertToMap(finding.Service.Action.RdsLoginAttemptAction)
+				if err != nil {
+					return nil, fmt.Errorf("error converting RdsLoginAttemptAction: %w", err)
+				}
 			}
 
 			row.Service.Action.ActionDetails = details
@@ -241,22 +268,49 @@ func (g *GuardDutyMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 		switch {
 		case finding.Resource.ContainerDetails != nil:
 			details, err = convertToMap(finding.Resource.ContainerDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting ContainerDetails: %w", err)
+			}
 		case finding.Resource.EbsVolumeDetails != nil:
 			details, err = convertToMap(finding.Resource.EbsVolumeDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting EbsVolumeDetails: %w", err)
+			}
 		case finding.Resource.EcsClusterDetails != nil:
 			details, err = convertToMap(finding.Resource.EcsClusterDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting EcsClusterDetails: %w", err)
+			}
 		case finding.Resource.EksClusterDetails != nil:
 			details, err = convertToMap(finding.Resource.EksClusterDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting EksClusterDetails: %w", err)
+			}
 		case finding.Resource.InstanceDetails != nil:
 			details, err = convertToMap(finding.Resource.InstanceDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting InstanceDetails: %w", err)
+			}
 		case finding.Resource.KubernetesDetails != nil:
 			details, err = convertToMap(finding.Resource.KubernetesDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting KubernetesDetails: %w", err)
+			}
 		case finding.Resource.LambdaDetails != nil:
 			details, err = convertToMap(finding.Resource.LambdaDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting LambdaDetails: %w", err)
+			}
 		case finding.Resource.RdsDbInstanceDetails != nil:
 			details, err = convertToMap(finding.Resource.RdsDbInstanceDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting RdsDbInstanceDetails: %w", err)
+			}
 		case finding.Resource.RdsDbUserDetails != nil:
 			details, err = convertToMap(finding.Resource.RdsDbUserDetails)
+			if err != nil {
+				return nil, fmt.Errorf("error converting RdsDbUserDetails: %w", err)
+			}
 		case finding.Resource.S3BucketDetails != nil:
 			details = map[string]interface{}{
 				"s3_bucket_details": finding.Resource.S3BucketDetails,
