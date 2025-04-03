@@ -108,6 +108,14 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		// Map the values to the record
 		record.MapValues(recordMap)
 
+		// We should have null value if the map value is empty
+		if len(*record.RecommendedResourceDetails) == 0 {
+			record.RecommendedResourceDetails = nil
+		}
+		if len(*record.CurrentResourceDetails) == 0 {
+			record.CurrentResourceDetails = nil
+		}
+
 		// Add the record to our list
 		records = append(records, record)
 	}
@@ -193,15 +201,17 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 			switch ptrType.Kind() {
 			case reflect.String:
 				val := strVal
-				fieldVal.Set(reflect.ValueOf(&val))
+				if val != "" {
+					fieldVal.Set(reflect.ValueOf(&val))
+				}
 			case reflect.Int:
 				val, err := strconv.Atoi(strVal)
-				if err == nil {
+				if err == nil && val > 0 {
 					fieldVal.Set(reflect.ValueOf(&val))
 				}
 			case reflect.Float64:
 				val, err := strconv.ParseFloat(strVal, 64)
-				if err == nil {
+				if err == nil && val > 0 {
 					fieldVal.Set(reflect.ValueOf(&val))
 				}
 			case reflect.Bool:
