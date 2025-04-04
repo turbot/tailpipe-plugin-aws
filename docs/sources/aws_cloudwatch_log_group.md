@@ -3,7 +3,7 @@ title: "Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch Log 
 description: "Allows users to collect logs from AWS CloudWatch Log Groups."
 ---
 
-# Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch Log Groups
+# Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch log groups
 
 AWS CloudWatch Log Groups are collections of log streams that share the same retention, monitoring, and access control settings. They serve as containers for log data from AWS services, containerized applications, and custom applications.
 
