@@ -43,7 +43,7 @@ func init() {
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
-	row_source.RegisterRowSource[*cloudwatch_log_group.AwsCloudWatchSource]()
+	row_source.RegisterRowSource[*cloudwatch_log_group.AwsCloudWatchLogGroupSource]()
 }
 
 func NewPlugin() (_ plugin.TailpipePlugin, err error) {

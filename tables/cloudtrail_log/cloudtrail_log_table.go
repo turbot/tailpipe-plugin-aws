@@ -45,7 +45,7 @@ func (t *CloudTrailLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*Cloud
 			},
 		},
 		{
-			SourceName: cloudwatch_log_group.AwsCloudwatchSourceIdentifier,
+			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
 			Mapper:     &CloudTrailMapper{},
 		},
 	}, nil

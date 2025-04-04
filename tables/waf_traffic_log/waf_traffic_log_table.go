@@ -40,7 +40,7 @@ func (c *WafTrafficLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*WafTr
 			},
 		},
 		{
-			SourceName: cloudwatch_log_group.AwsCloudwatchSourceIdentifier,
+			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
 			Mapper:     &WafMapper{},
 		},
 		{

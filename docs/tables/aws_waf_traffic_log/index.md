@@ -145,8 +145,9 @@ Collect CloudTrail logs stored in a CloudWatch log group.
 ```hcl
 partition "aws_waf_traffic_log" "my_logs" {
   source "aws_cloudwatch_log_group" {
-    connection = connection.aws.logging_account
+    connection     = connection.aws.logging_account
     log_group_name = "aws-waf-log-group"
+    region         = "us-east-1"
   }
 }
 ```
@@ -158,9 +159,10 @@ Collect CloudTrail logs stored in a CloudWatch log group with a log stream prefi
 ```hcl
 partition "aws_waf_traffic_log" "my_logs_prefix" {
   source "aws_cloudwatch_log_group" {
-    connection = connection.aws.logging_account
-    log_group_name = "aws-waf-log-group"
+    connection        = connection.aws.logging_account
+    log_group_name    = "aws-waf-log-group"
     log_stream_prefix = "us-east-1-"
+    region            = "us-east-1"
   }
 }
 ```
@@ -250,5 +252,4 @@ This table sets the following defaults for the [aws_cloudwatch_log_group source]
 
 | Argument      | Default |
 |---------------|---------|
-| log_group_name | `/aws/waf/logs` |
-| log_stream_prefix | `waf-logs-` |
+| log_stream_prefix | "" |
