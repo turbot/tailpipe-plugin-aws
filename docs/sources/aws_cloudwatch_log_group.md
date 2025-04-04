@@ -1,5 +1,5 @@
 ---
-title: "Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch Log Groups"
+title: "Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch log groups"
 description: "Allows users to collect logs from AWS CloudWatch Log Groups."
 ---
 
