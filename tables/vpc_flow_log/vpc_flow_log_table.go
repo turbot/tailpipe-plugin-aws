@@ -18,6 +18,8 @@ import (
 
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 const VpcFlowLogTableNilValue = "-"
+const VpcFlowLogTableSkippedData = "SKIPDATA"
+const VpcFlowLogTableNoData = "NODATA"
 
 // VpcFlowLogTable - table for VPC Flow Logs
 type VpcFlowLogTable struct {
@@ -264,10 +266,10 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
-			Mapper:     mapper,
+			Mapper:     &VPCFlowLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithSkipHeaderRow(),
+				artifact_source.WithArtifactExtractor(NewVPCFlowLogExtractor(c.Format)),
 			},
 		},
 		{
@@ -285,16 +287,16 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentFields schema.SourceEnrichment) (*types.DynamicRow, error) {
 	var invalidFields []string
 
-	if startTime, ok := row.GetSourceValue("start_time"); ok {
+	row.OutputColumns[constants.TpTable] = VpcFlowLogTableIdentifier
+
+	if startTime, ok := row.GetSourceValue("start_time"); ok && (startTime != VpcFlowLogTableSkippedData || startTime != VpcFlowLogTableNoData || startTime != VpcFlowLogTableNilValue) {
 		t, err := helpers.ParseTime(startTime)
 		if err != nil {
 			invalidFields = append(invalidFields, "start_time")
 		} else {
 			row.OutputColumns[constants.TpTimestamp] = t
 		}
-	}
-
-	if endTime, ok := row.GetSourceValue("end_time"); ok {
+	} else if endTime, ok := row.GetSourceValue("end_time"); ok && (endTime != VpcFlowLogTableSkippedData || endTime != VpcFlowLogTableNoData || endTime != VpcFlowLogTableNilValue) {
 		t, err := helpers.ParseTime(endTime)
 		if err != nil {
 			invalidFields = append(invalidFields, "end_time")
@@ -309,18 +311,18 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 
 	// tp_ips
 	var ips []string
-	if srcAddr, ok := row.GetSourceValue("src_addr"); ok {
+	if srcAddr, ok := row.GetSourceValue("src_addr"); ok && (srcAddr != VpcFlowLogTableSkippedData || srcAddr != VpcFlowLogTableNoData || srcAddr != VpcFlowLogTableNilValue) {
 		ips = append(ips, srcAddr)
 		row.OutputColumns[constants.TpSourceIP] = srcAddr
 	}
-	if pktSrcAddr, ok := row.GetSourceValue("pkt_src_addr"); ok {
+	if pktSrcAddr, ok := row.GetSourceValue("pkt_src_addr"); ok && (pktSrcAddr != VpcFlowLogTableSkippedData || pktSrcAddr != VpcFlowLogTableNoData || pktSrcAddr != VpcFlowLogTableNilValue) {
 		ips = append(ips, pktSrcAddr)
 	}
-	if dstAddr, ok := row.GetSourceValue("dst_addr"); ok {
+	if dstAddr, ok := row.GetSourceValue("dst_addr"); ok && (dstAddr != VpcFlowLogTableSkippedData || dstAddr != VpcFlowLogTableNoData || dstAddr != VpcFlowLogTableNilValue) {
 		ips = append(ips, dstAddr)
 		row.OutputColumns[constants.TpDestinationIP] = dstAddr
 	}
-	if pktDstAddr, ok := row.GetSourceValue("pkt_dst_addr"); ok {
+	if pktDstAddr, ok := row.GetSourceValue("pkt_dst_addr"); ok && (pktDstAddr != VpcFlowLogTableSkippedData || pktDstAddr != VpcFlowLogTableNoData || pktDstAddr != VpcFlowLogTableNilValue) {
 		ips = append(ips, pktDstAddr)
 	}
 	if len(ips) > 0 {
@@ -329,7 +331,7 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 
 	// tp_index
 	for _, key := range []string{"interface_id", "subnet_id", "vpc_id"} {
-		if val, ok := row.GetSourceValue(key); ok {
+		if val, ok := row.GetSourceValue(key); ok && (val != VpcFlowLogTableSkippedData || val != VpcFlowLogTableNoData || val != VpcFlowLogTableNilValue) {
 			row.OutputColumns[constants.TpIndex] = val
 			break
 		}
@@ -340,16 +342,16 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 
 	// tp_akas
 	var akas []string
-	if ecsClusterArn, ok := row.GetSourceValue("ecs_cluster_arn"); ok {
+	if ecsClusterArn, ok := row.GetSourceValue("ecs_cluster_arn"); ok && (ecsClusterArn != VpcFlowLogTableSkippedData || ecsClusterArn != VpcFlowLogTableNoData || ecsClusterArn != VpcFlowLogTableNilValue) {
 		akas = append(akas, ecsClusterArn)
 	}
-	if ecsContainerInstanceArn, ok := row.GetSourceValue("ecs_container_instance_arn"); ok {
+	if ecsContainerInstanceArn, ok := row.GetSourceValue("ecs_container_instance_arn"); ok && (ecsContainerInstanceArn != VpcFlowLogTableSkippedData || ecsContainerInstanceArn != VpcFlowLogTableNoData || ecsContainerInstanceArn != VpcFlowLogTableNilValue) {
 		akas = append(akas, ecsContainerInstanceArn)
 	}
-	if ecsTaskArn, ok := row.GetSourceValue("ecs_task_arn"); ok {
+	if ecsTaskArn, ok := row.GetSourceValue("ecs_task_arn"); ok && (ecsTaskArn != VpcFlowLogTableSkippedData || ecsTaskArn != VpcFlowLogTableNoData || ecsTaskArn != VpcFlowLogTableNilValue) {
 		akas = append(akas, ecsTaskArn)
 	}
-	if ecsTaskDefinitionArn, ok := row.GetSourceValue("ecs_task_definition_arn"); ok {
+	if ecsTaskDefinitionArn, ok := row.GetSourceValue("ecs_task_definition_arn"); ok && (ecsTaskDefinitionArn != VpcFlowLogTableSkippedData || ecsTaskDefinitionArn != VpcFlowLogTableNoData || ecsTaskDefinitionArn != VpcFlowLogTableNilValue) {
 		akas = append(akas, ecsTaskDefinitionArn)
 	}
 	if len(akas) > 0 {

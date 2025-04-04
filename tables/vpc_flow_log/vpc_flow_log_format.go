@@ -145,5 +145,10 @@ func getValidTokensAndColumnNames() map[string]string {
 		"ecs-task-arn":               "ecs_task_arn",
 		"ecs-task-id":                "ecs_task_id",
 		"reject-reason":              "reject_reason",
+
+		// This is not present in the log but is added by AWS while exporting the log from CloudWatch to S3, the timestamp is the time when the log was exported.
+		// Here it the sample line from the log:
+		// 2025-02-25T12:25:04.000Z i-085c7a43a498c2f5d eni-0416a1c81c87ab9c9 - - - use1-az2 - 1740486335 - - - - - - 1740486304 subnet-027e9a6d4add894eb
+		"timestamp": "timestamp",
 	}
 }
