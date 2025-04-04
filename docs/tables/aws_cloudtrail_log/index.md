@@ -141,6 +141,35 @@ partition "aws_cloudtrail_log" "my_logs_prefix" {
 }
 ```
 
+### Collect logs from a CloudWatch log group
+
+Collect CloudTrail logs stored in a CloudWatch log group.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs" {
+  source "aws_cloudwatch_log_group" {
+    connection     = connection.aws.logging_account
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
+    region         = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group with a log stream prefix
+
+Collect CloudTrail logs for account ID `456789012345` in us-east-1.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
+  source "aws_cloudwatch_log_group" {
+    connection        = connection.aws.default
+    log_group_name    = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_prefix = "456789012345_CloudTrail_us-east-1"
+    region            = "us-east-1"
+  }
+}
+```
+
 ### Collect logs from local files
 
 You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/).

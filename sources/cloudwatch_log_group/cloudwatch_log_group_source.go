@@ -1,5 +1,5 @@
 // Package cloudwatch provides functionality to collect logs from AWS CloudWatch Log Groups
-package cloudwatch
+package cloudwatch_log_group
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
-	cwtypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
+	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/collection_state"
@@ -19,32 +19,30 @@ import (
 )
 
 const (
-	// AwsCloudwatchSourceIdentifier is the unique identifier for the CloudWatch log source
-	AwsCloudwatchSourceIdentifier = "aws_cloudwatch_log_group"
-	// defaultCloudwatchRegion is used when no region is specified in the config
-	defaultCloudwatchRegion = "us-east-1"
+	// AwsCloudwatchLogGroupSourceIdentifier is the unique identifier for the CloudWatch log group source
+	AwsCloudwatchLogGroupSourceIdentifier = "aws_cloudwatch_log_group"
 )
 
-// AwsCloudWatchSource is responsible for collection of events from log streams within a log group in AWS CloudWatch
+// AwsCloudWatchLogGroupSource is responsible for collection of events from log streams within a log group in AWS CloudWatch
 // It implements the RowSource interface and manages the collection state to support incremental collection
-type AwsCloudWatchSource struct {
+type AwsCloudWatchLogGroupSource struct {
 	// Embed the base RowSourceImpl with CloudWatch specific config and AWS connection
-	row_source.RowSourceImpl[*AwsCloudWatchSourceConfig, *config.AwsConnection]
+	row_source.RowSourceImpl[*AwsCloudWatchLogGroupSourceConfig, *config.AwsConnection]
 
 	// AWS CloudWatch Logs client
 	client *cloudwatchlogs.Client
 	// List of errors encountered during collection
 	errorList []error
 	// Collection state to track progress and support incremental collection
-	state *CloudWatchCollectionState
+	state *CloudWatchLogGroupCollectionState
 }
 
 // Init initializes the CloudWatch source with the provided parameters and options
 // It sets up the collection state, AWS client, and validates the configuration
-func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
+func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	// Set up the collection state constructor
-	s.NewCollectionStateFunc = func() collection_state.CollectionState[*AwsCloudWatchSourceConfig] {
-		return NewCloudWatchCollectionState()
+	s.NewCollectionStateFunc = func() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
+		return NewCloudWatchLogGroupCollectionState()
 	}
 
 	// Initialize the base implementation
@@ -62,7 +60,7 @@ func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSo
 	s.errorList = []error{}
 
 	// Get and validate the collection state from the base implementation
-	state, ok := s.CollectionState.(*CloudWatchCollectionState)
+	state, ok := s.CollectionState.(*CloudWatchLogGroupCollectionState)
 	if !ok {
 		return fmt.Errorf("invalid collection state type: expected *CloudWatchCollectionState")
 	}
@@ -72,15 +70,15 @@ func (s *AwsCloudWatchSource) Init(ctx context.Context, params *row_source.RowSo
 }
 
 // Identifier returns the unique identifier for this source
-func (s *AwsCloudWatchSource) Identifier() string {
-	return AwsCloudwatchSourceIdentifier
+func (s *AwsCloudWatchLogGroupSource) Identifier() string {
+	return AwsCloudwatchLogGroupSourceIdentifier
 }
 
 // Collect retrieves log events from CloudWatch log streams within the specified time range
 // It handles pagination, maintains collection state, and processes events incrementally
-func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
+func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	// Get all log streams matching the prefix in the specified log group
-	logStreamCollection, err := s.getLogStreamsToCollect(ctx, s.Config.LogGroupName, s.Config.LogStreamPrefix)
+	logStreamCollection, err := s.getLogStreamsToCollect(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
@@ -98,7 +96,7 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 		// Set up source enrichment fields for the current stream
 		sourceEnrichmentFields := &schema.SourceEnrichment{
 			CommonFields: schema.CommonFields{
-				TpSourceType:     AwsCloudwatchSourceIdentifier,
+				TpSourceType:     AwsCloudwatchLogGroupSourceIdentifier,
 				TpSourceName:     &s.Config.LogGroupName,
 				TpSourceLocation: ls.LogStreamName,
 			},
@@ -202,14 +200,14 @@ func (s *AwsCloudWatchSource) Collect(ctx context.Context) error {
 
 // getLogStreamsToCollect retrieves all log streams in a log group that match the specified prefix
 // It handles pagination of the DescribeLogStreams API response
-func (s *AwsCloudWatchSource) getLogStreamsToCollect(ctx context.Context, logGroupName string, logStreamPrefix *string) ([]cwtypes.LogStream, error) {
-	var logStreams []cwtypes.LogStream
+func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context) ([]cwTypes.LogStream, error) {
+	var logStreams []cwTypes.LogStream
 	var nextToken *string
 
 	for {
 		input := &cloudwatchlogs.DescribeLogStreamsInput{
-			LogGroupName:        &logGroupName,
-			LogStreamNamePrefix: logStreamPrefix,
+			LogGroupName:        &s.Config.LogGroupName,
+			LogStreamNamePrefix: s.Config.LogStreamPrefix,
 			NextToken:           nextToken,
 		}
 
@@ -220,7 +218,7 @@ func (s *AwsCloudWatchSource) getLogStreamsToCollect(ctx context.Context, logGro
 
 		// Break if no streams found in this page
 		if len(output.LogStreams) == 0 {
-			slog.Debug("No log streams found", "logGroupName", logGroupName, "logStreamPrefix", logStreamPrefix)
+			slog.Debug("No log streams found", "logGroupName", s.Config.LogGroupName, "logStreamPrefix", s.Config.LogStreamPrefix)
 			break
 		}
 
@@ -228,14 +226,14 @@ func (s *AwsCloudWatchSource) getLogStreamsToCollect(ctx context.Context, logGro
 
 		// Break if no more pages
 		if output.NextToken == nil {
-			slog.Debug("No more log streams to fetch", "logGroupName", logGroupName, "logStreamPrefix", logStreamPrefix, "total_streams", len(logStreams))
+			slog.Debug("No more log streams to fetch", "logGroupName", s.Config.LogGroupName, "logStreamPrefix", s.Config.LogStreamPrefix, "total_streams", len(logStreams))
 			break
 		}
 		nextToken = output.NextToken
 	}
 
 	if len(logStreams) == 0 {
-		slog.Info("No log streams found to collect", "logGroupName", logGroupName, "logStreamPrefix", logStreamPrefix)
+		slog.Info("No log streams found to collect", "logGroupName", s.Config.LogGroupName, "logStreamPrefix", s.Config.LogStreamPrefix)
 	}
 
 	return logStreams, nil
@@ -243,13 +241,10 @@ func (s *AwsCloudWatchSource) getLogStreamsToCollect(ctx context.Context, logGro
 
 // getClient initializes and returns an AWS CloudWatch Logs client
 // It uses the provided region or falls back to the default region
-func (s *AwsCloudWatchSource) getClient(ctx context.Context) (*cloudwatchlogs.Client, error) {
-	region := defaultCloudwatchRegion
-	if s.Config != nil && s.Config.Region != nil {
-		region = *s.Config.Region
-	}
+func (s *AwsCloudWatchLogGroupSource) getClient(ctx context.Context) (*cloudwatchlogs.Client, error) {
+	region := s.Config.Region
 
-	cfg, err := s.Connection.GetClientConfiguration(ctx, &region)
+	cfg, err := s.Connection.GetClientConfiguration(ctx, region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client configuration, %w", err)
 	}
