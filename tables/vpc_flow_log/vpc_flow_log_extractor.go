@@ -3,21 +3,29 @@ package vpc_flow_log
 import (
 	"context"
 	"fmt"
-	"strconv"
+	"log/slog"
+	"slices"
 	"strings"
-	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
+	"github.com/turbot/tailpipe-plugin-sdk/formats"
 )
+
+var allLogFields = []string{
+	"account-id", "action", "az-id", "bytes", "dstaddr", "dstport", "end", "flow-direction", "instance-id", "interface-id", "log-status", "packets", "pkt-dst-aws-service", "pkt-dstaddr", "pkt-src-aws-service", "pkt-srcaddr", "protocol", "region", "reject-reason", "srcaddr", "srcport", "start", "sublocation-id", "sublocation-type", "subnet-id", "tcp-flags", "traffic-path", "type", "version", "vpc-id", "ecs-cluster-name", "ecs-cluster-arn", "ecs-container-instance-id", "ecs-container-instance-arn", "ecs-service-name", "ecs-task-definition-arn", "ecs-task-id", "ecs-task-arn", "ecs-container-id", "ecs-second-container-id",
+}
 
 // VPCFlowLogExtractor is an extractor that receives JSON serialised VPCFlowLogBatch objects
 // and extracts VPCFlowLog records from them
 type VPCFlowLogExtractor struct {
+	Format formats.Format
 }
 
 // NewVPCFlowLogExtractor creates a new VPCFlowLogExtractor
-func NewVPCFlowLogExtractor() artifact_source.Extractor {
-	return &VPCFlowLogExtractor{}
+func NewVPCFlowLogExtractor(format formats.Format) artifact_source.Extractor {
+	return &VPCFlowLogExtractor{
+		Format: format,
+	}
 }
 
 func (c *VPCFlowLogExtractor) Identifier() string {
@@ -32,7 +40,7 @@ func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
 		return nil, fmt.Errorf("expected byte[], got %T", a)
 	}
 
-	mappedData, err := ConvertToMapSlice(string(jsonBytes))
+	mappedData, err := ConvertToMapSlice(c, string(jsonBytes))
 	if err != nil {
 		return nil, fmt.Errorf("error in mapping the results in the form of []map[string]string")
 	}
@@ -40,18 +48,13 @@ func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
 	var res = make([]any, len(mappedData))
 	for i, record := range mappedData {
 
-		flowLog := &VpcFlowLog{}
-		err := flowLog.MapValues(record)
-		if err != nil {
-			return nil, fmt.Errorf("error in extracting the log: %v", err)
-		}
-		res[i] = flowLog
+		res[i] = record
 	}
 	return res, nil
 }
 
 // ConvertToMapSlice converts space-separated string data into a slice of map[string]string
-func ConvertToMapSlice(data string) ([]map[string]string, error) {
+func ConvertToMapSlice(c *VPCFlowLogExtractor, data string) ([]map[string]string, error) {
 	// Split the input into lines
 	lines := strings.Split(strings.TrimSpace(data), "\n")
 	if len(lines) < 2 {
@@ -60,6 +63,21 @@ func ConvertToMapSlice(data string) ([]map[string]string, error) {
 
 	// Extract header row as keys
 	keys := strings.Fields(lines[0]) // Splitting header by spaces
+
+	if !isHeaderAvailableInLog(keys) {
+		// Get the layout from the format
+		// If the format it specifies in config then it wil be used otherwise the default format("version account-id interface-id srcaddr dstaddr srcport dstport protocol packets bytes start end action log-status") will be used.
+		// The default format has been defined under vpc_flow_log_format_presets.go
+		prop := c.Format.GetProperties()
+		layout := prop["layout"]
+		keys = strings.Fields(layout)
+
+		newLines := make([]string, len(lines)+1)
+		newLines[0] = layout
+		copy(newLines[1:], lines)
+		lines = newLines
+		slog.Warn("Header is not available in the log", "Using the default layout", layout)
+	}
 
 	var result []map[string]string
 
@@ -82,148 +100,15 @@ func ConvertToMapSlice(data string) ([]map[string]string, error) {
 	return result, nil
 }
 
-// MapValues splits the input string and assigns each word to a corresponding key in the slice
-func (flowLog *VpcFlowLog) MapValues(input map[string]string) error {
+func isHeaderAvailableInLog(header []string) bool {
+	headerAvailable := true
 
-	for i, field := range input {
-		// skip empty fields
-		// https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html#flow-log-example-no-data
-		if field == "-" || field == "SKIPDATA" || field == "NODATA" {
-			continue
-		}
-		switch i {
-		case "version":
-			version, err := strconv.ParseInt(field, 10, 32)
-			if err != nil {
-				return fmt.Errorf("invalid version: %s", field)
-			}
-			v := int32(version)
-			flowLog.Version = &v
-		case "account-id":
-			flowLog.AccountID = &field
-		case "interface-id":
-			flowLog.InterfaceID = &field
-		case "srcaddr":
-			flowLog.SrcAddr = &field
-		case "dstaddr":
-			flowLog.DstAddr = &field
-		case "srcport":
-			srcPort, err := strconv.ParseInt(field, 10, 32)
-			if err != nil {
-				return fmt.Errorf("invalid srcport: %s", field)
-			}
-			v := int32(srcPort)
-			flowLog.SrcPort = &v
-		case "dstport":
-			dstPort, err := strconv.ParseInt(field, 10, 32)
-			if err != nil {
-				return fmt.Errorf("invalid dstport: %s", field)
-			}
-			v := int32(dstPort)
-			flowLog.DstPort = &v
-		case "protocol":
-			protocol, err := strconv.ParseInt(field, 10, 32)
-			if err != nil {
-				return fmt.Errorf("invalid protocol: %s", field)
-			}
-			v := int32(protocol)
-			flowLog.Protocol = &v
-		case "packets":
-			packets, err := strconv.ParseInt(field, 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid packets: %s", field)
-			}
-			flowLog.Packets = &packets
-		case "bytes":
-			bytes, err := strconv.ParseInt(field, 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid bytes: %s", field)
-			}
-			flowLog.Bytes = &bytes
-		case "start":
-			start, err := strconv.ParseInt(field, 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid start value: %s", field)
-			}
-			t := time.Unix(start, 0)
-			flowLog.Start = &t
-		case "end":
-			end, err := strconv.ParseInt(field, 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid end value: %s", field)
-			}
-			t := time.Unix(end, 0)
-			flowLog.End = &t
-		case "action":
-			flowLog.Action = &field
-		case "log-status":
-			flowLog.LogStatus = &field
-		case "vpc-id":
-			flowLog.VPCID = &field
-		case "subnet-id":
-			flowLog.SubnetID = &field
-		case "instance-id":
-			flowLog.InstanceID = &field
-		case "tcp-flags":
-			tcpFlags, err := strconv.ParseInt(field, 10, 32)
-			if err != nil {
-				return fmt.Errorf("invalid tcp-flags: %s", field)
-			}
-			v := int32(tcpFlags)
-			flowLog.TCPFlags = &v
-		case "type":
-			flowLog.Type = &field
-		case "pkt-srcaddr":
-			flowLog.PktSrcAddr = &field
-		case "pkt-dstaddr":
-			flowLog.PktDstAddr = &field
-		case "region":
-			flowLog.Region = &field
-		case "reject-reason":
-			flowLog.RejectReason = &field
-		case "az-id":
-			flowLog.AzID = &field
-		case "sublocation-type":
-			flowLog.SublocationType = &field
-		case "sublocation-id":
-			flowLog.SublocationID = &field
-		case "pkt-src-aws-service":
-			flowLog.PktSrcAWSService = &field
-		case "pkt-dst-aws-service":
-			flowLog.PktDstAWSService = &field
-		case "flow-direction":
-			flowLog.FlowDirection = &field
-		case "traffic-path":
-			trafficPath, err := strconv.ParseInt(field, 10, 32)
-			if err != nil {
-				return fmt.Errorf("invalid traffic-path: %s", field)
-			}
-			v := int32(trafficPath)
-			flowLog.TrafficPath = &v
-		case "ecs-cluster-arn":
-			flowLog.ECSClusterARN = &field
-		case "ecs-cluster-name":
-			flowLog.ECSClusterName = &field
-		case "ecs-container-instance-arn":
-			flowLog.ECSContainerInstanceARN = &field
-		case "ecs-container-instance-id":
-			flowLog.ECSContainerInstanceID = &field
-		case "ecs-container-id":
-			flowLog.ECSContainerID = &field
-		case "ecs-second-container-id":
-			flowLog.ECSSecondContainerID = &field
-		case "ecs-service-name":
-			flowLog.ECSServiceName = &field
-		case "ecs-task-definition-arn":
-			flowLog.ECSTaskDefinitionARN = &field
-		case "ecs-task-arn":
-			flowLog.ECSTaskARN = &field
-		case "ecs-task-id":
-			flowLog.ECSTaskID = &field
-		default:
-			return fmt.Errorf("unknown field: %s", i)
+	for _, field := range header {
+		if !slices.Contains(allLogFields, field) {
+			headerAvailable = false
+			break
 		}
 	}
 
-	return nil
+	return headerAvailable
 }
