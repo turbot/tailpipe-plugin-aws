@@ -198,12 +198,12 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 				}
 			case reflect.Int:
 				val, err := strconv.Atoi(strVal)
-				if err == nil && val > 0 {
+				if err == nil {
 					fieldVal.Set(reflect.ValueOf(&val))
 				}
 			case reflect.Float64:
 				val, err := strconv.ParseFloat(strVal, 64)
-				if err == nil && val > 0 {
+				if err == nil {
 					fieldVal.Set(reflect.ValueOf(&val))
 				}
 			case reflect.Bool:

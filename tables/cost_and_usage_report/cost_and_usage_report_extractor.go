@@ -211,11 +211,11 @@ func (value *CostUsageReport) MapValues(recordMap map[string]string) {
 						structField.Set(reflect.ValueOf(&val))
 					}
 				case reflect.Float64:
-					if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil && floatVal > 0 {
+					if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
 						structField.Set(reflect.ValueOf(&floatVal))
 					}
 				case reflect.Int64:
-					if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil && intVal > 0 {
+					if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
 						structField.Set(reflect.ValueOf(&intVal))
 					}
 				case reflect.Struct:

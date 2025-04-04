@@ -122,12 +122,12 @@ func (log *CostUsageFocus) mapValues(row map[string]string) error {
 					}
 
 				case reflect.Float64:
-					if floatVal, err := strconv.ParseFloat(value, 64); err == nil  && floatVal > 0{
+					if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
 						structField.Set(reflect.ValueOf(&floatVal))
 					}
 
 				case reflect.Int64:
-					if intVal, err := strconv.ParseInt(value, 10, 64); err == nil && intVal > 0{
+					if intVal, err := strconv.ParseInt(value, 10, 64); err == nil {
 						structField.Set(reflect.ValueOf(&intVal))
 					}
 
