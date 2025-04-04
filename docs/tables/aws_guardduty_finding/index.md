@@ -150,7 +150,7 @@ You can also collect GuardDuty findings from local files.
 partition "aws_guardduty_finding" "local_findings" {
   source "file"  {
     paths       = ["/Users/myuser/guardduty_findings"]
-    file_layout = "%{DATA}.jsonl.gz"
+    file_layout = `%{DATA}.jsonl.gz`
   }
 }
 ```
@@ -179,7 +179,7 @@ partition "aws_guardduty_finding" "my_findings_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.security_account
     bucket      = "guardduty-findings-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/GuardDuty/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz"
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/GuardDuty/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz`
   }
 }
 ```
@@ -193,7 +193,7 @@ partition "aws_guardduty_finding" "my_findings_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.security_account
     bucket      = "guardduty-findings-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/GuardDuty/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/GuardDuty/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz`
   }
 }
 ```
@@ -207,7 +207,7 @@ partition "aws_guardduty_finding" "my_findings_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.security_account
     bucket      = "guardduty-findings-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/GuardDuty/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/GuardDuty/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz`
   }
 }
 ```
