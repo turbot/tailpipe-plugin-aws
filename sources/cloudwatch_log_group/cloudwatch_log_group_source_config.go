@@ -3,7 +3,7 @@ package cloudwatch_log_group
 
 import "fmt"
 
-// AwsCloudWatchSourceConfig defines the configuration parameters for collecting logs from AWS CloudWatch.
+// AwsCloudWatchLogGroupSourceConfig defines the configuration parameters for collecting logs from AWS CloudWatch log groups.
 // It specifies which log group to collect from, optionally filters log streams by prefix,
 // and allows specifying the AWS region to connect to.
 type AwsCloudWatchLogGroupSourceConfig struct {

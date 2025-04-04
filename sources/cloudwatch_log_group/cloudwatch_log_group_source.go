@@ -19,11 +19,11 @@ import (
 )
 
 const (
-	// AwsCloudwatchSourceIdentifier is the unique identifier for the CloudWatch log source
+	// AwsCloudwatchLogGroupSourceIdentifier is the unique identifier for the CloudWatch log group source
 	AwsCloudwatchLogGroupSourceIdentifier = "aws_cloudwatch_log_group"
 )
 
-// AwsCloudWatchSource is responsible for collection of events from log streams within a log group in AWS CloudWatch
+// AwsCloudWatchLogGroupSource is responsible for collection of events from log streams within a log group in AWS CloudWatch
 // It implements the RowSource interface and manages the collection state to support incremental collection
 type AwsCloudWatchLogGroupSource struct {
 	// Embed the base RowSourceImpl with CloudWatch specific config and AWS connection

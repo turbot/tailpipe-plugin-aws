@@ -12,7 +12,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-sdk/collection_state"
 )
 
-// CloudWatchCollectionState tracks collection state for multiple log streams within a CloudWatch log group.
+// CloudWatchLogGroupCollectionState tracks collection state for multiple log streams within a CloudWatch log group.
 // It maintains a map of log stream names to their individual time range collection states,
 // allowing for incremental collection and resumption of collection from the last processed event.
 type CloudWatchLogGroupCollectionState struct {
@@ -28,7 +28,7 @@ type CloudWatchLogGroupCollectionState struct {
 	lastSaveTime time.Time
 }
 
-// NewCloudWatchCollectionState creates a new CloudWatchCollectionState instance.
+// NewCloudWatchLogGroupCollectionState creates a new CloudWatchCollectionState instance.
 // It initializes an empty map for log streams and sets the initial modification time.
 func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
 	return &CloudWatchLogGroupCollectionState{
