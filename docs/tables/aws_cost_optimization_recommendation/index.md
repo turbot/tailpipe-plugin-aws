@@ -162,7 +162,7 @@ partition "aws_cost_optimization_recommendation" "specific_recommendations" {
     connection  = connection.aws.billing_account
     bucket      = "aws-cost-optimization-recommendations-bucket"
     prefix      = "my/prefix/"
-    file_layout = "my-recommendations-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
+    file_layout = `my-recommendations-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz`
   }
 }
 ```
@@ -175,7 +175,7 @@ You can also collect AWS cost optimization recommendations from local files.
 partition "aws_cost_optimization_recommendation" "local_recommendations" {
   source "file"  {
     paths       = ["/Users/myuser/aws_recommendations"]
-    file_layout = "%{DATA}.csv.gz"
+    file_layout = `%{DATA}.csv.gz`
   }
 }
 ```

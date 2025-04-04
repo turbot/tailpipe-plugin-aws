@@ -163,7 +163,7 @@ partition "aws_cost_and_usage_report" "specific_cur_2_0" {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-billing-bucket"
     prefix      = "my/prefix/"
-    file_layout = "my-cur-2-0-export/data/%{DATA:partition}/?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.gz"
+    file_layout = `my-cur-2-0-export/data/%{DATA:partition}/?(?:%{DATA:timestamp}-%{DATA:execution_id}/)?%{DATA:file_name}.csv.gz`
   }
 }
 ```
@@ -178,7 +178,7 @@ partition "aws_cost_and_usage_report" "specific_cur_legacy" {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-billing-bucket"
     prefix      = "my/prefix/"
-    file_layout = "my-cur-legacy-export/%{INT:from_date}-%{INT:to_date}/(?:%{DATA:assembly_id}/)?%{DATA:file_name}.csv.zip"
+    file_layout = `my-cur-legacy-export/%{INT:from_date}-%{INT:to_date}/(?:%{DATA:assembly_id}/)?%{DATA:file_name}.csv.zip`
   }
 }
 ```
@@ -191,7 +191,7 @@ You can also reports from local files.
 partition "aws_cost_and_usage_report" "local_cur" {
   source "file"  {
     paths       = ["/Users/myuser/aws_cur"]
-    file_layout = "%{DATA}.csv.gz"
+    file_layout = `%{DATA}.csv.gz`
   }
 }
 ```
