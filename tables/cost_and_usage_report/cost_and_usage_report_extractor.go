@@ -132,6 +132,23 @@ func extractFromCSV(reader io.Reader) ([]any, error) {
 		record := &CostUsageReport{}
 		record.MapValues(recordMap)
 
+		// We should have null value if the map value is empty
+		if len(*record.Product) == 0 {
+			record.Product = nil
+		}
+		if len(*record.CostCategory) == 0 {
+			record.CostCategory = nil
+		}
+		if len(*record.Reservation) == 0 {
+			record.Reservation = nil
+		}
+		if len(*record.ResourceTags) == 0 {
+			record.ResourceTags = nil
+		}
+		if len(*record.Discount) == 0 {
+			record.Discount = nil
+		}
+
 		// Append the record
 		records = append(records, record)
 	}
@@ -190,32 +207,21 @@ func (value *CostUsageReport) MapValues(recordMap map[string]string) {
 				switch elemType.Kind() {
 				case reflect.String:
 					val := strVal
-					if val == "" {
-						structField.Set(reflect.Zero(structField.Type())) // Set to nil
-					} else {
+					if val != "" {
 						structField.Set(reflect.ValueOf(&val))
 					}
 				case reflect.Float64:
 					if floatVal, err := strconv.ParseFloat(strVal, 64); err == nil {
 						structField.Set(reflect.ValueOf(&floatVal))
-					} else {
-						defaultVal := float64(0)
-						structField.Set(reflect.ValueOf(&defaultVal))
 					}
 				case reflect.Int64:
 					if intVal, err := strconv.ParseInt(strVal, 10, 64); err == nil {
 						structField.Set(reflect.ValueOf(&intVal))
-					} else {
-						defaultVal := int64(0)
-						structField.Set(reflect.ValueOf(&defaultVal))
 					}
 				case reflect.Struct:
 					if elemType == reflect.TypeOf(time.Time{}) {
 						if timeVal, err := time.Parse(time.RFC3339, strVal); err == nil {
 							structField.Set(reflect.ValueOf(&timeVal))
-						} else {
-							defaultVal := time.Time{}
-							structField.Set(reflect.ValueOf(&defaultVal))
 						}
 					}
 				}

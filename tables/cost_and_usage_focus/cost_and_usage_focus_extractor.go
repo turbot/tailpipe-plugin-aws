@@ -141,7 +141,7 @@ func (log *CostUsageFocus) mapValues(row map[string]string) error {
 					// Handle map[string]string parsing
 					if elemType.Key().Kind() == reflect.String && elemType.Elem().Kind() == reflect.String {
 						var parsedMap map[string]string
-						if err := json.Unmarshal([]byte(value), &parsedMap); err == nil {
+						if err := json.Unmarshal([]byte(value), &parsedMap); err == nil && len(parsedMap) > 0 {
 							structField.Set(reflect.ValueOf(&parsedMap))
 						}
 					}
