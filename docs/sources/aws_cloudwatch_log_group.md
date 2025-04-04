@@ -13,7 +13,7 @@ Using this source, you can collect and analyze logs from CloudWatch log groups, 
 
 ### Collect all logs from a log group
 
-Collect all logs from a specific CloudWatch Log Group.
+Collect all logs from a specific CloudWatch log group.
 
 ```hcl
 connection "aws" "default" {
