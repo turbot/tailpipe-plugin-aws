@@ -1,5 +1,5 @@
 ---
-title: "Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch log groups"
+title: "Source: aws_cloudwatch_log_group - Collect logs from AWS CloudWatch Log Groups"
 description: "Allows users to collect logs from AWS CloudWatch log groups."
 ---
 
@@ -20,10 +20,10 @@ connection "aws" "default" {
   profile = "my-aws-profile"
 }
 
-partition "aws_cloudtrail_log" "application_logs" {
+partition "aws_cloudtrail_log" "cw_log_group_logs" {
   source "aws_cloudwatch_log_group" {
     connection     = connection.aws.default
-    log_group_name = "/aws/lambda/my-function"
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
     region         = "us-east-1"
   }
 }
@@ -31,14 +31,14 @@ partition "aws_cloudtrail_log" "application_logs" {
 
 ### Collect CloudTrail logs with a prefix
 
-Collect CloudTrail logs stored with a CloudWatch log stream prefix.
+Collect CloudTrail logs for account ID `456789012345` in us-east-1.
 
 ```hcl
-partition "aws_cloudtrail_log" "filtered_logs" {
+partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
   source "aws_cloudwatch_log_group" {
     connection        = connection.aws.default
-    log_group_name    = "/aws/ecs/my-cluster"
-    log_stream_prefix = "my-service"
+    log_group_name    = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_prefix = "456789012345_CloudTrail_us-east-1"
     region            = "us-east-1"
   }
 }
@@ -48,14 +48,7 @@ partition "aws_cloudtrail_log" "filtered_logs" {
 
 | Argument          | Type             | Required | Default                  | Description                                                                                                                   |
 | ----------------- | ---------------- | -------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| log_group_name    | String           | Yes      |                          | The name of the CloudWatch Log Group to collect logs from.                                                                    |
 | connection        | `connection.aws` | No       | `connection.aws.default` | The [AWS connection](https://hub.tailpipe.io/plugins/turbot/aws#connection-credentials) to use to connect to the AWS account. |
-| log_stream_prefix | String           | No       |                          | The prefix to filter Log Streams within the Log Group.                                                                        |
-| region            | String           | Yes      |                          | The AWS region where the Log Group is located.                                                                                |
-
-### Table Defaults
-
-The following tables define their own default values for certain source arguments:
-
-- **[aws_cloudtrail_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cloudtrail_log#aws_cloudwatch_log_group)**
-- **[aws_waf_traffic_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_waf_traffic_log#aws_cloudwatch_log_group)**
+| log_group_name    | String           | Yes      |                          | The name of the CloudWatch log group to collect logs from.                                                                    |
+| log_stream_prefix | String           | No       |                          | Collect logs from log streams whose names begin the specified prefix.                                                         |
+| region            | String           | Yes      |                          | The AWS region where the log group is located.                                                                                |

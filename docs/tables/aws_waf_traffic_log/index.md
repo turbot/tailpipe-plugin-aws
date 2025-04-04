@@ -109,7 +109,7 @@ order by
 
 ### Collect logs from an S3 bucket
 
-Collect WAF logs stored in an S3 bucket that uses the default log file format.
+Collect WAF traffic logs stored in an S3 bucket that uses the default log file format.
 
 ```hcl
 connection "aws" "security_account" {
@@ -126,7 +126,7 @@ partition "aws_waf_traffic_log" "my_logs" {
 
 ### Collect logs from an S3 bucket with a prefix
 
-Collect WAF logs stored in an S3 bucket using a prefix.
+Collect logs stored in an S3 bucket using a prefix.
 
 ```hcl
 partition "aws_waf_traffic_log" "my_logs_prefix" {
@@ -140,13 +140,13 @@ partition "aws_waf_traffic_log" "my_logs_prefix" {
 
 ### Collect logs from a CloudWatch log group
 
-Collect CloudTrail logs stored in a CloudWatch log group.
+Collect logs stored in a CloudWatch log group.
 
 ```hcl
-partition "aws_waf_traffic_log" "my_logs" {
+partition "aws_waf_traffic_log" "cw_log_group_logs" {
   source "aws_cloudwatch_log_group" {
     connection     = connection.aws.logging_account
-    log_group_name = "aws-waf-log-group"
+    log_group_name = "aws-waf-log-testLogGroup2"
     region         = "us-east-1"
   }
 }
@@ -154,14 +154,14 @@ partition "aws_waf_traffic_log" "my_logs" {
 
 ### Collect logs from a CloudWatch log group with a log stream prefix
 
-Collect CloudTrail logs stored in a CloudWatch log group with a log stream prefix.
+Collect logs for web ACL `TestWebACL` in us-east-1.
 
 ```hcl
-partition "aws_waf_traffic_log" "my_logs_prefix" {
+partition "aws_waf_traffic_log" "cw_log_group_logs_prefix" {
   source "aws_cloudwatch_log_group" {
     connection        = connection.aws.logging_account
-    log_group_name    = "aws-waf-log-group"
-    log_stream_prefix = "us-east-1-"
+    log_group_name    = "aws-waf-log-testLogGroup2"
+    log_stream_prefix = "us-east-1_TestWebACL_"
     region            = "us-east-1"
   }
 }
@@ -169,7 +169,7 @@ partition "aws_waf_traffic_log" "my_logs_prefix" {
 
 ### Collect logs from local files
 
-You can also collect AWS WAF logs from local files.
+You can also collect logs from local files.
 
 ```hcl
 partition "aws_waf_traffic_log" "local_logs" {
@@ -245,11 +245,3 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument    | Default                                                                                                                                                                                                                |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:cloudfront_or_region}/%{DATA:cloudfront_name_or_resource_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.gz` |
-
-### aws_cloudwatch_log_group
-
-This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
-
-| Argument      | Default |
-|---------------|---------|
-| log_stream_prefix | "" |

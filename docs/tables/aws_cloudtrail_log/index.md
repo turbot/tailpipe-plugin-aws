@@ -146,10 +146,10 @@ partition "aws_cloudtrail_log" "my_logs_prefix" {
 Collect CloudTrail logs stored in a CloudWatch log group.
 
 ```hcl
-partition "aws_cloudtrail_log" "my_logs" {
+partition "aws_cloudtrail_log" "cw_log_group_logs" {
   source "aws_cloudwatch_log_group" {
     connection     = connection.aws.logging_account
-    log_group_name = "aws-cloudtrail-log-group"
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
     region         = "us-east-1"
   }
 }
@@ -157,14 +157,14 @@ partition "aws_cloudtrail_log" "my_logs" {
 
 ### Collect logs from a CloudWatch log group with a log stream prefix
 
-Collect CloudTrail logs stored in a CloudWatch log group with a log stream prefix.
+Collect CloudTrail logs for account ID `456789012345` in us-east-1.
 
 ```hcl
-partition "aws_cloudtrail_log" "my_logs_prefix" {
+partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
   source "aws_cloudwatch_log_group" {
-    connection        = connection.aws.logging_account
-    log_group_name    = "aws-cloudtrail-log-group"
-    log_stream_prefix = "us-east-1-"
+    connection        = connection.aws.default
+    log_group_name    = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_prefix = "456789012345_CloudTrail_us-east-1"
     region            = "us-east-1"
   }
 }
@@ -263,11 +263,3 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument      | Default |
 |---------------|---------|
 | file_layout   | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
-
-### aws_cloudwatch_log_group
-
-This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
-
-| Argument      | Default |
-|---------------|---------|
-| log_stream_prefix | "" |
