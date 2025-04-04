@@ -11,7 +11,7 @@ Using this source, you can collect and analyze logs from CloudWatch log groups, 
 
 ## Example Configurations
 
-### Collect all logs from a Log Group
+### Collect all logs from a log group
 
 Collect all logs from a specific CloudWatch Log Group.
 
