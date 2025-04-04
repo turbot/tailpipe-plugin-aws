@@ -53,7 +53,7 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
   source "aws_s3_bucket" {
     connection  = connection.aws.logging_account
     bucket      = "aws-cloudtrail-logs-bucket"
-    file_layout = "CustomLogs/Dev/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `CustomLogs/Dev/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```

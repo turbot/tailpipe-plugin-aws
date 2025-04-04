@@ -149,7 +149,7 @@ You can also collect CloudTrail logs from local files, like the [flaws.cloud pub
 partition "aws_cloudtrail_log" "local_logs" {
   source "file"  {
     paths       = ["/Users/myuser/cloudtrail_logs"]
-    file_layout = "%{DATA}.json.gz"
+    file_layout = `%{DATA}.json.gz`
   }
 }
 ```
@@ -179,7 +179,7 @@ partition "aws_cloudtrail_log" "my_logs_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```
@@ -193,7 +193,7 @@ partition "aws_cloudtrail_log" "my_logs_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```
@@ -207,7 +207,7 @@ partition "aws_cloudtrail_log" "my_logs_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```
@@ -220,7 +220,7 @@ For all accounts, collect logs from us-east-1 and us-east-2.
 partition "aws_cloudtrail_log" "my_logs_regions" {
   source "aws_s3_bucket"  {
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```

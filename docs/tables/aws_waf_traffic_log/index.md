@@ -146,7 +146,7 @@ You can also collect AWS WAF logs from local files.
 partition "aws_waf_traffic_log" "local_logs" {
   source "file"  {
     paths       = ["/Users/myuser/aws_waf_traffic_logs"]
-    file_layout = "%{DATA}.json.gz"
+    file_layout = `%{DATA}.json.gz`
   }
 }
 ```
@@ -160,7 +160,7 @@ partition "aws_waf_traffic_log" "my_logs_org" {
   source "aws_s3_bucket" {
     connection  = connection.aws.security_account
     bucket      = "waf-traffic-logs-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/WAFLogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/WAFLogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.json.gz`
   }
 }
 ```
@@ -174,7 +174,7 @@ partition "aws_waf_traffic_log" "my_logs_account" {
   source "aws_s3_bucket" {
     connection  = connection.aws.security_account
     bucket      = "waf-traffic-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/WAFLogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/WAFLogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.json.gz`
   }
 }
 ```
@@ -187,7 +187,7 @@ You can also collect logs from local files.
 partition "aws_waf_traffic_log" "my_logs" {
   source "file"  {
     paths       = ["/Users/myuser/aws_waf_traffic_log"]
-    file_layout = "%{DATA}.txt"
+    file_layout = `%{DATA}.txt`
   }
 }
 ```
