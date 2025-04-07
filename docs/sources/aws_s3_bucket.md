@@ -93,6 +93,7 @@ The following tables define their own default values for certain source argument
 - **[aws_guardduty_finding](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_guardduty_finding#aws_s3_bucket)**
 - **[aws_nlb_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_nlb_access_log#aws_s3_bucket)**
 - **[aws_s3_server_access_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_s3_server_access_log#aws_s3_bucket)**
+- **[aws_securityhub_finding](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_securityhub_finding#aws_s3_bucket)**
 - **[aws_cost_and_usage_focus](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_focus#aws_s3_bucket)**
 - **[aws_cost_and_usage_report](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_and_usage_report#aws_s3_bucket)**
 - **[aws_cost_optimization_recommendation](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_cost_optimization_recommendation#aws_s3_bucket)**
