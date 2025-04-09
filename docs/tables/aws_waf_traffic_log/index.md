@@ -140,7 +140,7 @@ partition "aws_waf_traffic_log" "my_logs_prefix" {
 
 ### Collect logs from a CloudWatch log group
 
-This example shows how to collect WAF traffic logs from a basic CloudWatch log group configuration without any log stream filtering.
+Collect WAF traffic logs from a CloudWatch log group without any log stream filtering.
 
 ```hcl
 partition "aws_waf_traffic_log" "cw_log_group_logs" {
