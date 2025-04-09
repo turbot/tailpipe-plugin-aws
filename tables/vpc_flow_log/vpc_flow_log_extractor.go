@@ -4,16 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"slices"
 	"strings"
 
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/formats"
+	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
-
-var allLogFields = []string{
-	"account-id", "action", "az-id", "bytes", "dstaddr", "dstport", "end", "flow-direction", "instance-id", "interface-id", "log-status", "packets", "pkt-dst-aws-service", "pkt-dstaddr", "pkt-src-aws-service", "pkt-srcaddr", "protocol", "region", "reject-reason", "srcaddr", "srcport", "start", "sublocation-id", "sublocation-type", "subnet-id", "tcp-flags", "traffic-path", "type", "version", "vpc-id", "ecs-cluster-name", "ecs-cluster-arn", "ecs-container-instance-id", "ecs-container-instance-arn", "ecs-service-name", "ecs-task-definition-arn", "ecs-task-id", "ecs-task-arn", "ecs-container-id", "ecs-second-container-id",
-}
 
 // VPCFlowLogExtractor is an extractor that receives JSON serialised VPCFlowLogBatch objects
 // and extracts VPCFlowLog records from them
@@ -32,29 +28,49 @@ func (c *VPCFlowLogExtractor) Identifier() string {
 	return "vpc_flow_log_extractor"
 }
 
-// Extract unmarshalls the artifact data as an VPCFlowLogBatch and returns the VPCFlowLog records
+// Extract unmarshalls the artifact data as a VPCFlowLogBatch and returns the VPCFlowLog records
 func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
-	// the expected input type is a JSON byte[] deserializable to VPCFlowLogBatch
+	// The expected input type is a JSON byte[] deserializable to VPCFlowLogBatch
 	jsonBytes, ok := a.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("expected byte[], got %T", a)
 	}
 
-	mappedData, err := ConvertToMapSlice(c, string(jsonBytes))
+	mappedData, err := toMapSlice(c, string(jsonBytes))
 	if err != nil {
-		return nil, fmt.Errorf("error in mapping the results in the form of []map[string]string")
+		return nil, fmt.Errorf("error in mapping the results to []map[string]string: %w", err)
 	}
 
-	var res = make([]any, len(mappedData))
-	for i, record := range mappedData {
+	fields := getValidTokensAndColumnNames()
+	res := make([]any, 0, len(mappedData))
 
-		res[i] = record
+	for _, record := range mappedData {
+		row := &types.DynamicRow{}
+		rowColumnMap := make(map[string]string)
+
+		for k, v := range record {
+			if columnName, ok := fields[k]; ok {
+				if v != VpcFlowLogTableSkippedData &&
+					v != VpcFlowLogTableNoData &&
+					v != VpcFlowLogTableNilValue {
+					rowColumnMap[columnName] = v
+				}
+			}
+		}
+
+		err := row.InitialiseFromMap(rowColumnMap)
+		if err != nil {
+			return nil, fmt.Errorf("error initialising dynamic row: %w", err)
+		}
+
+		res = append(res, row)
 	}
+
 	return res, nil
 }
 
-// ConvertToMapSlice converts space-separated string data into a slice of map[string]string
-func ConvertToMapSlice(c *VPCFlowLogExtractor, data string) ([]map[string]string, error) {
+// toMapSlice converts space-separated string data into a slice of map[string]string
+func toMapSlice(c *VPCFlowLogExtractor, data string) ([]map[string]string, error) {
 	// Split the input into lines
 	lines := strings.Split(strings.TrimSpace(data), "\n")
 	if len(lines) < 2 {
@@ -64,7 +80,7 @@ func ConvertToMapSlice(c *VPCFlowLogExtractor, data string) ([]map[string]string
 	// Extract header row as keys
 	keys := strings.Fields(lines[0]) // Splitting header by spaces
 
-	if !isHeaderAvailableInLog(keys) {
+	if !isValidHeader(keys) {
 		// Get the layout from the format
 		// If the format it specifies in config then it wil be used otherwise the default format("version account-id interface-id srcaddr dstaddr srcport dstport protocol packets bytes start end action log-status") will be used.
 		// The default format has been defined under vpc_flow_log_format_presets.go
@@ -100,11 +116,12 @@ func ConvertToMapSlice(c *VPCFlowLogExtractor, data string) ([]map[string]string
 	return result, nil
 }
 
-func isHeaderAvailableInLog(header []string) bool {
+func isValidHeader(header []string) bool {
 	headerAvailable := true
+	allKeys := getValidTokensAndColumnNames()
 
 	for _, field := range header {
-		if !slices.Contains(allLogFields, field) {
+		if _, exists := allKeys[field]; !exists {
 			headerAvailable = false
 			break
 		}
