@@ -161,7 +161,7 @@ partition "aws_waf_traffic_log" "cw_log_group_logs_prefix" {
   source "aws_cloudwatch_log_group" {
     connection        = connection.aws.logging_account
     log_group_name    = "aws-waf-log-testLogGroup2"
-    log_stream_prefix = "us-east-1_TestWebACL_"
+    log_stream_names  = ["us-east-1_TestWebACL_*"]
     region            = "us-east-1"
   }
 }

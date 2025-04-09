@@ -9,8 +9,10 @@ import "fmt"
 type AwsCloudWatchLogGroupSourceConfig struct {
 	// LogGroupName is the name of the CloudWatch log group to collect logs from (required)
 	LogGroupName string `hcl:"log_group_name"`
-	// LogStreamPrefix optionally filters log streams by their name prefix
-	LogStreamPrefix *string `hcl:"log_stream_prefix"`
+	// LogStreamNames optionally filters log streams by their names. Supports wildcards (*).
+	// If not specified, logs from all available streams will be collected.
+	// Example: ["456789012345_CloudTrail_*", "123456789012_CloudTrail_us-east-1"]
+	LogStreamNames []string `hcl:"log_stream_names,optional"`
 	// Region specifies the AWS region where the log group exists
 	// If not provided, defaults to us-east-1
 	Region *string `hcl:"region"`
