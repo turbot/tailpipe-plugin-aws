@@ -273,7 +273,7 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 		},
 		{
 			// CloudWatch source
-			SourceName: cloudwatch_log_group.AwsCloudwatchSourceIdentifier,
+			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
 			Mapper:     mapper,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
