@@ -122,10 +122,6 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 	// Process each log stream
 	for _, ls := range logStreamCollection {
-		if ls.LogStreamName == nil {
-			s.errorList = append(s.errorList, fmt.Errorf("skipping stream with nil name in log group %s", s.Config.LogGroupName))
-			continue
-		}
 
 		slog.Info("Processing stream", "stream", *ls.LogStreamName)
 		// Set up source enrichment fields for the current stream
