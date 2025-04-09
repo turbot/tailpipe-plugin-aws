@@ -158,7 +158,7 @@ You can also collect ALB access logs from local files.
 partition "aws_alb_access_log" "local_logs" {
   source "file"  {
     paths       = ["/Users/myuser/elb_logs"]
-    file_layout = "%{DATA}.log.gz"
+    file_layout = `%{DATA}.log.gz`
   }
 }
 ```
@@ -187,7 +187,7 @@ partition "aws_alb_access_log" "my_logs_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz`
   }
 }
 ```
@@ -201,7 +201,7 @@ partition "aws_alb_access_log" "my_logs_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz`
   }
 }
 ```
@@ -215,7 +215,7 @@ partition "aws_alb_access_log" "my_logs_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz`
   }
 }
 ```
@@ -229,7 +229,7 @@ partition "aws_alb_access_log" "my_logs_regions" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "aws-alb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_app.%{DATA}.log.gz`
   }
 }
 ```

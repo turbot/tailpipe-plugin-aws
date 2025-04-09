@@ -134,7 +134,7 @@ You can also collect logs from local files.
 partition "aws_s3_server_access_log" "my_s3_logs" {
   source "file"  {
     paths       = ["/Users/myuser/s3_server_access_log"]
-    file_layout = "%{DATA}.txt"
+    file_layout = `%{DATA}.txt`
   }
 }
 ```

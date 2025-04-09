@@ -9,7 +9,7 @@ An AWS S3 bucket is a cloud storage resource used to store objects like data fil
 
 Using this source, you can collect, filter, and analyze logs stored in S3 buckets, enabling system monitoring, security investigations, and compliance reporting.
 
-Most AWS tables define a default `file_path` for the `aws_s3_bucket` source, so if your AWS logs are stored in default log locations, you don't need to override the `file_path` argument.
+Most AWS tables define a default `file_layout` for the `aws_s3_bucket` source, so if your AWS logs are stored in default log locations, you don't need to override the `file_layout` argument.
 
 ## Example Configurations
 
@@ -53,7 +53,7 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
   source "aws_s3_bucket" {
     connection  = connection.aws.logging_account
     bucket      = "aws-cloudtrail-logs-bucket"
-    file_layout = "CustomLogs/Dev/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `CustomLogs/Dev/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```

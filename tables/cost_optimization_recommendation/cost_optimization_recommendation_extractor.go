@@ -193,7 +193,9 @@ func (value *CostOptimizationRecommendation) MapValues(recordMap map[string]stri
 			switch ptrType.Kind() {
 			case reflect.String:
 				val := strVal
-				fieldVal.Set(reflect.ValueOf(&val))
+				if val != "" {
+					fieldVal.Set(reflect.ValueOf(&val))
+				}
 			case reflect.Int:
 				val, err := strconv.Atoi(strVal)
 				if err == nil {

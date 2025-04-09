@@ -159,7 +159,7 @@ partition "aws_cost_and_usage_focus" "specific_cur_focus" {
     connection  = connection.aws.billing_account
     bucket      = "aws-cur-org-bucket"
     prefix      = "my/prefix/"
-    file_layout = "my-focus-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz"
+    file_layout = `my-focus-export/data/%{DATA:partition}/(?:%{TIMESTAMP_ISO8601:timestamp}-%{UUID:execution_id}/)?%{DATA:filename}.csv.gz`
   }
 }
 ```
@@ -172,7 +172,7 @@ You can also collect reports from local files.
 partition "aws_cost_and_usage_focus" "local_cur_focus" {
   source "file"  {
     paths       = ["/Users/myuser/aws_cur"]
-    file_layout = "%{DATA}.csv.gz"
+    file_layout = `%{DATA}.csv.gz`
   }
 }
 ```
