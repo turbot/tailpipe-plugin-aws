@@ -143,7 +143,7 @@ partition "aws_cloudtrail_log" "my_logs_prefix" {
 
 ### Collect logs from a CloudWatch log group
 
-Collect CloudTrail logs stored in a CloudWatch log group.
+Collect CloudTrail logs from a basic CloudWatch log group configuration without any stream filtering.
 
 ```hcl
 partition "aws_cloudtrail_log" "cw_log_group_logs" {
@@ -155,17 +155,32 @@ partition "aws_cloudtrail_log" "cw_log_group_logs" {
 }
 ```
 
-### Collect logs from a CloudWatch log group with a log stream prefix
+### Collect CloudTrail logs from CloudWatch for a specific region
 
-Collect CloudTrail logs for account ID `456789012345` in us-east-1.
+Collect CloudTrail logs for a specific account (456789012345) in a particular region (us-east-1) by using an exact log stream name match.
 
 ```hcl
-partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
+partition "aws_cloudtrail_log" "cw_log_group_logs_specific" {
   source "aws_cloudwatch_log_group" {
-    connection        = connection.aws.default
-    log_group_name    = "aws-cloudtrail-logs-123456789012-fd33b044"
-    log_stream_names  = ["456789012345_CloudTrail_*"]
-    region            = "us-east-1"
+    connection = connection.aws.default
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names = ["456789012345_CloudTrail_us-east-1"]
+    region = "us-east-1"
+  }
+}
+```
+
+### Collect CloudTrail logs from CloudWatch for all regions
+
+Collect CloudTrail logs for a specific account (456789012345) across all regions by using a wildcard pattern in the log stream name.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_all_regions" {
+  source "aws_cloudwatch_log_group" {
+    connection = connection.aws.default
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names = ["456789012345_CloudTrail_*"]
+    region = "us-east-1"
   }
 }
 ```
@@ -260,6 +275,6 @@ partition "aws_cloudtrail_log" "my_logs_regions" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument      | Default |
-|---------------|---------|
-| file_layout   | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
+| Argument    | Default                                                                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
