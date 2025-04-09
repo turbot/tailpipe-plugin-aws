@@ -152,7 +152,7 @@ partition "aws_waf_traffic_log" "cw_log_group_logs" {
 }
 ```
 
-### Collect WAF logs from CloudWatch from a specific log stream
+### Collect logs from a CloudWatch log group with a log stream
 
 Collect WAF traffic logs for a specific Web ACL in us-east-1 by using an exact log stream name match.
 
