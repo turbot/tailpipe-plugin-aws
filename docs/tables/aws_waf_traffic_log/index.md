@@ -85,7 +85,7 @@ limit 10;
 
 ### Blocked Requests With SQL Injection
 
-Find web requests that matched AWS WAF’s SQL injection detection.
+Find web requests that matched AWS WAF's SQL injection detection.
 
 ```sql
 select
@@ -140,7 +140,7 @@ partition "aws_waf_traffic_log" "my_logs_prefix" {
 
 ### Collect logs from a CloudWatch log group
 
-Collect logs stored in a CloudWatch log group.
+Collect WAF traffic logs from a CloudWatch log group without any log stream filtering.
 
 ```hcl
 partition "aws_waf_traffic_log" "cw_log_group_logs" {
@@ -152,17 +152,32 @@ partition "aws_waf_traffic_log" "cw_log_group_logs" {
 }
 ```
 
-### Collect logs from a CloudWatch log group with a log stream prefix
+### Collect logs from a CloudWatch log group with a log stream
 
-Collect logs for web ACL `TestWebACL` in us-east-1.
+Collect WAF traffic logs for a specific Web ACL in us-east-1 by using an exact log stream name match.
 
 ```hcl
-partition "aws_waf_traffic_log" "cw_log_group_logs_prefix" {
+partition "aws_waf_traffic_log" "cw_log_group_logs_specific" {
   source "aws_cloudwatch_log_group" {
-    connection        = connection.aws.logging_account
-    log_group_name    = "aws-waf-log-testLogGroup2"
-    log_stream_prefix = "us-east-1_TestWebACL_"
-    region            = "us-east-1"
+    connection = connection.aws.logging_account
+    log_group_name = "aws-waf-log-testLogGroup2"
+    log_stream_names = ["us-east-1_TestWebACL_123456"]
+    region = "us-east-1"
+  }
+}
+```
+
+### Collect WAF logs from CloudWatch for all Web ACLs in a region
+
+Collect WAF traffic logs for all Web ACLs in us-east-1 by using a wildcard pattern in the log stream name.
+
+```hcl
+partition "aws_waf_traffic_log" "cw_log_group_logs_all" {
+  source "aws_cloudwatch_log_group" {
+    connection = connection.aws.logging_account
+    log_group_name = "aws-waf-log-testLogGroup2"
+    log_stream_names = ["us-east-1_*"]
+    region = "us-east-1"
   }
 }
 ```

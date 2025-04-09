@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -74,6 +75,20 @@ func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 	return AwsCloudwatchLogGroupSourceIdentifier
 }
 
+func matchesAnyPattern(target string, patterns []string) bool {
+	for _, pattern := range patterns {
+		match, err := filepath.Match(pattern, target)
+		if err != nil {
+			slog.Error("error matching pattern '%s': %v\n", pattern, err)
+			continue
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
 // Collect retrieves log events from CloudWatch log streams within the specified time range
 // It handles pagination, maintains collection state, and processes events incrementally
 func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
@@ -83,14 +98,30 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
+	// Filter out the log streams that are not in the list of log stream names
+	if len(s.Config.LogStreamNames) > 0 {
+		filteredLogStreamCollection := []cwTypes.LogStream{}
+		logStreamNames := s.Config.LogStreamNames
+
+		for _, ls := range logStreamCollection {
+			if ls.LogStreamName == nil {
+				s.errorList = append(s.errorList, fmt.Errorf("skipping stream with nil name in log group %s", s.Config.LogGroupName))
+				continue
+			}
+
+			if matchesAnyPattern(*ls.LogStreamName, logStreamNames) {
+				filteredLogStreamCollection = append(filteredLogStreamCollection, ls)
+			}
+		}
+
+		// Use the filtered collection
+		logStreamCollection = filteredLogStreamCollection
+	}
+
 	slog.Info("Starting collection", "total_streams", len(logStreamCollection))
 
 	// Process each log stream
 	for _, ls := range logStreamCollection {
-		if ls.LogStreamName == nil {
-			s.errorList = append(s.errorList, fmt.Errorf("skipping stream with nil name in log group %s", s.Config.LogGroupName))
-			continue
-		}
 
 		slog.Info("Processing stream", "stream", *ls.LogStreamName)
 		// Set up source enrichment fields for the current stream
@@ -206,9 +237,8 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 
 	for {
 		input := &cloudwatchlogs.DescribeLogStreamsInput{
-			LogGroupName:        &s.Config.LogGroupName,
-			LogStreamNamePrefix: s.Config.LogStreamPrefix,
-			NextToken:           nextToken,
+			LogGroupName: &s.Config.LogGroupName,
+			NextToken:    nextToken,
 		}
 
 		output, err := s.client.DescribeLogStreams(ctx, input)
@@ -218,7 +248,7 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 
 		// Break if no streams found in this page
 		if len(output.LogStreams) == 0 {
-			slog.Debug("No log streams found", "logGroupName", s.Config.LogGroupName, "logStreamPrefix", s.Config.LogStreamPrefix)
+			slog.Debug("No log streams found", "logGroupName", s.Config.LogGroupName)
 			break
 		}
 
@@ -226,14 +256,14 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 
 		// Break if no more pages
 		if output.NextToken == nil {
-			slog.Debug("No more log streams to fetch", "logGroupName", s.Config.LogGroupName, "logStreamPrefix", s.Config.LogStreamPrefix, "total_streams", len(logStreams))
+			slog.Debug("No more log streams to fetch", "logGroupName", s.Config.LogGroupName, "total_streams", len(logStreams))
 			break
 		}
 		nextToken = output.NextToken
 	}
 
 	if len(logStreams) == 0 {
-		slog.Info("No log streams found to collect", "logGroupName", s.Config.LogGroupName, "logStreamPrefix", s.Config.LogStreamPrefix)
+		slog.Info("No log streams found to collect", "logGroupName", s.Config.LogGroupName)
 	}
 
 	return logStreams, nil

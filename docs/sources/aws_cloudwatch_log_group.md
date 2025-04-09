@@ -29,7 +29,7 @@ partition "aws_cloudtrail_log" "cw_log_group_logs" {
 }
 ```
 
-### Collect CloudTrail logs with a prefix
+### Collect CloudTrail logs for a specific account and region
 
 Collect CloudTrail logs for account ID `456789012345` in us-east-1.
 
@@ -38,7 +38,22 @@ partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
   source "aws_cloudwatch_log_group" {
     connection        = connection.aws.default
     log_group_name    = "aws-cloudtrail-logs-123456789012-fd33b044"
-    log_stream_prefix = "456789012345_CloudTrail_us-east-1"
+    log_stream_names  = ["456789012345_CloudTrail_us-east-1*"]
+    region            = "us-east-1"
+  }
+}
+```
+
+### Collect CloudTrail logs for all regions in an account
+
+Collect CloudTrail logs for account ID `456789012345` for all regions.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
+  source "aws_cloudwatch_log_group" {
+    connection        = connection.aws.default
+    log_group_name    = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names  = ["456789012345_CloudTrail_*"]
     region            = "us-east-1"
   }
 }
@@ -46,9 +61,9 @@ partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
 
 ## Arguments
 
-| Argument          | Type             | Required | Default                  | Description                                                                                                                   |
-| ----------------- | ---------------- | -------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| connection        | `connection.aws` | No       | `connection.aws.default` | The [AWS connection](https://hub.tailpipe.io/plugins/turbot/aws#connection-credentials) to use to connect to the AWS account. |
-| log_group_name    | String           | Yes      |                          | The name of the CloudWatch log group to collect logs from.                                                                    |
-| log_stream_prefix | String           | No       |                          | Collect logs from log streams whose names begin the specified prefix.                                                         |
-| region            | String           | Yes      |                          | The AWS region where the log group is located.                                                                                |
+| Argument         | Type             | Required | Default                  | Description                                                                                                                   |
+| ---------------- | ---------------- | -------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| connection       | `connection.aws` | No       | `connection.aws.default` | The [AWS connection](https://hub.tailpipe.io/plugins/turbot/aws#connection-credentials) to use to connect to the AWS account. |
+| log_group_name   | String           | Yes      |                          | The name of the CloudWatch log group to collect logs from.                                                                    |
+| log_stream_names | List(String)     | No       |                          | Collect logs from log streams whose names begin the specified prefix.                                                         |
+| region           | String           | Yes      |                          | The AWS region where the log group is located.                                                                                |
