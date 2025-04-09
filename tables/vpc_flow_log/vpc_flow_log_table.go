@@ -266,7 +266,6 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
-			Mapper:     &VPCFlowLogMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
 				artifact_source.WithArtifactExtractor(NewVPCFlowLogExtractor(c.Format)),
