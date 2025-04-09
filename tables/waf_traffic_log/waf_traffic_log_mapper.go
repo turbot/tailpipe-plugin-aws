@@ -8,6 +8,7 @@ import (
 
 	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	helper "github.com/turbot/tailpipe-plugin-aws/tables"
+
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
