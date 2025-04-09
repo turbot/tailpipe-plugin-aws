@@ -14,7 +14,7 @@ type AwsCloudWatchLogGroupSourceConfig struct {
 	// Example: ["456789012345_CloudTrail_*", "123456789012_CloudTrail_us-east-1"]
 	LogStreamNames []string `hcl:"log_stream_names,optional"`
 	// Region specifies the AWS region where the log group exists
-	// If not provided, defaults to us-east-1
+	// If not provided, an error will be raised "region is required and cannot be empty".
 	Region *string `hcl:"region"`
 }
 
