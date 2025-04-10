@@ -273,7 +273,7 @@ Collect VPC flow logs from a CloudWatch log group where each log stream correspo
 
 ```hcl
 format "aws_vpc_flow_log" "log_format" {
-  layout = "export-timestamp instance-id interface-id pkt-srcaddr pkt-dstaddr pkt-src-aws-service az-id flow-direction start log-status packets protocol srcaddr dstaddr srcport end subnet-id"
+  layout = "instance-id interface-id pkt-srcaddr pkt-dstaddr pkt-src-aws-service az-id flow-direction start log-status packets protocol srcaddr dstaddr srcport end subnet-id"
 }
 ```
 
@@ -282,7 +282,7 @@ partition "aws_vpc_flow_log" "cw_log_group_logs" {
   source "aws_cloudwatch_log_group" {
     connection       = connection.aws.default
     format           = format.aws_vpc_flow_log.log_format
-    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_group_name   = "aws-vpc-flow-logs-123456789012-fd33b044"
     log_stream_names = ["eni-*"]
     region           = "us-east-1"
   }
