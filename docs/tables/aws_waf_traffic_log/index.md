@@ -138,59 +138,17 @@ partition "aws_waf_traffic_log" "my_logs_prefix" {
 }
 ```
 
-### Collect logs from a CloudWatch log group
+### Exclude GET requests
 
-Collect WAF traffic logs from a CloudWatch log group without any log stream filtering.
-
-```hcl
-partition "aws_waf_traffic_log" "cw_log_group_logs" {
-  source "aws_cloudwatch_log_group" {
-    connection     = connection.aws.logging_account
-    log_group_name = "aws-waf-log-testLogGroup2"
-    region         = "us-east-1"
-  }
-}
-```
-
-### Collect logs from a CloudWatch log group with a log stream
-
-Collect WAF traffic logs for a specific Web ACL in us-east-1 by using an exact log stream name match.
+Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
 
 ```hcl
-partition "aws_waf_traffic_log" "cw_log_group_logs_specific" {
-  source "aws_cloudwatch_log_group" {
-    connection = connection.aws.logging_account
-    log_group_name = "aws-waf-log-testLogGroup2"
-    log_stream_names = ["us-east-1_TestWebACL_123456"]
-    region = "us-east-1"
-  }
-}
-```
+partition "aws_waf_traffic_log" "my_logs_write" {
+  filter = "(http_request ->> 'httpMethod') not like 'GET'"
 
-### Collect WAF logs from CloudWatch for all Web ACLs in a region
-
-Collect WAF traffic logs for all Web ACLs in us-east-1 by using a wildcard pattern in the log stream name.
-
-```hcl
-partition "aws_waf_traffic_log" "cw_log_group_logs_all" {
-  source "aws_cloudwatch_log_group" {
-    connection = connection.aws.logging_account
-    log_group_name = "aws-waf-log-testLogGroup2"
-    log_stream_names = ["us-east-1_*"]
-    region = "us-east-1"
-  }
-}
-```
-
-### Collect logs from local files
-
-You can also collect logs from local files.
-
-```hcl
-partition "aws_waf_traffic_log" "local_logs" {
-  source "file"  {
-    paths       = ["/Users/myuser/aws_waf_traffic_logs"]
-    file_layout = `%{DATA}.json.gz`
+  source "aws_s3_bucket" {
+    connection = connection.aws.security_account
+    bucket     = "waf-traffic-logs-bucket"
   }
 }
 ```
@@ -223,30 +181,59 @@ partition "aws_waf_traffic_log" "my_logs_account" {
 }
 ```
 
+### Collect logs from a CloudWatch log group
+
+Collect WAF traffic logs from all log streams in a CloudWatch log group.
+
+```hcl
+partition "aws_waf_traffic_log" "cw_log_group_logs" {
+  source "aws_cloudwatch_log_group" {
+    connection     = connection.aws.logging_account
+    log_group_name = "aws-waf-log-testLogGroup2"
+    region         = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group for a specific web ACL
+
+Collect WAF traffic logs for a specific web ACL.
+
+```hcl
+partition "aws_waf_traffic_log" "cw_log_group_logs_specific" {
+  source "aws_cloudwatch_log_group" {
+    connection       = connection.aws.logging_account
+    log_group_name   = "aws-waf-log-testLogGroup2"
+    log_stream_names = ["us-east-1_TestWebACL_*"]
+    region           = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group for all web ACLs in a region
+
+Collect WAF traffic logs for all web ACLs in a single region.
+
+```hcl
+partition "aws_waf_traffic_log" "cw_log_group_logs_all" {
+  source "aws_cloudwatch_log_group" {
+    connection       = connection.aws.logging_account
+    log_group_name   = "aws-waf-log-testLogGroup2"
+    log_stream_names = ["us-east-1_*"]
+    region           = "us-east-1"
+  }
+}
+```
+
 ### Collect logs from local files
 
 You can also collect logs from local files.
 
 ```hcl
-partition "aws_waf_traffic_log" "my_logs" {
+partition "aws_waf_traffic_log" "local_logs" {
   source "file"  {
-    paths       = ["/Users/myuser/aws_waf_traffic_log"]
-    file_layout = `%{DATA}.txt`
-  }
-}
-```
-
-### Exclude GET requests
-
-Use the filter argument in your partition to exclude read-only requests and reduce the size of local log storage.
-
-```hcl
-partition "aws_waf_traffic_log" "my_logs_write" {
-  filter = "(http_request ->> 'httpMethod') not like 'GET'"
-
-  source "aws_s3_bucket" {
-    connection = connection.aws.security_account
-    bucket     = "waf-traffic-logs-bucket"
+    paths       = ["/Users/myuser/aws_waf_traffic_logs"]
+    file_layout = `%{DATA}.json.gz`
   }
 }
 ```
