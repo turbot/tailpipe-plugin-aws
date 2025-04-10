@@ -191,7 +191,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 				// Create row data with the event message and enrichment
 				row := &types.RowData{
-					Data:             event.Message,
+					Data:             *event.Message,
 					SourceEnrichment: sourceEnrichmentFields,
 				}
 
