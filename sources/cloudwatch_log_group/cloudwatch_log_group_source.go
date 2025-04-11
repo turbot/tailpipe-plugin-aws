@@ -104,11 +104,6 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		logStreamNames := s.Config.LogStreamNames
 
 		for _, ls := range logStreamCollection {
-			if ls.LogStreamName == nil {
-				s.errorList = append(s.errorList, fmt.Errorf("skipping stream with nil name in log group %s", s.Config.LogGroupName))
-				continue
-			}
-
 			if matchesAnyPattern(*ls.LogStreamName, logStreamNames) {
 				filteredLogStreamCollection = append(filteredLogStreamCollection, ls)
 			}
@@ -191,7 +186,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 				// Create row data with the event message and enrichment
 				row := &types.RowData{
-					Data:             event.Message,
+					Data:             *event.Message,
 					SourceEnrichment: sourceEnrichmentFields,
 				}
 
