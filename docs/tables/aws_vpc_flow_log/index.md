@@ -209,6 +209,21 @@ partition "aws_vpc_flow_log" "my_logs_region" {
 }
 ```
 
+### Exclude rejected traffic logs
+
+Use the filter argument in your partition to exclude rejected traffic logs and reduce the size of local log storage.
+
+```hcl
+partition "aws_vpc_flow_log" "my_logs_instance" {
+  filter = "action <> 'REJECT'"
+
+  source "aws_s3_bucket" {
+    connection  = connection.aws.vpc_logging
+    bucket      = "vpc-flow-logs-bucket"
+  }
+}
+````
+
 ### Collect VPC flow logs exported from CloudWatch to an S3 bucket
 
 Collect VPC flow logs that were exported from CloudWatch to an S3 bucket, where the logs do not include a header line. Since the exported logs contain raw log lines only, a custom format block is defined to map the layout of each field.
@@ -246,7 +261,7 @@ partition "aws_vpc_flow_log" "cw_log_group_logs" {
 }
 ```
 
-### Collect VPC flow logs from a CloudWatch log group using a custom log format
+### Collect VPC flow logs from a CloudWatch log group with custom log format
 
 Collect VPC flow logs from an AWS CloudWatch Log Group where the log format does not include a header line, or the format differs from the default.
 
@@ -267,7 +282,7 @@ partition "aws_vpc_flow_log" "cw_log_group_logs" {
 }
 ```
 
-### Collect VPC flow logs from a CloudWatch log group for all ENIs using wildcard stream names
+### Collect VPC flow logs from a CloudWatch log group for all ENIs with wildcard stream names
 
 Collect VPC flow logs from a CloudWatch log group where each log stream corresponds to an ENI (Elastic Network Interface).
 
@@ -289,20 +304,22 @@ partition "aws_vpc_flow_log" "cw_log_group_logs" {
 }
 ```
 
-### Exclude rejected traffic logs
+### Exclude logs with no status from a CloudWatch log group
 
 Use the filter argument in your partition to exclude [records that are skipped or have no data](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html#flow-log-example-no-data) and reduce the size of local log storage.
 
 ```hcl
-partition "aws_vpc_flow_log" "my_logs_status_ok" {
-  filter = "log_status = 'OK'"
+partition "aws_vpc_flow_log" "cw_flow_log" {
+  filter = "log_status <> 'NODATA' and log_status <> 'SKIPDATA'"
 
-  source "aws_s3_bucket" {
-    connection  = connection.aws.vpc_logging
-    bucket      = "vpc-flow-logs-bucket"
+  source "aws_cloudwatch_log_group"  {
+    connection = connection.aws.default
+    format     = format.aws_vpc_flow_log.log_layout
+    log_group_name = "aws-vpc-flow-logs-123456789012-fd33b044"
+    region = "us-east-1"
   }
 }
-````
+```
 
 ## Source Defaults
 
