@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"regexp"
+	"path/filepath"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -75,79 +75,18 @@ func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 	return AwsCloudwatchLogGroupSourceIdentifier
 }
 
-// matchesAnyPattern returns true if the target string matches any pattern
-// LogStream name pattern is [^:*]*
-
-// Test cases with target and matching patterns:
-
-// Target:  "log/stream/abc"
-// Pattern: "log/stream/abc"
-// → Matches (exact match)
-
-// Target:  "abc/def/[$latest]/log123"
-// Pattern: "abc/def/*/log123"
-// → Matches (wildcard in middle)
-
-// Target:  "abc/def/[$latest]/dasjldjsa28742"
-// Pattern: "abc/def/*/dasjldjsa*"
-// → Matches (wildcard in middle and end)
-
-// Target:  "abc/def/log/xyz"
-// Pattern: "abc/*/log/xyz"
-// → Matches (wildcard between fixed segments)
-
-// Target:  "abc/def/ghi"
-// Pattern: "abc/xyz/*"
-// → No match (segment mismatch)
-
-// Target:  "log1"
-// Pattern: "log?"
-// → Matches (single character wildcard)
-
-// Target:  "log12"
-// Pattern: "log?"
-// → No match (too many characters)
-
-// Target:  "abc/[$latest]/xyz"
-// Pattern: "abc/*/xyz"
-// → Matches (wildcard for special characters)
-
-// Target:  "stream/test/123"
-// Patterns: "wrong/pattern", "stream/*/123"
-// → Matches (second pattern matches)
-
-// Target:  "foo/bar"
-// Patterns: "baz/*", "qux/?ar"
-// → No match (none of the patterns match)
-
-// Target:  "folder/file.txt"
-// Patterns: "folder/*", "folder/*.txt"
-// → Matches (both patterns match)
-
-// Target:  "folder/another/file.log"
-// Pattern: "folder/*/file.*"
-// → Matches (wildcard directory and extension)
 func matchesAnyPattern(target string, patterns []string) bool {
 	for _, pattern := range patterns {
-		regexPattern := wildcardToRegex(pattern)
-		matched, err := regexp.MatchString(regexPattern, target)
+		match, err := filepath.Match(pattern, target)
 		if err != nil {
 			slog.Error("error matching pattern '%s': %v\n", pattern, err)
 			continue
 		}
-		if matched {
+		if match {
 			return true
 		}
 	}
 	return false
-}
-
-// wildcardToRegex converts shell-style patterns (*, ?) to regex
-func wildcardToRegex(pattern string) string {
-	escaped := regexp.QuoteMeta(pattern)
-	escaped = "^" + regexp.MustCompile(`\\\*`).ReplaceAllString(escaped, ".*")
-	escaped = regexp.MustCompile(`\\\?`).ReplaceAllString(escaped, ".") + "$"
-	return escaped
 }
 
 // Collect retrieves log events from CloudWatch log streams within the specified time range
