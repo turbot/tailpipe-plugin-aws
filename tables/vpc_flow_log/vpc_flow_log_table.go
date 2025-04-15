@@ -277,6 +277,13 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 				artifact_source.WithRowPerLine(),
 			},
 		},
+		{
+			// File source
+			SourceName: constants.ArtifactSourceIdentifier,
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithArtifactExtractor(NewVPCFlowLogExtractor(c.Format)),
+			},
+		},
 	}, nil
 }
 
