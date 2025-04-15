@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"path/filepath"
+	"path"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -77,7 +77,7 @@ func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 
 func matchesAnyPattern(target string, patterns []string) bool {
 	for _, pattern := range patterns {
-		match, err := filepath.Match(pattern, target)
+		match, err := path.Match(pattern, target)
 		if err != nil {
 			slog.Error("error matching pattern '%s': %v\n", pattern, err)
 			continue
