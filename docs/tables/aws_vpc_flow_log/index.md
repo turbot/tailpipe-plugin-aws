@@ -151,15 +151,17 @@ partition "aws_vpc_flow_log" "my_logs_prefix" {
 }
 ```
 
-### Collect logs from local files
+### Exclude rejected traffic logs
 
-You can also collect VPC Flow Logs from local files.
+Use the filter argument in your partition to exclude rejected traffic logs and reduce the size of local log storage.
 
 ```hcl
-partition "aws_vpc_flow_log" "local_logs" {
-  source "file"  {
-    paths       = ["/Users/myuser/vpc_flow_logs"]
-    file_layout = `%{DATA}.json.gz`
+partition "aws_vpc_flow_log" "my_logs_instance" {
+  filter = "action <> 'REJECT'"
+
+  source "aws_s3_bucket" {
+    connection  = connection.aws.vpc_logging
+    bucket      = "vpc-flow-logs-bucket"
   }
 }
 ```
@@ -220,24 +222,9 @@ partition "aws_vpc_flow_log" "my_logs_region" {
 }
 ```
 
-### Exclude rejected traffic logs
-
-Use the filter argument in your partition to exclude rejected traffic logs and reduce the size of local log storage.
-
-```hcl
-partition "aws_vpc_flow_log" "my_logs_instance" {
-  filter = "action <> 'REJECT'"
-
-  source "aws_s3_bucket" {
-    connection  = connection.aws.vpc_logging
-    bucket      = "vpc-flow-logs-bucket"
-  }
-}
-```
-
 ### Collect VPC flow logs exported from CloudWatch to an S3 bucket
 
-Collect VPC flow logs that were exported from CloudWatch to an S3 bucket, where the logs do not include a header line. Since the exported logs contain raw log lines only, a custom format block is defined to map the layout of each field.
+Collect VPC flow logs that were exported from CloudWatch to an S3 bucket, where the logs do not include a header line. Since the exported logs contain raw log lines only, a format block is defined to map the layout of each field.
 
 **Important Note**: The field, `export-timestamp`, is not part of the original log event. It is automatically added by AWS during the export process from CloudWatch to S3. This timestamp represents the time when the log was exported, not when the event occurred.
 
@@ -315,7 +302,7 @@ partition "aws_vpc_flow_log" "cw_log_group_logs" {
 }
 ```
 
-### Exclude logs with no status from a CloudWatch log group
+### Exclude flow log records with no traffic or skipped data from CloudWatch log group
 
 Use the filter argument in your partition to exclude [records that are skipped or have no data](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html#flow-log-example-no-data) and reduce the size of local log storage.
 
@@ -328,6 +315,19 @@ partition "aws_vpc_flow_log" "cw_flow_log" {
     format     = format.aws_vpc_flow_log.log_layout
     log_group_name = "aws-vpc-flow-logs-123456789012-fd33b044"
     region = "us-east-1"
+  }
+}
+```
+
+### Collect logs from local files
+
+You can also collect VPC Flow Logs from local files.
+
+```hcl
+partition "aws_vpc_flow_log" "local_logs" {
+  source "file" {
+    paths       = ["/Users/myuser/vpc_flow_logs"]
+    file_layout = `%{DATA}.gz`
   }
 }
 ```
