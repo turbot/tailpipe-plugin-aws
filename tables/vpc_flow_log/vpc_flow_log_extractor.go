@@ -50,9 +50,7 @@ func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
 
 		for k, v := range record {
 			if columnName, ok := fields[k]; ok {
-				if v != VpcFlowLogTableSkippedData &&
-					v != VpcFlowLogTableNoData &&
-					v != VpcFlowLogTableNilValue {
+				if v != VpcFlowLogTableNilValue {
 					rowColumnMap[columnName] = v
 				}
 			}

@@ -18,8 +18,6 @@ import (
 
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 const VpcFlowLogTableNilValue = "-"
-const VpcFlowLogTableSkippedData = "SKIPDATA"
-const VpcFlowLogTableNoData = "NODATA"
 
 // VpcFlowLogTable - table for VPC Flow Logs
 type VpcFlowLogTable struct {
@@ -288,14 +286,14 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 
 	row.OutputColumns[constants.TpTable] = VpcFlowLogTableIdentifier
 
-	if startTime, ok := row.GetSourceValue("start_time"); ok && startTime != VpcFlowLogTableSkippedData && startTime != VpcFlowLogTableNoData && startTime != VpcFlowLogTableNilValue {
+	if startTime, ok := row.GetSourceValue("start_time"); ok && startTime != VpcFlowLogTableNilValue {
 		t, err := helpers.ParseTime(startTime)
 		if err != nil {
 			invalidFields = append(invalidFields, "start_time")
 		} else {
 			row.OutputColumns[constants.TpTimestamp] = t
 		}
-	} else if endTime, ok := row.GetSourceValue("end_time"); ok && endTime != VpcFlowLogTableSkippedData && endTime != VpcFlowLogTableNoData && endTime != VpcFlowLogTableNilValue {
+	} else if endTime, ok := row.GetSourceValue("end_time"); ok && endTime != VpcFlowLogTableNilValue {
 		t, err := helpers.ParseTime(endTime)
 		if err != nil {
 			invalidFields = append(invalidFields, "end_time")
