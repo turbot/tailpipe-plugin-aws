@@ -8,10 +8,10 @@ description: "AWS VPC flow logs capture information about IP traffic going to an
 The `aws_vpc_flow_log` table allows you to query data from [AWS VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html). This table provides detailed insights into network traffic within your VPC, including source and destination IP addresses, ports, protocols, and more.
 
 **Note**:
-- When using the `aws_s3_bucket` source:
+- Using `aws_s3_bucket` source:
   - The `format` block is **optional**. If not provided, the log format will be inferred from the **first line of the object** in the bucket.
   - However, when logs are **exported from CloudWatch to S3**, they typically **do not include a header line**, so the `format` block becomes **required**. If not specified, a **default format** will be applied.
-- When using the `aws_cloudwatch_log_group` source:
+- Using`aws_cloudwatch_log_group` source:
   - The `format` block is **required** to define the structure of the logs. If omitted, the system will fall back to a **default format**.
 - For timestamp information, the `start` field will be used first, with the `end` field as a fallback. If neither field is available, then that log line will not be collected and Tailpipe will return an error.
 - When determining each log's index, the table uses the following order of precedence:
