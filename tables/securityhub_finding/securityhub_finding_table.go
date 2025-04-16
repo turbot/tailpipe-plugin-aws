@@ -35,7 +35,6 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() ([]*table.SourceMetadata[*
 			Mapper:     &SecurityHubFindingMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithRowPerLine(),
 			},
 		},
 		{
