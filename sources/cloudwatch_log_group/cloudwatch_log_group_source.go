@@ -189,6 +189,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 					continue
 				}
 
+				sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp
 				// Create row data with the event message and enrichment
 				row := &types.RowData{
 					Data:             event.Message,
