@@ -40,9 +40,6 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() ([]*table.SourceMetadata[*
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &SecurityHubFindingMapper{},
-			Options: []row_source.RowSourceOption{
-				artifact_source.WithRowPerLine(),
-			},
 		},
 	}, nil
 }
