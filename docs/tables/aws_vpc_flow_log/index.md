@@ -195,13 +195,13 @@ partition "aws_vpc_flow_log" "my_logs_region" {
 }
 ```
 
-### Exclude rejected traffic logs
+### Exclude skipped logs and logs with no data
 
-Use the filter argument in your partition to exclude rejected traffic logs and reduce the size of local log storage.
+Use the filter argument in your partition to exclude [records that are skipped or have no data](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html#flow-log-example-no-data) and reduce the size of local log storage.
 
 ```hcl
-partition "aws_vpc_flow_log" "my_logs_instance" {
-  filter = "action <> 'REJECT'"
+partition "aws_vpc_flow_log" "my_logs_status_ok" {
+  filter = "log_status = 'OK'"
 
   source "aws_s3_bucket" {
     connection  = connection.aws.vpc_logging
