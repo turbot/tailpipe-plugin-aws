@@ -1,3 +1,20 @@
+## v0.9.0 [2025-04-17]
+
+_Enhancements_
+
+- Updated `file_layout` arguments in documentation to wrap values in backticks instead of double quotes to align with Tailpipe CLI v0.2.0 changes. ([#140](https://github.com/turbot/tailpipe-plugin-aws/pull/140))
+
+_Bug fixes_
+
+- The `aws_vpc_flow_log` table no longer skips collecting records with log status `SKIPPED` or `NODATA`.
+- Updated `aws_cost_and_usage_focus`, `aws_cost_and_usage_report` and `aws_cost_optimization_recommendation` tables to store missing column values as `null`. ([#139](https://github.com/turbot/tailpipe-plugin-aws/pull/139))
+- Fixed typo for `file_layout` in `aws_s3_bucket` source doc.
+
+_Dependencies_
+
+- Bumped github.com/turbot/pipe-fittings/v2 from 2.3.0 to 2.3.1. ([#143](https://github.com/turbot/tailpipe-plugin-aws/pull/143))
+- Bumped github.com/turbot/tailpipe-plugin-sdk from v0.1.1 to v0.2.0. ([#136](https://github.com/turbot/tailpipe-plugin-aws/pull/136))
+
 ## v0.8.1 [2025-03-28]
 
 _Bug fixes_
