@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"path/filepath"
+	"path"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -77,7 +77,7 @@ func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 
 func matchesAnyPattern(target string, patterns []string) bool {
 	for _, pattern := range patterns {
-		match, err := filepath.Match(pattern, target)
+		match, err := path.Match(pattern, target)
 		if err != nil {
 			slog.Error("error matching pattern '%s': %v\n", pattern, err)
 			continue
@@ -104,11 +104,6 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		logStreamNames := s.Config.LogStreamNames
 
 		for _, ls := range logStreamCollection {
-			if ls.LogStreamName == nil {
-				s.errorList = append(s.errorList, fmt.Errorf("skipping stream with nil name in log group %s", s.Config.LogGroupName))
-				continue
-			}
-
 			if matchesAnyPattern(*ls.LogStreamName, logStreamNames) {
 				filteredLogStreamCollection = append(filteredLogStreamCollection, ls)
 			}
@@ -191,7 +186,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 				// Create row data with the event message and enrichment
 				row := &types.RowData{
-					Data:             event.Message,
+					Data:             *event.Message,
 					SourceEnrichment: sourceEnrichmentFields,
 				}
 
