@@ -88,7 +88,7 @@ func (flowLog *VpcFlowLog) MapValues(input map[string]string) error {
 	for i, field := range input {
 		// skip empty fields
 		// https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html#flow-log-example-no-data
-		if field == "-" || field == "SKIPDATA" || field == "NODATA" {
+		if field == "-" {
 			continue
 		}
 		switch i {
