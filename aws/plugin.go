@@ -50,7 +50,6 @@ func init() {
 	// register formats
 	table.RegisterFormatPresets(vpc_flow_log.VPCFlowLogTableFormatPresets...)
 	table.RegisterFormat[*vpc_flow_log.VPCFlowLogTableFormat]()
-	row_source.RegisterRowSource[*cloudwatch_log_group.AwsCloudWatchLogGroupSource]()
 }
 
 func NewPlugin() (_ plugin.TailpipePlugin, err error) {
