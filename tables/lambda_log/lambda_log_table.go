@@ -1,6 +1,7 @@
 package lambda_log
 
 import (
+	"regexp"
 	"time"
 
 	"github.com/rs/xid"
@@ -61,12 +62,24 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 	// Record standardization
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
-	if !row.TpTimestamp.IsZero() {
+	if row.Timestamp != nil {
 		row.TpTimestamp = *row.Timestamp
 		row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
+	} else if !row.TpTimestamp.IsZero() {
+		row.TpDate = row.TpTimestamp.Truncate(24 * time.Hour)
 	}
 
 	row.TpIndex = schema.DefaultIndex
+
+	var arnRegex = regexp.MustCompile(`arn:aws:[^,\s'"\\]+`)
+
+	seen := map[string]struct{}{}
+	for _, match := range arnRegex.FindAllString(*row.Message, -1) {
+		if _, exists := seen[match]; !exists {
+			seen[match] = struct{}{}
+			row.TpAkas = append(row.TpAkas, match)
+		}
+	}
 
 	// TODO: Add enrichment fields
 
