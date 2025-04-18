@@ -35,11 +35,15 @@ func (c *SecurityHubFindingTable) GetSourceMetadata() ([]*table.SourceMetadata[*
 			Mapper:     &SecurityHubFindingMapper{},
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
+				artifact_source.WithArtifactExtractor(NewSecurityHubFindingExtractor()),
 			},
 		},
 		{
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &SecurityHubFindingMapper{},
+			Options: []row_source.RowSourceOption{
+				artifact_source.WithArtifactExtractor(NewSecurityHubFindingExtractor()),
+			},
 		},
 	}, nil
 }
@@ -50,9 +54,9 @@ func (c *SecurityHubFindingTable) EnrichRow(row *SecurityHubFinding, sourceEnric
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 
-	for _, resource := range row.Resources {
-		newAkas := tables.AwsAkasFromArn(*resource)
-		row.TpAkas = append(row.TpAkas, newAkas...)
+	if row.ProductArn != nil {
+		akas := tables.AwsAkasFromArn(*row.ProductArn)
+		row.TpAkas = append(row.TpAkas, akas...)
 	}
 
 	if row.Time != nil {

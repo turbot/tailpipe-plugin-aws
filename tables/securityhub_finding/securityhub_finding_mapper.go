@@ -29,6 +29,10 @@ func (m *SecurityHubFindingMapper) Map(_ context.Context, a any, _ ...mappers.Ma
 		}
 	case SecurityHubFinding:
 		b = data
+		return &b, nil
+	case *SecurityHubFinding:
+		b = *data
+		return &b, nil
 	default:
 		return nil, fmt.Errorf("expected byte[], string or SecurityHubFinding, got %T", a)
 	}
