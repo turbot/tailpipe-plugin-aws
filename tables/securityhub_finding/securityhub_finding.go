@@ -134,24 +134,6 @@ func (c *SecurityHubFinding) GetColumnDescriptions() map[string]string {
 		"workflow":                "Information about the status of the investigation into a finding.",
 		"workflow_state":          "The workflow state of a finding.",
 
-		// Event fields
-		"event_category":       "The category of the event.",
-		"event_id":             "The unique identifier for the event.",
-		"event_name":           "The name of the event.",
-		"event_source":         "The source of the event.",
-		"event_time":           "The timestamp when the event was generated.",
-		"event_type":           "The type of the event.",
-		"event_version":        "The version of the event.",
-		"management_event":     "Indicates if the event is a management event.",
-		"read_only":            "Indicates if the event is read-only.",
-		"recipient_account_id": "The AWS account ID of the recipient of the event.",
-		"request_id":           "The unique identifier for the request.",
-		"request_parameters":   "The parameters of the request.",
-		"response_elements":    "The elements of the response.",
-		"source_ip_address":    "The IP address of the source of the event.",
-		"user_agent":           "The user agent of the user who made the request.",
-		"user_identity":        "The identity of the user who made the request.",
-
 		// Tailpipe-specific metadata fields
 		"tp_akas":      "The list of AWS ARNs associated with the finding.",
 		"tp_index":     "The AWS account ID where the finding was generated.",
