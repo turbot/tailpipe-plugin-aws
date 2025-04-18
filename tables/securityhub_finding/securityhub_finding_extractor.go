@@ -90,19 +90,66 @@ func toMapSecurityHubFinding(event DetailFindingsData) []SecurityHubFinding {
 		f.Region = event.Region
 
 		// Finding details from AWS security finding
+		if finding.AwsAccountName != nil {
+			f.AwsAccountName = finding.AwsAccountName
+		}
+		if finding.CompanyName != nil {
+			f.CompanyName = finding.CompanyName
+		}
+		if finding.Compliance != nil {
+			f.Compliance = finding.Compliance
+		}
+		if finding.Confidence != nil {
+			f.Confidence = finding.Confidence
+		}
 		if finding.CreatedAt != nil {
-			// CreatedAt is a string in SecurityHubFinding
 			createdAtStr := *finding.CreatedAt
 			f.CreatedAt = &createdAtStr
+		}
+		if finding.Criticality != nil {
+			f.Criticality = finding.Criticality
 		}
 		if finding.Description != nil {
 			f.Description = finding.Description
 		}
+		if finding.FirstObservedAt != nil {
+			f.FirstObservedAt = finding.FirstObservedAt
+		}
 		if finding.GeneratorId != nil {
 			f.GeneratorId = finding.GeneratorId
 		}
+		if finding.GeneratorDetails != nil {
+			f.GeneratorDetails = finding.GeneratorDetails
+		}
 		if finding.Id != nil {
 			f.FindingId = finding.Id
+		}
+		if finding.Region != nil {
+			f.FindingRegion = finding.Region
+		}
+		if finding.LastObservedAt != nil {
+			f.LastObservedAt = finding.LastObservedAt
+		}
+		if finding.Malware != nil {
+			f.Malware = finding.Malware
+		}
+		if finding.Network != nil {
+			f.Network = finding.Network
+		}
+		if finding.NetworkPath != nil {
+			f.NetworkPath = finding.NetworkPath
+		}
+		if finding.Note != nil {
+			f.Note = finding.Note
+		}
+		if finding.PatchSummary != nil {
+			f.PatchSummary = finding.PatchSummary
+		}
+		if finding.Process != nil {
+			f.Process = finding.Process
+		}
+		if finding.ProcessedAt != nil {
+			f.ProcessedAt = finding.ProcessedAt
 		}
 		if finding.ProductArn != nil {
 			f.ProductArn = finding.ProductArn
@@ -110,11 +157,60 @@ func toMapSecurityHubFinding(event DetailFindingsData) []SecurityHubFinding {
 		if finding.ProductName != nil {
 			f.ProductName = finding.ProductName
 		}
-		if finding.Title != nil {
-			f.Title = finding.Title
+		if finding.RecordState != "" {
+			f.RecordState = finding.RecordState
+		}
+		if finding.RelatedFindings != nil {
+			f.RelatedFindings = finding.RelatedFindings
+		}
+		if finding.Action != nil {
+			f.Action = finding.Action
+		}
+		if finding.Sample != nil {
+			f.Sample = finding.Sample
 		}
 		if finding.SchemaVersion != nil {
 			f.SchemaVersion = finding.SchemaVersion
+		}
+		if finding.Severity != nil {
+			f.Severity = finding.Severity
+		}
+		if finding.SourceUrl != nil {
+			f.SourceUrl = finding.SourceUrl
+		}
+		if finding.ThreatIntelIndicators != nil {
+			f.ThreatIntelIndicators = finding.ThreatIntelIndicators
+		}
+		if finding.Threats != nil {
+			f.Threats = finding.Threats
+		}
+		if finding.Title != nil {
+			f.Title = finding.Title
+		}
+		if finding.Types != nil {
+			f.Types = finding.Types
+		}
+		if finding.UpdatedAt != nil {
+			f.UpdatedAt = finding.UpdatedAt
+		}
+		if finding.UserDefinedFields != nil {
+			userDefinedFields := make(map[string]string)
+			for k, v := range finding.UserDefinedFields {
+				userDefinedFields[k] = v
+			}
+			f.UserDefinedFields = userDefinedFields
+		}
+		if finding.VerificationState != "" {
+			f.VerificationState = finding.VerificationState
+		}
+		if finding.Vulnerabilities != nil {
+			f.Vulnerabilities = finding.Vulnerabilities
+		}
+		if finding.Workflow != nil {
+			f.Workflow = finding.Workflow
+		}
+		if finding.WorkflowState != "" {
+			f.WorkflowState = finding.WorkflowState
 		}
 
 		// Map ProductFields
