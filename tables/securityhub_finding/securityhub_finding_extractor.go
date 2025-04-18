@@ -15,7 +15,7 @@ type SecurityHubFindingExtractor struct {
 }
 
 // NewCloudTrailLogExtractor creates a new SecurityHubFindingExtractor
-func NewCloudTrailLogExtractor() artifact_source.Extractor {
+func NewSecurityHubFindingExtractor() artifact_source.Extractor {
 	return &SecurityHubFindingExtractor{}
 }
 
@@ -26,9 +26,15 @@ func (c *SecurityHubFindingExtractor) Identifier() string {
 // Extract unmarshalls the artifact data as an CloudTrailLogBatch and returns the SecurityHubFinding records
 func (c *SecurityHubFindingExtractor) Extract(_ context.Context, a any) ([]any, error) {
 	// the expected input type is a JSON byte[] deserializable to CloudTrailLogBatch
-	jsonBytes, ok := a.([]byte)
-	if !ok {
-		return nil, fmt.Errorf("expected byte[], got %T", a)
+	var jsonBytes []byte
+
+	switch v := a.(type) {
+	case []byte:
+		jsonBytes = v
+	case string:
+		jsonBytes = []byte(v)
+	default:
+		return nil, fmt.Errorf("expected []byte or string, got %T", a)
 	}
 
 	// decode json ito CloudTrailLogBatch
@@ -39,7 +45,7 @@ func (c *SecurityHubFindingExtractor) Extract(_ context.Context, a any) ([]any, 
 	}
 
 	slog.Debug("SecurityHubFindingExtractor", "record count", len(log.Detail.Findings))
-	findings := toMapSecurityHubFinding(DetailFindingsData)
+	findings := toMapSecurityHubFinding(log)
 	var res = make([]any, len(findings))
 	for i, record := range findings {
 		res[i] = &record
@@ -62,26 +68,15 @@ func toMapSecurityHubFinding(findingsRow DetailFindingsData) []SecurityHubFindin
 		// Findings field
 		f.AwsAccountId = finding.AwsAccountId
 		f.CreatedAt = finding.CreatedAt
-		f.UpdatedAt = finding.UpdatedAt
-		f.ResourceId = finding.ResourceId
-		f.ResourceType = finding.ResourceType
-		f.ResourceRegion = finding.ResourceRegion
-		f.ResourceTags = finding.ResourceTags
-		f.ResourceName = finding.ResourceName
-		f.ResourceAccountId = finding.ResourceAccountId
-		f.ResourceArn = finding.ResourceArn
-		f.ResourceOwnerAccountId = finding.ResourceOwnerAccountId
-		f.ResourcePartition = finding.ResourcePartition
-		f.ResourceRegion = finding.ResourceRegion
-		f.ResourceType = finding.ResourceType
-		f.ResourceAccountId = finding.ResourceAccountId
-		f.ResourceArn = finding.ResourceArn
-		f.ResourceOwnerAccountId = finding.ResourceOwnerAccountId
-		f.ResourcePartition = finding.ResourcePartition
-		f.ResourceRegion = finding.ResourceRegion
-		f.ResourceType = finding.ResourceType
-
-		findings = append(findings, *f)
+		f.Description = finding.Description
+		f.GeneratorId = finding.GeneratorId
+		f.FindingId = finding.Id
+		f.ProductArn = finding.ProductArn
+		f.ProductFields = finding.ProductFields
+		f.ProductName = finding.ProductName
+		f.Remediation = finding.Remediation
+		f.Resources = finding.Resources
+		// findings = append(findings, *f)
 	}
 	return findings
 }

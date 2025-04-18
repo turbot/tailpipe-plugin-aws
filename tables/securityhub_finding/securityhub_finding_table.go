@@ -6,7 +6,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
+	// "github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -52,10 +52,10 @@ func (c *SecurityHubFindingTable) EnrichRow(row *SecurityHubFinding, sourceEnric
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 
-	for _, resource := range row.Resources {
-		newAkas := tables.AwsAkasFromArn(*resource)
-		row.TpAkas = append(row.TpAkas, newAkas...)
-	}
+	// for _, resource := range row.Resources {
+	// 	newAkas := tables.AwsAkasFromArn(*resource)
+	// 	row.TpAkas = append(row.TpAkas, newAkas...)
+	// }
 
 	if row.Time != nil {
 		row.TpTimestamp = *row.Time
