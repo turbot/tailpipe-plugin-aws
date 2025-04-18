@@ -62,24 +62,6 @@ type SecurityHubFinding struct {
 	Vulnerabilities       []types.Vulnerability        `json:"vulnerabilities" parquet:"name=vulnerabilities"`
 	Workflow              *types.Workflow              `json:"workflow" parquet:"name=workflow"`
 	WorkflowState         types.WorkflowState          `json:"workflow_state" parquet:"name=workflow_state"`
-
-	// Event fields
-	EventCategory      *string                 `json:"eventCategory" parquet:"name=event_category"`
-	EventID            *string                 `json:"eventID" parquet:"name=event_id"`
-	EventName          *string                 `json:"eventName" parquet:"name=event_name"`
-	EventSource        *string                 `json:"eventSource" parquet:"name=event_source"`
-	EventTime          time.Time               `json:"eventTime" parquet:"name=event_time"`
-	EventType          *string                 `json:"eventType" parquet:"name=event_type"`
-	EventVersion       *string                 `json:"eventVersion" parquet:"name=event_version"`
-	ManagementEvent    bool                    `json:"managementEvent" parquet:"name=management_event"`
-	ReadOnly           bool                    `json:"readOnly" parquet:"name=read_only"`
-	RecipientAccountID *string                 `json:"recipientAccountId" parquet:"name=recipient_account_id"`
-	RequestID          *string                 `json:"requestID" parquet:"name=request_id"`
-	RequestParameters  *map[string]interface{} `json:"requestParameters" parquet:"name=request_parameters, type=JSON"`
-	ResponseElements   *map[string]interface{} `json:"responseElements" parquet:"name=response_elements, type=JSON"`
-	SourceIPAddress    *string                 `json:"sourceIPAddress" parquet:"name=source_ip_address"`
-	UserAgent          *string                 `json:"userAgent" parquet:"name=user_agent"`
-	UserIdentity       SecurityHubUserIdentity `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
 }
 
 // DetailFindingsData maps the `detail` field containing findings
@@ -93,52 +75,8 @@ type DetailFindingsData struct {
 	Time       *time.Time `json:"time,omitempty"`
 	Region     *string    `json:"region,omitempty"`
 	Detail     struct {
-		Findings           []types.AwsSecurityFinding `json:"findings" parquet:"name=findings, type=JSON"`
-		AwsRegion          *string                    `json:"awsRegion" parquet:"name=aws_region"`
-		EventCategory      *string                    `json:"eventCategory" parquet:"name=event_category"`
-		EventID            *string                    `json:"eventID" parquet:"name=event_id"`
-		EventName          *string                    `json:"eventName" parquet:"name=event_name"`
-		EventSource        *string                    `json:"eventSource" parquet:"name=event_source"`
-		EventTime          time.Time                  `json:"eventTime" parquet:"name=event_time"`
-		EventType          *string                    `json:"eventType" parquet:"name=event_type"`
-		EventVersion       *string                    `json:"eventVersion" parquet:"name=event_version"`
-		ManagementEvent    bool                       `json:"managementEvent" parquet:"name=management_event"`
-		ReadOnly           bool                       `json:"readOnly" parquet:"name=read_only"`
-		RecipientAccountID *string                    `json:"recipientAccountId" parquet:"name=recipient_account_id"`
-		RequestID          *string                    `json:"requestID" parquet:"name=request_id"`
-		RequestParameters  *map[string]interface{}    `json:"requestParameters" parquet:"name=request_parameters, type=JSON"`
-		ResponseElements   *map[string]interface{}    `json:"responseElements" parquet:"name=response_elements, type=JSON"`
-		SourceIPAddress    *string                    `json:"sourceIPAddress" parquet:"name=source_ip_address"`
-		UserAgent          *string                    `json:"userAgent" parquet:"name=user_agent"`
-		UserIdentity       SecurityHubUserIdentity    `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
+		Findings []types.AwsSecurityFinding `json:"findings" parquet:"name=findings, type=JSON"`
 	} `json:"detail" parquet:"name=detail, type=JSON"`
-}
-
-type SecurityHubUserIdentity struct {
-	AccessKeyID    *string                   `json:"accessKeyId"`
-	AccountID      *string                   `json:"accountId"`
-	Arn            *string                   `json:"arn"`
-	PrincipalID    *string                   `json:"principalId"`
-	SessionContext SecurityHubSessionContext `json:"sessionContext"`
-	Type           *string                   `json:"type"`
-}
-
-type SecurityHubSessionContext struct {
-	Attributes    Attributes               `json:"attributes"`
-	SessionIssuer SecurityHubSessionIssuer `json:"sessionIssuer"`
-}
-
-type Attributes struct {
-	CreationDate     time.Time `json:"creationDate"`
-	MfaAuthenticated *string   `json:"mfaAuthenticated"`
-}
-
-type SecurityHubSessionIssuer struct {
-	AccountID   string `json:"accountId"`
-	Arn         string `json:"arn"`
-	PrincipalID string `json:"principalId"`
-	Type        string `json:"type"`
-	UserName    string `json:"userName"`
 }
 
 func (c *SecurityHubFinding) GetColumnDescriptions() map[string]string {
