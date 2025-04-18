@@ -11,49 +11,60 @@ type SecurityHubFinding struct {
 	schema.CommonFields
 
 	// Top level fields
-	Version    *string             `json:"version,omitempty"`
-	ID         *string             `json:"id,omitempty"`
-	DetailType *string             `json:"detail_type,omitempty"`
-	Source     *string             `json:"source,omitempty"`
-	Account    *string             `json:"account,omitempty"`
-	Time       *time.Time          `json:"time,omitempty"`
-	Region     *string             `json:"region,omitempty"`
+	Version    *string    `json:"version,omitempty"`
+	ID         *string    `json:"id,omitempty"`
+	DetailType *string    `json:"detail_type,omitempty"`
+	Source     *string    `json:"source,omitempty"`
+	Account    *string    `json:"account,omitempty"`
+	Time       *time.Time `json:"time,omitempty"`
+	Region     *string    `json:"region,omitempty"`
 	// Detail     *DetailFindingsData `json:"detail,omitempty" parquet:"name=detail, type=JSON"`
 	// Finding array schema
-	AwsAccountId       *string                   `json:"awsAccountId" parquet:"name=aws_account_id"`
-	CreatedAt          *string                   `json:"createdAt" parquet:"name=created_at"`
-	Description *string `json:"description" parquet:"name=description"`
-	GeneratorId *string `json:"generatorId" parquet:"name=generator_id"`
-	FindingId *string `json:"findingId" parquet:"name=finding_id"`
-	ProductArn *string `json:"productArn" parquet:"name=product_arn"`
+	AwsAccountId  *string                 `json:"awsAccountId" parquet:"name=aws_account_id"`
+	CreatedAt     *string                 `json:"createdAt" parquet:"name=created_at"`
+	Description   *string                 `json:"description" parquet:"name=description"`
+	GeneratorId   *string                 `json:"generatorId" parquet:"name=generator_id"`
+	FindingId     *string                 `json:"findingId" parquet:"name=finding_id"`
+	ProductArn    *string                 `json:"productArn" parquet:"name=product_arn"`
 	ProductFields *map[string]interface{} `json:"productFields" parquet:"name=product_fields, type=JSON"`
-	ProductName *string `json:"productName" parquet:"name=product_name"`
-	Remediation *string `json:"remediation" parquet:"name=remediation"`
-	Resources []types.Resource `json:"resources" parquet:"name=resources, type=JSON"`
-	SchemaVersion *string `json:"schemaVersion" parquet:"name=schema_version"`
-	Title *string `json:"title" parquet:"name=title"`
+	ProductName   *string                 `json:"productName" parquet:"name=product_name"`
+	Remediation   *string                 `json:"remediation" parquet:"name=remediation"`
+	Resources     []types.Resource        `json:"resources" parquet:"name=resources, type=JSON"`
+	SchemaVersion *string                 `json:"schemaVersion" parquet:"name=schema_version"`
+	Title         *string                 `json:"title" parquet:"name=title"`
 	// It is for schema only
-	AwsRegion          *string                   `json:"awsRegion" parquet:"name=aws_region"`
-	EventCategory      *string                   `json:"eventCategory" parquet:"name=event_category"`
-	EventID            *string                   `json:"eventID" parquet:"name=event_id"`
-	EventName          *string                   `json:"eventName" parquet:"name=event_name"`
-	EventSource        *string                   `json:"eventSource" parquet:"name=event_source"`
-	EventTime          time.Time                 `json:"eventTime" parquet:"name=event_time"`
-	EventType          *string                   `json:"eventType" parquet:"name=event_type"`
-	EventVersion       *string                   `json:"eventVersion" parquet:"name=event_version"`
-	ManagementEvent    bool                      `json:"managementEvent" parquet:"name=management_event"`
-	ReadOnly           bool                      `json:"readOnly" parquet:"name=read_only"`
-	RecipientAccountID *string                   `json:"recipientAccountId" parquet:"name=recipient_account_id"`
-	RequestID          *string                   `json:"requestID" parquet:"name=request_id"`
-	RequestParameters  *map[string]interface{}   `json:"requestParameters" parquet:"name=request_parameters, type=JSON"`
-	ResponseElements   *map[string]interface{}   `json:"responseElements" parquet:"name=response_elements, type=JSON"`
-	SourceIPAddress    *string                   `json:"sourceIPAddress" parquet:"name=source_ip_address"`
-	UserAgent          *string                   `json:"userAgent" parquet:"name=user_agent"`
-	UserIdentity       SecurityHubUserIdentity   `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
+	AwsRegion          *string                 `json:"awsRegion" parquet:"name=aws_region"`
+	EventCategory      *string                 `json:"eventCategory" parquet:"name=event_category"`
+	EventID            *string                 `json:"eventID" parquet:"name=event_id"`
+	EventName          *string                 `json:"eventName" parquet:"name=event_name"`
+	EventSource        *string                 `json:"eventSource" parquet:"name=event_source"`
+	EventTime          time.Time               `json:"eventTime" parquet:"name=event_time"`
+	EventType          *string                 `json:"eventType" parquet:"name=event_type"`
+	EventVersion       *string                 `json:"eventVersion" parquet:"name=event_version"`
+	ManagementEvent    bool                    `json:"managementEvent" parquet:"name=management_event"`
+	ReadOnly           bool                    `json:"readOnly" parquet:"name=read_only"`
+	RecipientAccountID *string                 `json:"recipientAccountId" parquet:"name=recipient_account_id"`
+	RequestID          *string                 `json:"requestID" parquet:"name=request_id"`
+	RequestParameters  *map[string]interface{} `json:"requestParameters" parquet:"name=request_parameters, type=JSON"`
+	ResponseElements   *map[string]interface{} `json:"responseElements" parquet:"name=response_elements, type=JSON"`
+	SourceIPAddress    *string                 `json:"sourceIPAddress" parquet:"name=source_ip_address"`
+	UserAgent          *string                 `json:"userAgent" parquet:"name=user_agent"`
+	UserIdentity       SecurityHubUserIdentity `json:"userIdentity" parquet:"name=user_identity, type=JSON"`
 }
 
 // DetailFindingsData maps the `detail` field containing findings
+// The following struct will be used for only parse the log lines
 type DetailFindingsData struct {
+	Version    *string    `json:"version,omitempty"`
+	ID         *string    `json:"id,omitempty"`
+	DetailType *string    `json:"detail_type,omitempty"`
+	Source     *string    `json:"source,omitempty"`
+	Account    *string    `json:"account,omitempty"`
+	Time       *time.Time `json:"time,omitempty"`
+	Region     *string    `json:"region,omitempty"`
+	Detail     struct {
+		Findings []types.AwsSecurityFinding `json:"findings" parquet:"name=findings, type=JSON"`
+	} `json:"detail" parquet:"name=detail, type=JSON"`
 	AwsRegion          *string                 `json:"awsRegion" parquet:"name=aws_region"`
 	EventCategory      *string                 `json:"eventCategory" parquet:"name=event_category"`
 	EventID            *string                 `json:"eventID" parquet:"name=event_id"`
