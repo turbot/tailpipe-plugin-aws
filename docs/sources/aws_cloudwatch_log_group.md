@@ -61,9 +61,9 @@ partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
 
 ## Arguments
 
-| Argument         | Type             | Required | Default                  | Description                                                                                                                                    |
-| ---------------- | ---------------- | -------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| connection       | `connection.aws` | No       | `connection.aws.default` | The [AWS connection](https://hub.tailpipe.io/plugins/turbot/aws#connection-credentials) to use to connect to the AWS account.                  |
-| log_group_name   | String           | Yes      |                          | The name of the CloudWatch log group to collect logs from.                                                                                     |
-| log_stream_names | List(String)     | No       | ["*"]                    | A list of log stream names to collect logs from. Wildcard characters are supported.                                                            |
-| region           | String           | Yes      |                          | The AWS region where the log group is located.                                                                                                 |
+| Argument         | Type             | Required | Default                  | Description                                                                                                                   |
+| ---------------- | ---------------- | -------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| connection       | `connection.aws` | No       | `connection.aws.default` | The [AWS connection](https://hub.tailpipe.io/plugins/turbot/aws#connection-credentials) to use to connect to the AWS account. |
+| log_group_name   | String           | Yes      |                          | The name of the CloudWatch log group to collect logs from.                                                                    |
+| log_stream_names | List(String)     | No       | `["*"]`                  | A list of log stream names to collect logs from. Wildcard characters are supported.                                           |
+| region           | String           | Yes      |                          | The AWS region where the log group is located.                                                                                |
