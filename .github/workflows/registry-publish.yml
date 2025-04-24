@@ -12,3 +12,4 @@ jobs:
     with:
       releaseTimeout: 60m
       pipeling: tailpipe
+      useCgo: true
