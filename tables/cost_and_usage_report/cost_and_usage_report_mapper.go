@@ -29,7 +29,7 @@ func (c *CostAndUsageReportMapper) Identifier() string {
 
 func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers.MapOption[*CostUsageReport]) (*CostUsageReport, error) {
 	var input []byte
-	// apply opts - maybe we can use this to set headers?
+	// apply opts
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -45,9 +45,6 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 		return nil, error_types.NewRowErrorWithMessage("unable to map row, invalid type received")
 	}
 
-	// create a new CostUsageReport object with initialised maps
-	output := NewCostUsageReport()
-
 	// read CSV line
 	reader := csv.NewReader(bytes.NewReader(input))
 	record, err := reader.Read()
@@ -56,7 +53,14 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 		return nil, error_types.NewRowErrorWithMessage("failed to read log line")
 	}
 
-	// TODO: validate fields/headers count
+	// validate header/value count
+	if len(record) != len(c.headers) {
+		slog.Error("CostAndUsageReportMapper.Map failed to map row due to header/value count mismatch", "expected", len(c.headers), "got", len(record))
+		return nil, error_types.NewRowErrorWithMessage("row fields doesn't match count of headers")
+	}
+
+	// create a new CostUsageReport object with initialised maps
+	output := NewCostUsageReport()
 
 	// map to struct (normalize headers)
 	for i, value := range record {
