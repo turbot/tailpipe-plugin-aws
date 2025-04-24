@@ -4,10 +4,27 @@ go 1.24
 
 toolchain go1.24.1
 
-//	github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
-replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
+//replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
+//replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
 
-require github.com/turbot/tailpipe-plugin-sdk v0.3.1
+require (
+	github.com/aws/aws-sdk-go v1.55.6
+	github.com/aws/aws-sdk-go-v2 v1.36.3
+	github.com/aws/aws-sdk-go-v2/config v1.29.9
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.66
+	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.47.1
+	github.com/aws/aws-sdk-go-v2/service/guardduty v1.54.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.2
+	github.com/elastic/go-grok v0.3.1
+	github.com/hashicorp/hcl/v2 v2.23.0
+	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
+	github.com/rs/xid v1.6.0
+	github.com/turbot/go-kit v1.2.0
+	github.com/turbot/pipe-fittings/v2 v2.3.3
+	github.com/turbot/tailpipe-plugin-sdk v0.4.0-rc.0
+	golang.org/x/sync v0.12.0
+)
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
@@ -172,14 +189,14 @@ require (
 	go.opentelemetry.io/otel/trace v1.31.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/term v0.29.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
@@ -193,22 +210,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	oras.land/oras-go/v2 v2.5.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
-)
-
-require (
-	github.com/aws/aws-sdk-go v1.55.6
-	github.com/aws/aws-sdk-go-v2 v1.36.3
-	github.com/aws/aws-sdk-go-v2/config v1.29.9
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.62
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.66
-	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.47.1
-	github.com/aws/aws-sdk-go-v2/service/guardduty v1.54.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.78.2
-	github.com/elastic/go-grok v0.3.1
-	github.com/hashicorp/hcl/v2 v2.23.0
-	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
-	github.com/rs/xid v1.6.0
-	github.com/turbot/go-kit v1.2.0
-	github.com/turbot/pipe-fittings/v2 v2.3.3
-	golang.org/x/sync v0.12.0
 )
