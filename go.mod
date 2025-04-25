@@ -10,7 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.67
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.72
-	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.47.1
 	github.com/aws/aws-sdk-go-v2/service/guardduty v1.54.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.79.2
 	github.com/elastic/go-grok v0.3.1
