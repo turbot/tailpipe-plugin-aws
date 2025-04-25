@@ -4,22 +4,61 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - env:
-      - CGO_ENABLED=0
-      - GO111MODULE=on
-      - GOPRIVATE=github.com/turbot
+  - id: tailpipe-darwin-amd64
+    binary: "{{ .ProjectName }}.plugin"
     goos:
-      - linux
       - darwin
-
     goarch:
       - amd64
-      - arm64
+    env:
+      - CC=o64-clang
+      - CXX=o64-clang++
+    flags:
+      - -tags=netgo
+    ldflags:
+      - -s -w
 
-    id: "tailpipe"
+  - id: tailpipe-darwin-arm64
     binary: "{{ .ProjectName }}.plugin"
-#    flags:
-#      - -tags=netgo
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    env:
+      - CC=oa64-clang
+      - CXX=oa64-clang++
+    flags:
+      - -tags=netgo
+    ldflags:
+      - -s -w
+
+  - id: tailpipe-linux-arm64
+    binary: "{{ .ProjectName }}.plugin"
+    goos:
+      - linux
+    goarch:
+      - arm64
+    env:
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+    flags:
+      - -tags=netgo
+    ldflags:
+      - -s -w
+
+  - id: tailpipe-linux-amd64
+    binary: "{{ .ProjectName }}.plugin"
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=x86_64-linux-gnu-gcc
+      - CXX=x86_64-linux-gnu-g++
+    flags:
+      - -tags=netgo
+    ldflags:
+      - -s -w
 
 archives:
   - format: gz

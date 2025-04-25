@@ -138,6 +138,16 @@ type CostUsageReport struct {
 	SplitLineItemUnusedCost                                  *float64                `json:"split_line_item_unused_cost,omitempty" parquet:"name=split_line_item_unused_cost"`
 }
 
+func NewCostUsageReport() *CostUsageReport {
+	return &CostUsageReport{
+		Product:      &map[string]interface{}{},
+		Reservation:  &map[string]interface{}{},
+		CostCategory: &map[string]interface{}{},
+		Discount:     &map[string]interface{}{},
+		ResourceTags: &map[string]interface{}{},
+	}
+}
+
 func (c *CostUsageReport) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"bill_billing_entity":                                      "Helps in identify whether the invoices or transactions are for AWS Marketplace or for purchases of other AWS services.",
