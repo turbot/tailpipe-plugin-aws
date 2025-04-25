@@ -35,16 +35,20 @@ func (t *CostOptimizationRecommendationsTable) GetSourceMetadata() ([]*table.Sou
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
+			Mapper:     NewCostOptimizationRecommendationMapper(),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewCostOptimizationRecommendationExtractor()),
+				artifact_source.WithRowPerLine(),
+				artifact_source.WithHeaderRowNotification(","),
 			},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
+			Mapper:     NewCostOptimizationRecommendationMapper(),
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewCostOptimizationRecommendationExtractor()),
+				artifact_source.WithRowPerLine(),
+				artifact_source.WithHeaderRowNotification(","),
 			},
 		},
 	}, nil

@@ -49,6 +49,14 @@ type CostOptimizationRecommendation struct {
 	Tags                       *map[string]string      `json:"tags,omitempty" parquet:"name=tags"`
 }
 
+func NewCostOptimizationRecommendation() *CostOptimizationRecommendation {
+	return &CostOptimizationRecommendation{
+		CurrentResourceDetails:     &map[string]interface{}{},
+		RecommendedResourceDetails: &map[string]interface{}{},
+		Tags:                       &map[string]string{},
+	}
+}
+
 func (c *CostOptimizationRecommendation) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"account_id":                                   "The account that the recommendation is for.",

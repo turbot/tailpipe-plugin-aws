@@ -59,6 +59,14 @@ type CostUsageFocus struct {
 	XUsageType                 *string            `json:"x_UsageType,omitempty" parquet:"name=x_usage_type"`
 }
 
+func NewCostUsageFocus() *CostUsageFocus {
+	return &CostUsageFocus{
+		Tags:            &map[string]string{},
+		XCostCategories: &map[string]string{},
+		XDiscounts:      &map[string]string{},
+	}
+}
+
 func (c *CostUsageFocus) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"availability_zone":            "A provider-assigned identifier for a physically separated and isolated area within a Region that provides high availability and fault tolerance.",

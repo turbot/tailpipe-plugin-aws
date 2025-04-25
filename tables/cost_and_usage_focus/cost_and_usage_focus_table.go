@@ -34,16 +34,20 @@ func (c *CostUsageFocusTable) GetSourceMetadata() ([]*table.SourceMetadata[*Cost
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
+			Mapper:     NewCostAndUsageFocusMapper(),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
+				artifact_source.WithRowPerLine(),
+				artifact_source.WithHeaderRowNotification(","),
 			},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
+			Mapper:     NewCostAndUsageFocusMapper(),
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
+				artifact_source.WithRowPerLine(),
+				artifact_source.WithHeaderRowNotification(","),
 			},
 		},
 	}, nil
