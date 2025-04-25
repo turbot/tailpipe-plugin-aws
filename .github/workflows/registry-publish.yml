@@ -3,7 +3,7 @@ name: Build and Deploy OCI Image
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   registry_publish_workflow_ghcr:
@@ -12,3 +12,4 @@ jobs:
     with:
       releaseTimeout: 60m
       pipeling: tailpipe
+      useCgo: true
