@@ -1,3 +1,20 @@
+## v0.9.1 [2025-04-25]
+
+_Enhancements_
+
+- Improved error reporting for `aws_s3_bucket` source. ([#159](https://github.com/turbot/tailpipe-plugin-aws/pull/159))
+
+_Bug fixes_
+
+- Fixed a memory consumption issue with `aws_cost_*` tables during log collection. ([#159](https://github.com/turbot/tailpipe-plugin-aws/pull/159))
+
+_Dependencies_
+
+- Bumped github.com/aws/aws-sdk-go-v2/credentials from 1.17.62 to 1.17.67. ([#150](https://github.com/turbot/tailpipe-plugin-aws/pull/150))
+- Bumped github.com/aws/aws-sdk-go-v2/feature/s3/manager. ([#151](https://github.com/turbot/tailpipe-plugin-aws/pull/151))
+- Bumped github.com/turbot/tailpipe-plugin-sdk from v0.2.0 to v0.4.0. ([#159](https://github.com/turbot/tailpipe-plugin-aws/pull/159))
+- Bumped golang.org/x/net from 0.36.0 to 0.38.0. ([#154](https://github.com/turbot/tailpipe-plugin-aws/pull/154))
+
 ## v0.9.0 [2025-04-17]
 
 _Enhancements_
