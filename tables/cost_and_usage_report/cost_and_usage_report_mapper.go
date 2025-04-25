@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stoewer/go-strcase"
+
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/error_types"
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
@@ -64,7 +66,7 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 
 	// map to struct (normalize headers)
 	for i, value := range record {
-		field := strings.ToLower(c.headers[i])
+		field := c.headers[i]
 
 		switch field {
 		case "bill_billing_entity":
@@ -327,7 +329,7 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 				output.ReservationRecurringFeeForUsage = &f
 				(*output.Reservation)["recurring_fee_for_usage"] = f
 			}
-		case "reservation_reservation_a_r_n":
+		case "reservation_reservation_arn":
 			output.ReservationArn = &value
 			(*output.Reservation)["reservation_arn"] = value
 		case "reservation_start_time":
@@ -412,7 +414,7 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 			}
 		case "savings_plan_region":
 			output.SavingsPlanRegion = &value
-		case "savings_plan_savings_plan_a_r_n":
+		case "savings_plan_savings_plan_arn":
 			output.SavingsPlanSavingsPlanARN = &value
 		case "savings_plan_savings_plan_effective_cost":
 			if f, err := strconv.ParseFloat(value, 64); err == nil {
@@ -489,5 +491,12 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 
 // OnHeader implementOnHeader so that when the collector is notified of a header row, we get notified
 func (c *CostAndUsageReportMapper) OnHeader(header []string) {
-	c.headers = header
+	newHeaders := make([]string, len(header))
+	// set headers but normalize first
+	for _, h := range header {
+		v := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(h, "/", "_"), ":", "_"), " ", "_"), ".", "_"), "a_r_n", "arn")
+		v = strcase.SnakeCase(v)
+		newHeaders = append(newHeaders, strings.ToLower(v))
+	}
+	c.headers = newHeaders
 }
