@@ -55,6 +55,14 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 	default:
 		return nil, fmt.Errorf("expected string or []byte, got %T", a)
 	}
+	raw = strings.TrimSpace(raw)
+	if strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") {
+		lambdaLog, err := parseLambdaPainTextLog(raw)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
+		}
+		return lambdaLog, nil
+	}
 
 	// First unmarshal into a minimal structure to detect log type
 	var probe map[string]json.RawMessage
@@ -117,6 +125,8 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			row.LogLevel = &appLog.Level
 			row.Message = &appLog.Message
 			row.RequestID = &appLog.RequestID
+
+			return row, nil
 		}
 	} else if len(strings.Fields(raw)) >= 4 && isTimestamp(strings.Fields(raw)[0]) { // plain text application log
 		// Handle plain text application logs (format: timestamp requestID logLevel message)
@@ -140,14 +150,17 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			msg := strings.Join(fields[3:], " ")
 			row.Message = &msg
 		}
-	} else {
-		// Handle legacy plain text system logs (START, END, REPORT format)
-		row, err := parseLambdaPainTextLog(raw)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
-		}
-		row.Message = &raw
 	}
+	// else {
+	// 	// Handle legacy plain text system logs (START, END, REPORT format)
+	// 	row, err := parseLambdaPainTextLog(raw)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
+	// 	}
+	// 	row.Message = &raw
+	// }
+
+	row.RawMessage = &raw
 
 	return row, nil
 }
@@ -160,30 +173,49 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 // REPORT RequestId: 8b133862-5331-4ded-ac5d-1ad5da5aee81 Duration: 123.45 ms Billed Duration: 124 ms Memory Size: 128 MB Max Memory Used: 84 MB
 func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 	log := &LambdaLog{}
-	now := time.Now().UTC()
-	log.Timestamp = &now
-
+	if id := extractAfter(line, "RequestId: "); id != "" {
+		log.RequestID = &id
+	}
+	log.RawMessage = &line
 	switch {
 	case strings.HasPrefix(line, "START RequestId:"):
 		// Parse START log line
 		log.LogType = ptr("START")
 		if id := extractAfter(line, "START RequestId: "); id != "" {
 			log.RequestID = ptr(strings.Fields(id)[0])
+			if len(strings.Split(line, "RequestId: " + id)[1]) > 0 {
+				log.Message = &strings.Split(line, "RequestId: " + id)[1]
+			}
+		} else {
+			log.Message = ptr(line)
 		}
-		log.Message = ptr(line)
-
+	case strings.HasPrefix(line, "INIT_START"):
+		// Parse START log line
+		log.LogType = ptr("INIT_START")
+		if id := extractAfter(line, "INIT_START RequestId: "); id != "" {
+			log.RequestID = ptr(strings.Fields(id)[0])
+			if len(strings.Split(line, "RequestId: " + id)[1]) > 0 {
+				log.Message = &strings.Split(line, "RequestId: " + id)[1]
+			}
+		} else {
+			msg := strings.Split(line, "INIT_START " + id)[1]
+			log.Message = &msg
+		}
 	case strings.HasPrefix(line, "END RequestId:"):
 		// Parse END log line
 		log.LogType = ptr("END")
 		if id := extractAfter(line, "END RequestId: "); id != "" {
 			log.RequestID = ptr(strings.Fields(id)[0])
+			if len(strings.Split(line, "RequestId: " + id)[1]) > 0 {
+				log.Message = &strings.Split(line, "RequestId: " + id)[1]
+			}
+		} else {
+			log.Message = ptr(line)
 		}
-		log.Message = ptr(line)
 
 	case strings.HasPrefix(line, "REPORT RequestId:"):
 		// Parse REPORT log line which contains metrics
 		log.LogType = ptr("REPORT")
-		log.Message = ptr(line)
 
 		// Extract RequestId
 		if id := extractAfter(line, "REPORT RequestId: "); id != "" {
