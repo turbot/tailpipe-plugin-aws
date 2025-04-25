@@ -74,12 +74,20 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 	var arnRegex = regexp.MustCompile(`arn:aws:[^,\s'"\\]+`)
 
 	seen := map[string]struct{}{}
-	for _, match := range arnRegex.FindAllString(*row.Message, -1) {
-		if _, exists := seen[match]; !exists {
-			seen[match] = struct{}{}
-			row.TpAkas = append(row.TpAkas, match)
+	if row.Message != nil {
+		for _, match := range arnRegex.FindAllString(*row.Message, -1) {
+			if _, exists := seen[match]; !exists {
+				seen[match] = struct{}{}
+				row.TpAkas = append(row.TpAkas, match)
+			}
 		}
 	}
+
+	row.LogGroupName = row.TpSourceName
+
+	// if row.Message == nil {
+	// 	return nil, nil
+	// }
 
 	// TODO: Add enrichment fields
 

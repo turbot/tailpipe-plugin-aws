@@ -9,11 +9,13 @@ import (
 type LambdaLog struct {
 	schema.CommonFields
 
-	Timestamp *time.Time `json:"timestamp,omitempty"`
-	RequestID *string    `json:"request_id,omitempty"`
-	LogType   *string    `json:"log_type,omitempty"`
-	LogLevel  *string    `json:"log_level,omitempty"`
-	Message   *string    `json:"message,omitempty"`
+	Timestamp    *time.Time `json:"timestamp,omitempty"`
+	RequestID    *string    `json:"request_id,omitempty"`
+	LogType      *string    `json:"log_type,omitempty"`
+	LogLevel     *string    `json:"log_level,omitempty"`
+	Message      *string    `json:"message,omitempty"`
+	RawMessage   *string    `json:"raw_message,omitempty"`
+	LogGroupName *string    `json:"log_group_name,omitempty"`
 
 	// Report Specific Fields
 	Duration       *float64 `json:"duration,omitempty"`
