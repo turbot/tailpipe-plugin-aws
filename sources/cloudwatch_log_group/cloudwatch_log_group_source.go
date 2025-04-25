@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -98,6 +99,8 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
+	slog.Debug("Total log stream collected based on '--from' flag: ", len(logStreamCollection))
+
 	// Filter out the log streams that are not in the list of log stream names
 	if len(s.Config.LogStreamNames) > 0 {
 		filteredLogStreamCollection := []cwTypes.LogStream{}
@@ -120,105 +123,92 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 	slog.Info("Starting collection", "total_streams", len(logStreamCollection))
 
-	// Process each log stream
-	for _, ls := range logStreamCollection {
+	batchLogStream := [][]string{}
 
-		slog.Info("Processing stream", "stream", *ls.LogStreamName)
-		// Set up source enrichment fields for the current stream
-		sourceEnrichmentFields := &schema.SourceEnrichment{
-			CommonFields: schema.CommonFields{
-				TpSourceType:     AwsCloudwatchLogGroupSourceIdentifier,
-				TpSourceName:     &s.Config.LogGroupName,
-				TpSourceLocation: ls.LogStreamName,
-			},
+	streamNames := []string{}
+
+	for _, stream := range logStreamCollection {
+		streamNames = append(streamNames, *stream.LogStreamName)
+	}
+
+	// Loop through the array with step 2 to create sub-arrays of size 2
+	for i := 0; i < len(streamNames); i += 100 {
+		// Append a sub-array of size 2 (or less if the last one is incomplete)
+		end := i + 100
+		if end > len(streamNames) {
+			end = len(streamNames)
 		}
+		batchLogStream = append(batchLogStream, streamNames[i:end])
+	}
 
+	batchCount := 0
+	for _, batch := range batchLogStream {
+		batchCount++
+		slog.Info("Processing batch log streams: ", batchCount)
 		// Convert time range to milliseconds for CloudWatch API
 		startTimeMillis := s.FromTime.UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
 
-		// Configure the GetLogEvents API request
-		input := &cloudwatchlogs.GetLogEventsInput{
-			LogGroupName:  &s.Config.LogGroupName,
-			LogStreamName: ls.LogStreamName,
-			StartFromHead: aws.Bool(true), // Start from oldest events
-			StartTime:     aws.Int64(startTimeMillis),
-			EndTime:       aws.Int64(endTimeMillis),
-			Limit:         aws.Int32(10000), // Maximum allowed by AWS API
+		input := &cloudwatchlogs.FilterLogEventsInput{
+			LogGroupName:   &s.Config.LogGroupName,
+			LogStreamNames: batch,
+			StartTime:      aws.Int64(startTimeMillis),
+			EndTime:        aws.Int64(endTimeMillis),
 		}
 
-		// For incremental collection, start from the last collected event time
-		if s.state.GetEndTimeForStream(*ls.LogStreamName).UnixMilli() > startTimeMillis {
-			input.StartTime = aws.Int64(s.state.GetEndTimeForStream(*ls.LogStreamName).UnixMilli())
+		events, err := s.filterLogEvents(ctx, input)
+		if err != nil {
+			s.errorList = append(s.errorList, fmt.Errorf("failed to filter log events for stream %s: %w", batch, err))
+			continue
 		}
 
-		var (
-			nextToken   *string
-			totalEvents int
-		)
+		events = sortFilteredLogEvents(events)
 
-		// Use paginator to handle response pagination automatically
-		paginator := cloudwatchlogs.NewGetLogEventsPaginator(s.client, input)
-		for paginator.HasMorePages() {
-			output, err := paginator.NextPage(ctx)
-			if err != nil {
-				s.errorList = append(s.errorList, fmt.Errorf("failed to get log events for stream %s: %w", *ls.LogStreamName, err))
-				break // Skip to next stream on error
+		// Process each event in the page
+		for _, event := range events {
+			if event.Message == nil || *event.Message == "" {
+				s.errorList = append(s.errorList, fmt.Errorf("empty message in stream %s at timestamp %d", *event.LogStreamName, *event.Timestamp))
+				continue
 			}
 
-			// Break if no events in this page
-			if len(output.Events) == 0 {
-				slog.Debug("No events in page", "stream", *ls.LogStreamName)
-				break
+			slog.Info("Processing stream", "stream", *event.LogStreamName)
+			// Set up source enrichment fields for the current stream
+			sourceEnrichmentFields := &schema.SourceEnrichment{
+				CommonFields: schema.CommonFields{
+					TpSourceType:     AwsCloudwatchLogGroupSourceIdentifier,
+					TpSourceName:     &s.Config.LogGroupName,
+					TpSourceLocation: event.LogStreamName,
+				},
 			}
 
-			// Process each event in the page
-			for _, event := range output.Events {
-				if event.Message == nil || *event.Message == "" {
-					s.errorList = append(s.errorList, fmt.Errorf("empty or nil message in stream %s at timestamp %d", *ls.LogStreamName, *event.Timestamp))
-					continue
-				}
+			timestamp := time.UnixMilli(*event.Timestamp)
 
-				timestamp := time.UnixMilli(*event.Timestamp)
-
-				// Skip already collected events based on state
-				if !s.state.ShouldCollect(*ls.LogStreamName, timestamp) {
-					slog.Debug("Skipping already collected event",
-						"stream", *ls.LogStreamName,
-						"timestamp", timestamp.Format(time.RFC3339))
-					continue
-				}
-
-				sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp
-				// Create row data with the event message and enrichment
-				row := &types.RowData{
-					Data:             event.Message,
-					SourceEnrichment: sourceEnrichmentFields,
-				}
-
-				// Update collection state with the processed event
-				if err := s.state.OnCollected(*ls.LogStreamName, timestamp); err != nil {
-					s.errorList = append(s.errorList, fmt.Errorf("failed to update collection state for stream %s: %w", *ls.LogStreamName, err))
-					continue
-				}
-
-				// Send the row for processing
-				if err := s.OnRow(ctx, row); err != nil {
-					s.errorList = append(s.errorList, fmt.Errorf("error processing row in stream %s: %w", *ls.LogStreamName, err))
-					continue
-				}
-
-				totalEvents++
+			// Skip already collected events based on state
+			if !s.state.ShouldCollect(*event.LogStreamName, timestamp) {
+				slog.Debug("Skipping already collected event",
+					"stream", *event.LogStreamName,
+					"timestamp", timestamp.Format(time.RFC3339))
+				continue
 			}
 
-			// Break if we've received the same token twice (end of stream)
-			if nextToken != nil && *output.NextForwardToken == *nextToken {
-				slog.Debug("Stopping: NextForwardToken hasn't changed",
-					"stream", *ls.LogStreamName,
-					"total_events", totalEvents)
-				break
+			sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp
+			// Create row data with the event message and enrichment
+			row := &types.RowData{
+				Data:             event.Message,
+				SourceEnrichment: sourceEnrichmentFields,
 			}
-			nextToken = output.NextForwardToken
+
+			// Update collection state with the processed event
+			if err := s.state.OnCollected(*event.LogStreamName, timestamp); err != nil {
+				s.errorList = append(s.errorList, fmt.Errorf("failed to update collection state for stream %s: %w", *event.LogStreamName, err))
+				continue
+			}
+
+			// Send the row for processing
+			if err := s.OnRow(ctx, row); err != nil {
+				s.errorList = append(s.errorList, fmt.Errorf("error processing row in stream %s: %w", *event.LogStreamName, err))
+				continue
+			}
 		}
 	}
 
@@ -230,42 +220,108 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	return nil
 }
 
+func (s *AwsCloudWatchLogGroupSource) filterLogEvents(ctx context.Context, input *cloudwatchlogs.FilterLogEventsInput) ([]cwTypes.FilteredLogEvent, error) {
+
+	allEvents := []cwTypes.FilteredLogEvent{}
+
+	paginator := cloudwatchlogs.NewFilterLogEventsPaginator(s.client, input)
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, event := range output.Events {
+			allEvents = append(allEvents, event)
+		}
+	}
+
+	return allEvents, nil
+}
+
+// Function to sort []FilteredLogEvent by LogStreamName and Timestamp
+func sortFilteredLogEvents(events []cwTypes.FilteredLogEvent) []cwTypes.FilteredLogEvent {
+	// Sorting the events by LogStreamName and then by Timestamp
+	sort.Slice(events, func(i, j int) bool {
+		// First, sort by LogStreamName, then by Timestamp
+		if *events[i].LogStreamName != *events[j].LogStreamName {
+			return *events[i].LogStreamName < *events[j].LogStreamName
+		}
+		return *events[i].Timestamp < *events[j].Timestamp
+	})
+
+	return events
+}
+
 // getLogStreamsToCollect retrieves all log streams in a log group that match the specified prefix
 // It handles pagination of the DescribeLogStreams API response
 func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context) ([]cwTypes.LogStream, error) {
 	var logStreams []cwTypes.LogStream
 	var nextToken *string
 
-	for {
-		input := &cloudwatchlogs.DescribeLogStreamsInput{
-			LogGroupName: &s.Config.LogGroupName,
-			NextToken:    nextToken,
-		}
+	input := &cloudwatchlogs.DescribeLogStreamsInput{
+		LogGroupName: &s.Config.LogGroupName,
+		NextToken:    nextToken,
+		OrderBy:      cwTypes.OrderByLastEventTime,
+		Descending:   aws.Bool(true),
+	}
 
-		output, err := s.client.DescribeLogStreams(ctx, input)
+	paginator := cloudwatchlogs.NewDescribeLogStreamsPaginator(s.client, input, func(o *cloudwatchlogs.DescribeLogStreamsPaginatorOptions) {
+		o.Limit = int32(50)
+		o.StopOnDuplicateToken = true
+	})
+
+	// Flag to indicate whether to stop pagination
+	stopPagination := false
+
+	// Collect the log streams first
+	for paginator.HasMorePages() && !stopPagination {
+		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to describe log streams, %w", err)
 		}
 
-		// Break if no streams found in this page
-		if len(output.LogStreams) == 0 {
-			slog.Debug("No log streams found", "logGroupName", s.Config.LogGroupName)
-			break
+		for _, ls := range output.LogStreams {
+			// Skip if LastEventTimestamp is nil
+			if ls.LastEventTimestamp == nil {
+				continue
+			}
+
+			// Convert LastEventTimestamp once and reuse
+			lastEventTime := time.UnixMilli(*ls.LastEventTimestamp)
+
+			// If LastEventTimestamp is before FromTime, break the loop
+			if lastEventTime.Before(s.FromTime) {
+				stopPagination = true
+				break
+			}
+
+			// Add log stream to the collection
+			logStreams = append(logStreams, ls)
 		}
 
-		logStreams = append(logStreams, output.LogStreams...)
-
-		// Break if no more pages
-		if output.NextToken == nil {
-			slog.Debug("No more log streams to fetch", "logGroupName", s.Config.LogGroupName, "total_streams", len(logStreams))
+		// Check if we need to stop pagination
+		if stopPagination {
+			slog.Debug("Stopping pagination as lastEventTime is before FromTime")
 			break
 		}
-		nextToken = output.NextToken
 	}
 
+	// If no log streams were collected, log the information and return
 	if len(logStreams) == 0 {
 		slog.Info("No log streams found to collect", "logGroupName", s.Config.LogGroupName)
+		return nil, nil
 	}
+
+	// Sort the log streams from oldest to newest based on LastEventTimestamp
+	sort.Slice(logStreams, func(i, j int) bool {
+		// Ensure nil values come last
+		if logStreams[i].LastEventTimestamp == nil || logStreams[j].LastEventTimestamp == nil {
+			return logStreams[i].LastEventTimestamp == nil
+		}
+		// Sort by LastEventTimestamp
+		return *logStreams[i].LastEventTimestamp < *logStreams[j].LastEventTimestamp
+	})
 
 	return logStreams, nil
 }

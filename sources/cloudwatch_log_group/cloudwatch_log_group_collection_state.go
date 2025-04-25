@@ -32,8 +32,8 @@ type CloudWatchLogGroupCollectionState struct {
 // It initializes an empty map for log streams and sets the initial modification time.
 func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
 	return &CloudWatchLogGroupCollectionState{
-		LogStreams:       make(map[string]*collection_state.TimeRangeCollectionStateImpl),
-		LastModifiedTime: time.Now(),
+		LogStreams:        make(map[string]*collection_state.TimeRangeCollectionStateImpl),
+		LastModifiedTime:  time.Now(),
 	}
 }
 
@@ -56,7 +56,7 @@ func (s *CloudWatchLogGroupCollectionState) Init(config *AwsCloudWatchLogGroupSo
 		}
 	}
 
-	// Initialize or reinitialize the map if nil
+	// Initialize or reinitialize the maps if nil
 	if s.LogStreams == nil {
 		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionStateImpl)
 	}
@@ -162,6 +162,7 @@ func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, ti
 		timeRangeState = collection_state.NewTimeRangeCollectionStateImpl(collection_state.CollectionOrderChronological)
 		timeRangeState.SetGranularity(s.GetGranularity())
 		s.LogStreams[logStreamName] = timeRangeState
+		// s.ProcessedEventIds = append(s.ProcessedEventIds, eventId)
 	}
 
 	// Call OnCollected on the time range state
@@ -206,9 +207,9 @@ func (s *CloudWatchLogGroupCollectionState) GetToTime() time.Time {
 
 // ShouldCollect determines whether an event with the given timestamp should be collected
 // for the specified log stream based on its time range state.
-func (s *CloudWatchLogGroupCollectionState) ShouldCollect(id string, timestamp time.Time) bool {
-	if state, exists := s.LogStreams[id]; exists {
-		return state.ShouldCollect(id, timestamp)
+func (s *CloudWatchLogGroupCollectionState) ShouldCollect(logStreamName string, timestamp time.Time) bool {
+	if state, exists := s.LogStreams[logStreamName]; exists {
+		return state.ShouldCollect(logStreamName, timestamp)
 	}
 	return true
 }
