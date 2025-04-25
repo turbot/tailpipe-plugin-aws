@@ -22,7 +22,7 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/turbot/go-kit v1.2.0
 	github.com/turbot/pipe-fittings/v2 v2.3.3
-	github.com/turbot/tailpipe-plugin-sdk v0.4.0-rc.0
+	github.com/turbot/tailpipe-plugin-sdk v0.4.0
 	golang.org/x/sync v0.12.0
 )
 
