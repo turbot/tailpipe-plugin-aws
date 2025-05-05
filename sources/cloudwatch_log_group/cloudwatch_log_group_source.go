@@ -99,7 +99,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
-	slog.Debug("Total log stream collected based on '--from' flag: ", fmt.Sprintf("%d", len(logStreamCollection)))
+	slog.Debug("Total log stream collected based on '--from' flag: ", fmt.Sprintf("%d", len(logStreamCollection)), "for the log group", s.Config.LogGroupName)
 
 	// Filter out the log streams that are not in the list of log stream names
 	if len(s.Config.LogStreamNames) > 0 {
@@ -144,7 +144,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	batchCount := 0
 	for _, batch := range batchLogStream {
 		batchCount++
-		slog.Info("Processing batch log streams batch: ", fmt.Sprintf("%d", batchCount))
+		slog.Info("Processing batch log streams batch: ", fmt.Sprintf("%d", batchCount), "for the log group", s.Config.LogGroupName)
 		// Convert time range to milliseconds for CloudWatch API
 		startTimeMillis := s.FromTime.UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
@@ -302,7 +302,7 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 
 		// Check if we need to stop pagination
 		if stopPagination {
-			slog.Debug("Stopping pagination as lastEventTime is before FromTime")
+			slog.Debug("Stopping pagination as lastEventTime is before FromTime", "for the log group", s.Config.LogGroupName)
 			break
 		}
 	}
