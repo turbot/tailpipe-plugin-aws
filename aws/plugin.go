@@ -3,6 +3,7 @@ package aws
 import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-aws/config"
+	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch_log_group"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-aws/tables/alb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/clb_access_log"
@@ -42,6 +43,7 @@ func init() {
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
+	row_source.RegisterRowSource[*cloudwatch_log_group.AwsCloudWatchLogGroupSource]()
 }
 
 func NewPlugin() (_ plugin.TailpipePlugin, err error) {
