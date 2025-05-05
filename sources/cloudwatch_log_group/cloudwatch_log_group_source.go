@@ -99,7 +99,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
-	slog.Debug("Total log stream collected based on '--from' flag: ", len(logStreamCollection))
+	slog.Debug("Total log stream collected based on '--from' flag: ", fmt.Sprintf("%d", len(logStreamCollection)))
 
 	// Filter out the log streams that are not in the list of log stream names
 	if len(s.Config.LogStreamNames) > 0 {
@@ -144,7 +144,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	batchCount := 0
 	for _, batch := range batchLogStream {
 		batchCount++
-		slog.Info("Processing batch log streams batch: ", batchCount)
+		slog.Info("Processing batch log streams batch: ", fmt.Sprintf("%d", batchCount))
 		// Convert time range to milliseconds for CloudWatch API
 		startTimeMillis := s.FromTime.UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
@@ -192,7 +192,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 			// Is this correct?
 			// Setting TpTimestamp to ensure accurate event ordering and processing, especially for Lambda logs where the timestamp may not be present in the log message.
-			sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp 
+			sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp
 
 			// Create row data with the event message and enrichment
 			row := &types.RowData{
@@ -233,9 +233,7 @@ func (s *AwsCloudWatchLogGroupSource) filterLogEvents(ctx context.Context, input
 			return nil, err
 		}
 
-		for _, event := range output.Events {
-			allEvents = append(allEvents, event)
-		}
+		allEvents = append(allEvents, output.Events...)
 	}
 
 	return allEvents, nil
