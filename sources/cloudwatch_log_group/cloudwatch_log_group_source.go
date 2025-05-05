@@ -64,7 +64,7 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	// Get and validate the collection state from the base implementation
 	state, ok := s.CollectionState.(*CloudWatchLogGroupCollectionState)
 	if !ok {
-		return fmt.Errorf("invalid collection state type: expected *CloudWatchCollectionState")
+		return fmt.Errorf("invalid collection state type: expected *CloudWatchLogGroupCollectionState")
 	}
 	s.state = state
 
@@ -190,9 +190,10 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 				continue
 			}
 
-			// Is this correct? this is needed for lambda logs where the timestamp is not available in the log message.
+			// Is this correct?
+			// Setting TpTimestamp to ensure accurate event ordering and processing, especially for Lambda logs where the timestamp may not be present in the log message.
 			sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp 
-			
+
 			// Create row data with the event message and enrichment
 			row := &types.RowData{
 				Data:             *event.Message,
