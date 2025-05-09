@@ -71,7 +71,6 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	// If explicit from time was provided (with --from flag), clear the collection state
 	// It should recollect the log forcefully
 	if !params.From.IsZero() {
-		slog.Info("Explicit from time provided, clearing collection state")
 		if err := s.Clear(); err != nil {
 			return fmt.Errorf("failed to clear collection state: %w", err)
 		}
@@ -98,7 +97,7 @@ func matchesAnyPattern(target string, patterns []string) bool {
 	for _, pattern := range patterns {
 		match, err := filepath.Match(pattern, target)
 		if err != nil {
-			slog.Error("error matching pattern '%s': %v\n", pattern, err)
+			slog.Error("error matching pattern", "pattern", pattern, "error", err)
 			continue
 		}
 		if match {
@@ -117,7 +116,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
-	slog.Debug("Total log stream collected based on '--from' flag: ", fmt.Sprintf("%d", len(logStreamCollection)), "for the log group", s.Config.LogGroupName)
+	slog.Debug("Total log stream collected based on '--from' flag",
+		"count", len(logStreamCollection),
+		"log_group", s.Config.LogGroupName)
 
 	// Filter out the log streams that are not in the list of log stream names
 	if len(s.Config.LogStreamNames) > 0 {
@@ -162,7 +163,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	batchCount := 0
 	for _, batch := range batchLogStream {
 		batchCount++
-		slog.Info("Processing batch log streams batch: ", fmt.Sprintf("%d", batchCount), "for the log group", s.Config.LogGroupName)
+		slog.Info("Processing batch log streams",
+			"batch", batchCount,
+			"log_group", s.Config.LogGroupName)
 		// Convert time range to milliseconds for CloudWatch API
 		startTimeMillis := s.FromTime.UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
@@ -320,7 +323,8 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 
 		// Check if we need to stop pagination
 		if stopPagination {
-			slog.Debug("Stopping pagination as lastEventTime is before FromTime", "for the log group", s.Config.LogGroupName)
+			slog.Debug("Stopping pagination as lastEventTime is before FromTime",
+				"log_group", s.Config.LogGroupName)
 			break
 		}
 	}
