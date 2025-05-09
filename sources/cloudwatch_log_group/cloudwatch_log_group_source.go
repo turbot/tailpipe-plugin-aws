@@ -68,12 +68,30 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	}
 	s.state = state
 
+	// If explicit from time was provided (with --from flag), clear the collection state
+	// It should recollect the log forcefully
+	if !params.From.IsZero() {
+		slog.Info("Explicit from time provided, clearing collection state")
+		if err := s.Clear(); err != nil {
+			return fmt.Errorf("failed to clear collection state: %w", err)
+		}
+	}
+
 	return nil
 }
 
 // Identifier returns the unique identifier for this source
 func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 	return AwsCloudwatchLogGroupSourceIdentifier
+}
+
+// Clear resets the collection state by clearing all log stream states
+func (s *AwsCloudWatchLogGroupSource) Clear() error {
+	if s.state != nil {
+		s.state.Clear()
+		return s.SaveCollectionState()
+	}
+	return nil
 }
 
 func matchesAnyPattern(target string, patterns []string) bool {
