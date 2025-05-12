@@ -20,7 +20,7 @@ require (
 	github.com/turbot/go-kit v1.2.0
 	github.com/turbot/pipe-fittings/v2 v2.3.4
 	github.com/turbot/tailpipe-plugin-sdk v0.4.0
-	golang.org/x/sync v0.13.0
+	golang.org/x/sync v0.14.0
 )
 
 require (
