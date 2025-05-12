@@ -64,9 +64,17 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	// Get and validate the collection state from the base implementation
 	state, ok := s.CollectionState.(*CloudWatchLogGroupCollectionState)
 	if !ok {
-		return fmt.Errorf("invalid collection state type: expected *CloudWatchCollectionState")
+		return fmt.Errorf("invalid collection state type: expected *CloudWatchLogGroupCollectionState")
 	}
 	s.state = state
+
+	// If explicit from time was provided (with --from flag), clear the collection state
+	// It should recollect the log forcefully
+	if !params.From.IsZero() {
+		if err := s.Clear(); err != nil {
+			return fmt.Errorf("failed to clear collection state: %w", err)
+		}
+	}
 
 	return nil
 }
@@ -76,11 +84,20 @@ func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 	return AwsCloudwatchLogGroupSourceIdentifier
 }
 
+// Clear resets the collection state by clearing all log stream states
+func (s *AwsCloudWatchLogGroupSource) Clear() error {
+	if s.state != nil {
+		s.state.Clear()
+		return s.SaveCollectionState()
+	}
+	return nil
+}
+
 func matchesAnyPattern(target string, patterns []string) bool {
 	for _, pattern := range patterns {
 		match, err := filepath.Match(pattern, target)
 		if err != nil {
-			slog.Error("error matching pattern '%s': %v\n", pattern, err)
+			slog.Error("error matching pattern", "pattern", pattern, "error", err)
 			continue
 		}
 		if match {
@@ -99,7 +116,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		return fmt.Errorf("failed to collect log streams, %w", err)
 	}
 
-	slog.Debug("Total log stream collected based on '--from' flag: ", len(logStreamCollection))
+	slog.Debug("Total log stream collected based on '--from' flag",
+		"count", len(logStreamCollection),
+		"log_group", s.Config.LogGroupName)
 
 	// Filter out the log streams that are not in the list of log stream names
 	if len(s.Config.LogStreamNames) > 0 {
@@ -144,7 +163,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	batchCount := 0
 	for _, batch := range batchLogStream {
 		batchCount++
-		slog.Info("Processing batch log streams: ", batchCount)
+		slog.Info("Processing batch log streams",
+			"batch", batchCount,
+			"log_group", s.Config.LogGroupName)
 		// Convert time range to milliseconds for CloudWatch API
 		startTimeMillis := s.FromTime.UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
@@ -182,7 +203,6 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 			}
 
 			timestamp := time.UnixMilli(*event.Timestamp)
-
 			// Skip already collected events based on state
 			if !s.state.ShouldCollect(*event.LogStreamName, timestamp) {
 				slog.Debug("Skipping already collected event",
@@ -191,10 +211,13 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 				continue
 			}
 
+			// Is this correct?
+			// Setting TpTimestamp to ensure accurate event ordering and processing, especially for Lambda logs where the timestamp may not be present in the log message.
 			sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp
+
 			// Create row data with the event message and enrichment
 			row := &types.RowData{
-				Data:             event.Message,
+				Data:             *event.Message,
 				SourceEnrichment: sourceEnrichmentFields,
 			}
 
@@ -231,9 +254,7 @@ func (s *AwsCloudWatchLogGroupSource) filterLogEvents(ctx context.Context, input
 			return nil, err
 		}
 
-		for _, event := range output.Events {
-			allEvents = append(allEvents, event)
-		}
+		allEvents = append(allEvents, output.Events...)
 	}
 
 	return allEvents, nil
@@ -302,7 +323,8 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 
 		// Check if we need to stop pagination
 		if stopPagination {
-			slog.Debug("Stopping pagination as lastEventTime is before FromTime")
+			slog.Debug("Stopping pagination as lastEventTime is before FromTime",
+				"log_group", s.Config.LogGroupName)
 			break
 		}
 	}

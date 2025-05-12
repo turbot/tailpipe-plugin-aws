@@ -32,8 +32,8 @@ type CloudWatchLogGroupCollectionState struct {
 // It initializes an empty map for log streams and sets the initial modification time.
 func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
 	return &CloudWatchLogGroupCollectionState{
-		LogStreams:        make(map[string]*collection_state.TimeRangeCollectionStateImpl),
-		LastModifiedTime:  time.Now(),
+		LogStreams:       make(map[string]*collection_state.TimeRangeCollectionStateImpl),
+		LastModifiedTime: time.Now(),
 	}
 }
 
@@ -209,6 +209,17 @@ func (s *CloudWatchLogGroupCollectionState) GetToTime() time.Time {
 // for the specified log stream based on its time range state.
 func (s *CloudWatchLogGroupCollectionState) ShouldCollect(logStreamName string, timestamp time.Time) bool {
 	if state, exists := s.LogStreams[logStreamName]; exists {
+		//  Granularity defines a small timing window (buffer zone) added after the end time of the last collected event.
+		// It helps decide whether a new event should be considered already collected or needs to be collected.
+		// It compensates for small delays or natural jitter between closely occurring events.
+		//
+		// Based on analysis of CloudWatch log streams:
+		// - Smallest gap between events is ~4-35ms
+		// - Use 6ms for stricter separation
+
+		// When running the command `tailpipe collect <table_name>.<partition>` multiple times with a larger granularity,
+		// duplicate events may be collected if those events were already collected in a previous run.
+		state.Granularity = 6 * time.Millisecond
 		return state.ShouldCollect(logStreamName, timestamp)
 	}
 	return true
