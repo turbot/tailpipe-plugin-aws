@@ -1,4 +1,6 @@
 // Package cloudwatch provides functionality to collect logs from AWS CloudWatch Log Groups
+//
+// This package enables the collection of log events from AWS CloudWatch log groups, supporting incremental collection, filtering, and batching for efficient processing.
 package cloudwatch_log_group
 
 import (
@@ -25,22 +27,23 @@ const (
 	AwsCloudwatchLogGroupSourceIdentifier = "aws_cloudwatch_log_group"
 )
 
-// AwsCloudWatchLogGroupSource is responsible for collection of events from log streams within a log group in AWS CloudWatch
-// It implements the RowSource interface and manages the collection state to support incremental collection
+// AwsCloudWatchLogGroupSource is responsible for collecting events from log streams within a CloudWatch log group.
+// It implements the RowSource interface and manages collection state to support incremental and efficient log collection.
 type AwsCloudWatchLogGroupSource struct {
-	// Embed the base RowSourceImpl with CloudWatch specific config and AWS connection
+	// Embeds the base RowSourceImpl with CloudWatch-specific config and AWS connection.
 	row_source.RowSourceImpl[*AwsCloudWatchLogGroupSourceConfig, *config.AwsConnection]
 
-	// AWS CloudWatch Logs client
+	// client is the AWS CloudWatch Logs client used for API calls.
 	client *cloudwatchlogs.Client
-	// List of errors encountered during collection
+	// errorList accumulates errors encountered during collection for reporting.
 	errorList []error
-	// Collection state to track progress and support incremental collection
+	// state tracks progress and supports incremental collection across log streams.
 	state *CloudWatchLogGroupCollectionState
 }
 
-// Init initializes the CloudWatch source with the provided parameters and options
-// It sets up the collection state, AWS client, and validates the configuration
+// Init sets up the CloudWatch log group source with the provided parameters and options.
+// It initializes the collection state, AWS client, and validates the configuration.
+// If a specific start time is provided, it clears the previous collection state to force recollection.
 func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	// Set up the collection state constructor
 	s.NewCollectionStateFunc = func() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
@@ -79,12 +82,12 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	return nil
 }
 
-// Identifier returns the unique identifier for this source
+// Identifier returns the unique identifier for this source type, used in the plugin system.
 func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 	return AwsCloudwatchLogGroupSourceIdentifier
 }
 
-// Clear resets the collection state by clearing all log stream states
+// Clear resets the collection state by removing all log stream states and saving the cleared state.
 func (s *AwsCloudWatchLogGroupSource) Clear() error {
 	if s.state != nil {
 		s.state.Clear()
@@ -93,6 +96,7 @@ func (s *AwsCloudWatchLogGroupSource) Clear() error {
 	return nil
 }
 
+// matchesAnyPattern returns true if the target string matches any of the provided patterns (supports wildcards).
 func matchesAnyPattern(target string, patterns []string) bool {
 	for _, pattern := range patterns {
 		match, err := filepath.Match(pattern, target)
@@ -107,8 +111,19 @@ func matchesAnyPattern(target string, patterns []string) bool {
 	return false
 }
 
-// Collect retrieves log events from CloudWatch log streams within the specified time range
-// It handles pagination, maintains collection state, and processes events incrementally
+// Collect retrieves log events from CloudWatch log streams within the specified time range.
+//
+// This function is responsible for collecting log events from all relevant log streams in the configured CloudWatch log group.
+// The process includes:
+//  1. Retrieving all log streams that match the configuration (optionally filtered by name/pattern).
+//  2. Batching log streams to efficiently query events in groups (up to 100 at a time).
+//  3. For each batch, querying CloudWatch Logs for events within the desired time window.
+//  4. Sorting and processing each event, skipping already-collected events based on collection state.
+//  5. Enriching and forwarding each new event for downstream processing.
+//  6. Updating the collection state to support incremental collection and avoid duplicates.
+//  7. Aggregating and returning any errors encountered during the process.
+//
+// Returns an error if any step fails, or if errors are encountered during log collection.
 func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	// Get all log streams matching the prefix in the specified log group
 	logStreamCollection, err := s.getLogStreamsToCollect(ctx)
@@ -150,9 +165,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 		streamNames = append(streamNames, *stream.LogStreamName)
 	}
 
-	// Loop through the array with step 2 to create sub-arrays of size 2
+	// Loop through the array with step 2 to create sub-arrays of size 100
 	for i := 0; i < len(streamNames); i += 100 {
-		// Append a sub-array of size 2 (or less if the last one is incomplete)
+		// Append a sub-array of size 100 (or less if the last one is incomplete)
 		end := i + 100
 		if end > len(streamNames) {
 			end = len(streamNames)
@@ -243,6 +258,8 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 	return nil
 }
 
+// filterLogEvents retrieves all log events for the given input, handling pagination.
+// Returns a slice of FilteredLogEvent and any error encountered.
 func (s *AwsCloudWatchLogGroupSource) filterLogEvents(ctx context.Context, input *cloudwatchlogs.FilterLogEventsInput) ([]cwTypes.FilteredLogEvent, error) {
 
 	allEvents := []cwTypes.FilteredLogEvent{}
@@ -260,7 +277,8 @@ func (s *AwsCloudWatchLogGroupSource) filterLogEvents(ctx context.Context, input
 	return allEvents, nil
 }
 
-// Function to sort []FilteredLogEvent by LogStreamName and Timestamp
+// sortFilteredLogEvents sorts a slice of FilteredLogEvent by LogStreamName and Timestamp.
+// This ensures events are processed in a consistent order.
 func sortFilteredLogEvents(events []cwTypes.FilteredLogEvent) []cwTypes.FilteredLogEvent {
 	// Sorting the events by LogStreamName and then by Timestamp
 	sort.Slice(events, func(i, j int) bool {
@@ -274,8 +292,9 @@ func sortFilteredLogEvents(events []cwTypes.FilteredLogEvent) []cwTypes.Filtered
 	return events
 }
 
-// getLogStreamsToCollect retrieves all log streams in a log group that match the specified prefix
-// It handles pagination of the DescribeLogStreams API response
+// getLogStreamsToCollect retrieves all log streams in a log group that match the specified prefix.
+// It paginates through the DescribeLogStreams API and stops when streams are older than the configured start time.
+// Returns a sorted slice of log streams from oldest to newest.
 func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context) ([]cwTypes.LogStream, error) {
 	var logStreams []cwTypes.LogStream
 	var nextToken *string
@@ -348,8 +367,8 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 	return logStreams, nil
 }
 
-// getClient initializes and returns an AWS CloudWatch Logs client
-// It uses the provided region or falls back to the default region
+// getClient initializes and returns an AWS CloudWatch Logs client for the configured region.
+// Returns an error if the client cannot be created.
 func (s *AwsCloudWatchLogGroupSource) getClient(ctx context.Context) (*cloudwatchlogs.Client, error) {
 	region := s.Config.Region
 
