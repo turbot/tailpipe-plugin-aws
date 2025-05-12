@@ -2,7 +2,7 @@
 
 ### Recent Lambda Log Activity
 
-This query shows the 100 most recent Lambda log entries across all functions. Real-time monitoring of Lambda activity helps with troubleshooting issues and understanding the current state of your serverless applications.
+This query shows the most recent Lambda log entries across all functions. Real-time monitoring of Lambda activity helps with troubleshooting issues and understanding the current state of your serverless applications.
 
 ```sql
 select
@@ -11,7 +11,8 @@ select
   log_type,
   log_level,
   message,
-  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name
 from
   aws_lambda_log
 order by
@@ -31,15 +32,17 @@ This query shows Lambda execution trends by hour for each function. Understandin
 ```sql
 select
   date_trunc('hour', tp_timestamp) as hour,
-  count(*) as execution_count,
-  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
+  count(*) as execution_count
 from
   aws_lambda_log
 where
   log_type = 'START'
 group by
   hour,
-  tp_source_name
+  lambda_function_name,
+  log_group_name
 order by
   hour desc,
   execution_count desc;
@@ -56,6 +59,7 @@ This query analyzes the distribution of log levels in Lambda application logs. R
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   log_level,
   count(*) as log_count
 from
@@ -63,7 +67,8 @@ from
 where
   log_level is not null
 group by
-  tp_source_name,
+  lambda_function_name,
+  log_group_name,
   log_level
 order by
   lambda_function_name,
@@ -89,7 +94,8 @@ select
     when log_level is not null then 'Application Log'
     else 'Other'
   end as log_category,
-  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name
 from
   aws_lambda_log
 where
@@ -104,23 +110,31 @@ folder: Lambda
 
 ## Detection Examples
 
-### Lambda Function Error Analysis
+### Lambda Error and Timeout Analysis
 
-This query finds the 100 most recent Lambda function errors and timeouts. Monitoring these errors helps identify reliability issues and functions that need error handling improvements for better application stability.
+This query finds the most recent Lambda function errors, timeouts, and other critical issues. Monitoring these errors helps identify reliability issues and functions that need error handling improvements for better application stability.
 
 ```sql
 select
   tp_timestamp,
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   request_id,
   message,
-  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name
+  case
+    when message ilike '%timed out%' then 'Timeout'
+    when message ilike '%memory size exceeded%' then 'Memory Exceeded'
+    when message ilike '%process exited before completing request%' then 'Process Exited'
+    when log_level = 'ERROR' then 'Application Error'
+    else 'Other Error'
+  end as error_type
 from
   aws_lambda_log
 where
   log_level = 'ERROR'
-  or message like '%Task timed out%'
-  or message like '%Memory Size exceeded%'
-  or message like '%Process exited before completing request%'
+  or message ilike '%timed out%'
+  or message ilike '%memory size exceeded%'
+  or message ilike '%process exited before completing request%'
 order by
   tp_timestamp desc
 limit
@@ -138,10 +152,11 @@ This query identifies functions with high billing-to-execution time ratios. Opti
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   round(avg(duration), 2) as avg_duration_ms,
   round(avg(billed_duration), 2) as avg_billed_duration_ms,
   round(avg(billed_duration - duration), 2) as avg_billing_overhead_ms,
-  round(avg(billed_duration * 100.0 / duration) - 100, 2) as billing_overhead_percent,
+  round(avg(billed_duration * 100.0 / nullif(duration, 0)) - 100, 2) as billing_overhead_percent,
   count(*) as execution_count
 from
   aws_lambda_log
@@ -150,7 +165,8 @@ where
   and duration > 0
   and billed_duration is not null
 group by
-  tp_source_name
+  lambda_function_name,
+  log_group_name
 having
   avg(billed_duration - duration) > 10
 order by
@@ -168,15 +184,21 @@ This query analyzes Lambda cold starts by counting initialization events for eac
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
-  count(distinct request_id) as cold_start_count,
-  avg(duration) as avg_init_duration_ms
+  log_group_name,
+  count(distinct request_id) as total_executions,
+  count(distinct case when message ilike '%init duration%' then request_id end) as cold_start_count,
+  round(count(distinct case when message ilike '%init duration%' then request_id end) * 100.0 /
+    nullif(count(distinct request_id), 0), 2) as cold_start_percentage,
+  avg(case when message ilike '%init duration%'
+    then cast(regexp_extract(message, 'Init Duration: ([0-9.]+) ms', 1) as double) end) as avg_init_duration_ms
 from
   aws_lambda_log
 where
-  log_type = 'INIT_START'
-  or message like '%Init Duration:%'
+  tp_timestamp >= current_timestamp - interval '7 day'
+  and (log_type = 'INIT_START' or message ilike '%init duration%')
 group by
-  tp_source_name
+  lambda_function_name,
+  log_group_name
 order by
   cold_start_count desc;
 ```
@@ -185,30 +207,63 @@ order by
 folder: Lambda
 ```
 
+### Lambda Throttling Analysis
+
+This query analyzes throttling patterns by hour to identify capacity constraints. Understanding when throttling occurs helps optimize concurrency limits and adjust scaling policies to prevent service disruptions during peak usage times.
+
+```sql
+select
+  date_trunc('hour', tp_timestamp) as hour,
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
+  count(*) as total_logs,
+  count(case when message ilike '%function was throttled%' then 1 end) as throttle_count,
+  round(count(case when message ilike '%function was throttled%' then 1 end) * 100.0 / nullif(count(*), 0), 2) as throttle_percentage
+from
+  aws_lambda_log
+where
+  tp_timestamp >= current_timestamp - interval '7 day'
+group by
+  hour,
+  lambda_function_name,
+  log_group_name
+having
+  count(case when message ilike '%function was throttled%' then 1 end) > 0
+order by
+  hour desc,
+  throttle_count desc;
+```
+
+```yaml
+folder: Lambda
+```
+
 ## Operational Examples
 
-### Top 10 Slowest Lambda Function Executions
+### Top Slowest Lambda Function Executions
 
-This query identifies the 10 slowest Lambda function executions by examining REPORT logs. Finding these slow executions helps pinpoint specific instances that require optimization to improve overall performance.
+This query identifies the slowest Lambda function executions by examining REPORT logs. Finding these slow executions helps pinpoint specific instances that require optimization to improve overall performance.
 
 ```sql
 select
   tp_timestamp,
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   request_id,
   duration as duration_ms,
   billed_duration as billed_duration_ms,
   memory_size as allocated_memory_mb,
-  max_memory_used as used_memory_mb,
-  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name
+  max_memory_used as used_memory_mb
 from
   aws_lambda_log
 where
   log_type = 'REPORT'
   and duration is not null
+  and duration > 1000
 order by
   duration desc
 limit
-  10;
+  20;
 ```
 
 ```yaml
@@ -222,19 +277,30 @@ This query calculates memory utilization efficiency for each Lambda function. Fi
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   memory_size as allocated_memory_mb,
   round(avg(max_memory_used), 2) as avg_used_memory_mb,
-  round(avg(max_memory_used * 100.0 / memory_size), 2) as memory_utilization_percent,
-  count(*) as execution_count
+  round(avg(max_memory_used * 100.0 / nullif(memory_size, 0)), 2) as memory_utilization_percent,
+  round(avg(duration), 2) as avg_duration_ms,
+  count(*) as execution_count,
+  case
+    when round(avg(max_memory_used * 100.0 / nullif(memory_size, 0)), 2) < 50 then 'Over-provisioned'
+    when round(avg(max_memory_used * 100.0 / nullif(memory_size, 0)), 2) > 85 then 'Under-provisioned'
+    else 'Well-balanced'
+  end as memory_allocation_assessment
 from
   aws_lambda_log
 where
   log_type = 'REPORT'
   and memory_size is not null
   and max_memory_used is not null
+  and duration is not null
 group by
-  tp_source_name,
+  lambda_function_name,
+  log_group_name,
   memory_size
+having
+  count(*) >= 10
 order by
   memory_utilization_percent desc;
 ```
@@ -252,6 +318,7 @@ with request_phases as (
   select
     request_id,
     tp_source_name,
+    log_group_name,
     regexp_replace(tp_source_name, '^/aws/lambda/', '') as function_name,
     min(case when log_type = 'START' then tp_timestamp end) as start_time,
     min(case when log_type = 'END' then tp_timestamp end) as end_time,
@@ -264,10 +331,10 @@ with request_phases as (
     count(case when log_level = 'ERROR' then 1 end) as error_log_count,
     count(case when log_level = 'WARN' then 1 end) as warn_log_count,
     count(case when log_level = 'DEBUG' then 1 end) as debug_log_count,
-    bool_or(message like '%Task timed out%') as has_timeout,
-    bool_or(message like '%Init Duration:%') as has_cold_start,
-    bool_or(message like '%Memory Size:%' and message like '%Max Memory Used:%') as has_memory_metrics,
-    bool_or(message like '%error%' or message like '%exception%' or message like '%fail%') as has_error_keywords
+    bool_or(message ilike '%timed out%') as has_timeout,
+    bool_or(message ilike '%init duration%') as has_cold_start,
+    bool_or(message ilike '%memory size%' and message ilike '%max memory used%') as has_memory_metrics,
+    bool_or(message ilike '%error%' or message ilike '%exception%' or message ilike '%fail%') as has_error_keywords
   from
     aws_lambda_log
   where
@@ -275,6 +342,7 @@ with request_phases as (
   group by
     request_id,
     tp_source_name,
+    log_group_name,
     function_name
 ),
 message_samples as (
@@ -316,7 +384,8 @@ select
   rp.has_memory_metrics,
   rp.has_error_keywords,
   ms.message_samples[1] as first_message,
-  rp.function_name as lambda_function_name
+  rp.function_name as lambda_function_name,
+  rp.log_group_name
 from
   request_phases rp
 left join
@@ -343,6 +412,7 @@ This query summarizes execution metrics for each Lambda function. It helps ident
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   count(*) as execution_count,
   avg(duration) as avg_duration_ms,
   min(duration) as min_duration_ms,
@@ -355,9 +425,46 @@ from
 where
   log_type = 'REPORT'
 group by
-  tp_source_name
+  lambda_function_name,
+  log_group_name
 order by
   execution_count desc;
+```
+
+```yaml
+folder: Lambda
+```
+
+### Lambda Invocation and Error Trends
+
+This query tracks daily Lambda invocation and error patterns. Monitoring these trends helps detect abnormal behavior, understand the impact of code changes, and identify functions with increasing error rates.
+
+```sql
+select
+  date_trunc('day', tp_timestamp) as day,
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
+  count(case when log_type = 'START' then 1 end) as invocation_count,
+  count(case when log_level = 'ERROR' then 1 end) as error_count,
+  count(case when message ilike '%timed out%' then 1 end) as timeout_count,
+  count(case when message ilike '%function was throttled%' then 1 end) as throttle_count,
+  round(count(case when log_level = 'ERROR'
+    or message ilike '%timed out%'
+    or message ilike '%function was throttled%' then 1 end) * 100.0 /
+    nullif(count(case when log_type = 'START' then 1 end), 0), 2) as error_percentage
+from
+  aws_lambda_log
+where
+  tp_timestamp >= current_timestamp - interval '30 day'
+group by
+  day,
+  lambda_function_name,
+  log_group_name
+having
+  count(case when log_type = 'START' then 1 end) > 0
+order by
+  day desc,
+  invocation_count desc;
 ```
 
 ```yaml
@@ -373,6 +480,7 @@ This query categorizes Lambda function executions into duration ranges. Understa
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
   case
     when duration < 100 then '< 100ms'
     when duration < 500 then '100-500ms'
@@ -388,7 +496,8 @@ where
   log_type = 'REPORT'
   and duration is not null
 group by
-  tp_source_name,
+  lambda_function_name,
+  log_group_name,
   duration_range
 order by
   lambda_function_name,
@@ -406,69 +515,65 @@ order by
 folder: Lambda
 ```
 
-### Most Common Error Messages by Function
+### Average Billed Duration by Memory Configuration
 
-This query identifies the most common error messages for each Lambda function. Finding recurring error patterns helps prioritize which issues to fix first and understand the reliability challenges affecting specific functions.
+This query analyzes average billed duration across different memory configurations. This analysis helps optimize cost and performance by finding the best memory setting for each function's runtime needs.
 
 ```sql
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
-  regexp_replace(message, '^.*Error: ', '') as error_message_pattern,
-  count(*) as occurrence_count
+  log_group_name,
+  memory_size as allocated_memory_mb,
+  round(avg(billed_duration), 2) as avg_billed_duration_ms,
+  min(billed_duration) as min_billed_duration_ms,
+  max(billed_duration) as max_billed_duration_ms,
+  count(*) as execution_count
 from
   aws_lambda_log
 where
-  log_level = 'ERROR'
-  or message like '%Error:%'
-  or message like '%Exception:%'
-  or message like '%Task timed out%'
+  log_type = 'REPORT'
+  and billed_duration is not null
+  and memory_size is not null
 group by
-  tp_source_name,
-  error_message_pattern
-order by
   lambda_function_name,
-  occurrence_count desc;
+  log_group_name,
+  memory_size
+order by
+  avg_billed_duration_ms desc;
 ```
 
 ```yaml
 folder: Lambda
 ```
 
-### Error Message Pattern Analysis
+### Most Common Error Messages
 
-This query analyzes error patterns across all Lambda functions to identify systematic issues. Detecting common error signatures across multiple functions helps identify widespread problems that may require architectural changes rather than function-specific fixes.
+This query identifies the most common error patterns across Lambda functions. Finding recurring error patterns helps prioritize which issues to fix first and understand the reliability challenges affecting specific functions.
 
 ```sql
-with error_patterns as (
-  select
-    regexp_replace(message, '([a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}|[\d\.]+|"[^"]*"|''[^'']*'')', 'X') as normalized_error,
-    count(*) as pattern_count,
-    count(distinct regexp_replace(tp_source_name, '^/aws/lambda/', '')) as affected_functions_count,
-    array_agg(distinct regexp_replace(tp_source_name, '^/aws/lambda/', '')) as affected_functions
-  from
-    aws_lambda_log
-  where
-    log_level = 'ERROR'
-    or message like '%Error:%'
-    or message like '%Exception:%'
-    or message like '%Task timed out%'
-  group by
-    normalized_error
-  having
-    count(*) > 1
-)
 select
-  normalized_error as error_pattern,
-  pattern_count as occurrence_count,
-  affected_functions_count,
-  affected_functions
+  regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
+  log_group_name,
+  regexp_replace(message, '([a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}|[\d\.]+|"[^"]*"|''[^'']*'')', 'X') as normalized_error_pattern,
+  count(*) as occurrence_count,
+  min(tp_timestamp) as first_occurrence,
+  max(tp_timestamp) as last_occurrence
 from
-  error_patterns
+  aws_lambda_log
+where
+  log_level = 'ERROR'
+  or message ilike '%error:%'
+  or message ilike '%exception:%'
+  or message ilike '%timed out%'
+group by
+  lambda_function_name,
+  log_group_name,
+  normalized_error_pattern
+having
+  count(*) > 1
 order by
-  pattern_count desc,
-  affected_functions_count desc
-limit
-  20;
+  occurrence_count desc,
+  lambda_function_name;
 ```
 
 ```yaml
