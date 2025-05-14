@@ -493,10 +493,10 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 func (c *CostAndUsageReportMapper) OnHeader(header []string) {
 	newHeaders := make([]string, len(header))
 	// set headers but normalize first
-	for _, h := range header {
+	for i, h := range header {
 		v := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(h, "/", "_"), ":", "_"), " ", "_"), ".", "_"), "a_r_n", "arn")
 		v = strcase.SnakeCase(v)
-		newHeaders = append(newHeaders, strings.ToLower(v))
+		newHeaders[i] = strings.ToLower(v)
 	}
 	c.headers = newHeaders
 }
