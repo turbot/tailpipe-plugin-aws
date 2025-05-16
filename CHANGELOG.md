@@ -1,3 +1,9 @@
+## v0.9.2 [2025-05-16]
+
+_Bug fixes_
+
+- Fixed error when adding an empty header value for the `aws_cost_and_usage_report` table while collecting rows. ([#174](https://github.com/turbot/tailpipe-plugin-aws/pull/174))
+
 ## v0.9.1 [2025-04-25]
 
 _Enhancements_
