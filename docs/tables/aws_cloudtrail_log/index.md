@@ -212,6 +212,50 @@ partition "aws_cloudtrail_log" "my_logs_regions" {
 }
 ```
 
+### Collect logs from a CloudWatch log group
+
+Collect CloudTrail logs from all log streams in a CloudWatch log group.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs" {
+  source "aws_cloudwatch_log_group" {
+    connection     = connection.aws.logging_account
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
+    region         = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group for a specific account and region
+
+Collect CloudTrail logs for a single region in an account.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_specific" {
+  source "aws_cloudwatch_log_group" {
+    connection       = connection.aws.default
+    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names = ["456789012345_CloudTrail_us-east-1*"]
+    region           = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group for all regions in an account
+
+Collect CloudTrail logs for all regions in an account.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_all_regions" {
+  source "aws_cloudwatch_log_group" {
+    connection       = connection.aws.default
+    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names = ["456789012345_CloudTrail_*"]
+    region           = "us-east-1"
+  }
+}
+```
+
 ### Collect logs from local files
 
 You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/).
@@ -234,3 +278,11 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument    | Default                                                                                                                                   |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
+
+### aws_cloudwatch_log_group
+
+This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
+
+| Argument         | Default |
+| ---------------- | ------- |
+| log_stream_names | `["*"]` |
