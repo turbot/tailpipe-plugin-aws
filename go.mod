@@ -17,8 +17,8 @@ require (
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529
 	github.com/rs/xid v1.6.0
 	github.com/stoewer/go-strcase v1.3.0
-	github.com/turbot/go-kit v1.2.0
-	github.com/turbot/pipe-fittings/v2 v2.3.4
+	github.com/turbot/go-kit v1.3.0
+	github.com/turbot/pipe-fittings/v2 v2.4.1
 	github.com/turbot/tailpipe-plugin-sdk v0.4.0
 	golang.org/x/sync v0.13.0
 )
