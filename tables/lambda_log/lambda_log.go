@@ -14,7 +14,6 @@ type LambdaLog struct {
 	LogType      *string    `json:"log_type,omitempty"`
 	LogLevel     *string    `json:"log_level,omitempty"`
 	Message      *string    `json:"message,omitempty"`
-	RawMessage   *string    `json:"raw_message,omitempty"`
 	LogGroupName *string    `json:"log_group_name,omitempty"`
 
 	// Report Specific Fields

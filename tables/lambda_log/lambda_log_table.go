@@ -27,7 +27,10 @@ func (c *LambdaLogTable) Identifier() string {
 
 func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/lambda/%{DATA:function_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log"),
+		// TODO: There is not specific file layout for the lambda logs.
+		// Also we can't directly store logs in S3 bucket.
+		// Does the file layout looks good?
+		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/lambda/%{DATA:function_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.txt"),
 	}
 
 	return []*table.SourceMetadata[*LambdaLog]{
@@ -40,12 +43,14 @@ func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog
 				artifact_source.WithRowPerLine(),
 			},
 		},
-		{
+		{	
+			// TODO: Should we keep this, as we don't have a direct way to store the logs in S3 bucket?
 			// S3 artifact source
 			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
 			Mapper:     &LambdaLogMapper{},
 		},
-		{
+		{	
+			// TODO: Should we keep this as we can't download the logs to local from log streams.
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &LambdaLogMapper{},
@@ -84,12 +89,6 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 	}
 
 	row.LogGroupName = row.TpSourceName
-
-	// if row.Message == nil {
-	// 	return nil, nil
-	// }
-
-	// TODO: Add enrichment fields
 
 	return row, nil
 }
