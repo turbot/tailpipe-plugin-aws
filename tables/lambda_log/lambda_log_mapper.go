@@ -151,16 +151,6 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			row.Message = &msg
 		}
 	}
-	// else {
-	// 	// Handle legacy plain text system logs (START, END, REPORT format)
-	// 	row, err := parseLambdaPainTextLog(raw)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
-	// 	}
-	// 	row.Message = &raw
-	// }
-
-	row.RawMessage = &raw
 
 	return row, nil
 }
@@ -176,7 +166,8 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 	if id := extractAfter(line, "RequestId: "); id != "" {
 		log.RequestID = &id
 	}
-	log.RawMessage = &line
+	// TODO: Handle other Platform event type of logs if any.
+	// https://docs.aws.amazon.com/lambda/latest/dg/telemetry-api.html
 	switch {
 	case strings.HasPrefix(line, "START RequestId:"):
 		// Parse START log line
@@ -212,7 +203,6 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 		} else {
 			log.Message = ptr(line)
 		}
-
 	case strings.HasPrefix(line, "REPORT RequestId:"):
 		// Parse REPORT log line which contains metrics
 		log.LogType = ptr("REPORT")
