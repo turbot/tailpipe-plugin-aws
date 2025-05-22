@@ -59,7 +59,7 @@ func (c *AlbConnectionLogTable) EnrichRow(row *AlbConnectionLog, sourceEnrichmen
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
-	row.TpIndex = row.ClientIP
+	row.TpIndex = "default"
 	return row, nil
 }
 
