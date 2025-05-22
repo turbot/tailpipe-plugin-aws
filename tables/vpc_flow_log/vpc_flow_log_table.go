@@ -293,18 +293,28 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 
 	row.OutputColumns[constants.TpTable] = VpcFlowLogTableIdentifier
 
+	// Process end_time first
+	if endTime, ok := row.GetSourceValue("end_time"); ok && endTime != VpcFlowLogTableNilValue {
+		t, err := helpers.ParseTime(endTime)
+		if err != nil {
+			invalidFields = append(invalidFields, "end_time")
+		} else {
+			// Set the end_time output column
+			row.OutputColumns["end_time"] = t
+			// Set TpTimestamp if not already set
+			row.OutputColumns[constants.TpTimestamp] = t
+		}
+	}
+
+	// Process start_time second (with precedence for TpTimestamp)
 	if startTime, ok := row.GetSourceValue("start_time"); ok && startTime != VpcFlowLogTableNilValue {
 		t, err := helpers.ParseTime(startTime)
 		if err != nil {
 			invalidFields = append(invalidFields, "start_time")
 		} else {
-			row.OutputColumns[constants.TpTimestamp] = t
-		}
-	} else if endTime, ok := row.GetSourceValue("end_time"); ok && endTime != VpcFlowLogTableNilValue {
-		t, err := helpers.ParseTime(endTime)
-		if err != nil {
-			invalidFields = append(invalidFields, "end_time")
-		} else if row.OutputColumns[constants.TpTimestamp] == nil {
+			// Set the start_time output column
+			row.OutputColumns["start_time"] = t
+			// Overwrite TpTimestamp (precedence to start_time)
 			row.OutputColumns[constants.TpTimestamp] = t
 		}
 	}
