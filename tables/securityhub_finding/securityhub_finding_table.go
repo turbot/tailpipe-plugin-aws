@@ -63,9 +63,7 @@ func (c *SecurityHubFindingTable) EnrichRow(row *SecurityHubFinding, sourceEnric
 		row.TpTimestamp = *row.Time
 		row.TpDate = row.Time.Truncate(24 * time.Hour)
 	}
-	if row.Account != nil {
-		row.TpIndex = *row.Account
-	}
+	row.TpIndex = "default"
 
 	return row, nil
 }
