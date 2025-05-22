@@ -243,7 +243,7 @@ func (c *VpcFlowLogTable) GetTableDefinition() *schema.TableSchema {
 				Type:        "varchar",
 			},
 		},
-		NullValue:   VpcFlowLogTableNilValue,
+		NullIf:      VpcFlowLogTableNilValue,
 		Description: c.GetDescription(),
 	}
 }
