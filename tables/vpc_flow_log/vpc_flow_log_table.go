@@ -334,15 +334,7 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 	}
 
 	// tp_index
-	for _, key := range []string{"interface_id", "subnet_id", "vpc_id"} {
-		if val, ok := row.GetSourceValue(key); ok && val != VpcFlowLogTableNilValue {
-			row.OutputColumns[constants.TpIndex] = val
-			break
-		}
-	}
-	if row.OutputColumns[constants.TpIndex] == nil {
-		row.OutputColumns[constants.TpIndex] = "default"
-	}
+	row.OutputColumns[constants.TpIndex] = schema.DefaultIndex
 
 	// tp_akas
 	var akas []string
