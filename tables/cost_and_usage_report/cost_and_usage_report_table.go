@@ -1,12 +1,10 @@
 package cost_and_usage_report
 
 import (
-	"strings"
 	"time"
 
 	"github.com/rs/xid"
 
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -116,26 +114,7 @@ func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentF
 		row.TpDate = row.BillBillingPeriodEndDate.Truncate(24 * time.Hour)
 	}
 
-	// TpIndex
-	// Set TpIndex for the row to help uniquely identify the resource owner or origin account.
-	// Priority:
-	//   1. Use LineItemUsageAccountId if available (typically the owning AWS account).
-	//   2. If not, attempt to extract the 5th element from LineItemResourceId ARN (e.g., the account ID).
-	//   3. If both are missing, fall back to a default value.
-	//
-	// Example:
-	//   For LineItemResourceId: "arn:aws:ec2:us-east-1:123456789012:volume/vol-0abcd1234efgh5678"
-	//   → TpIndex will be set to "123456789012".
-	if row.LineItemUsageAccountId != nil {
-		row.TpIndex = typehelpers.SafeString(row.LineItemUsageAccountId)
-	} else if row.LineItemResourceId != nil {
-		splitResourceId := strings.Split(*row.LineItemResourceId, ":")
-		if len(splitResourceId) > 4 {
-			row.TpIndex = splitResourceId[4]
-		}
-	} else {
-		row.TpIndex = schema.DefaultIndex
-	}
+	row.TpIndex = schema.DefaultIndex
 
 	return row, nil
 }

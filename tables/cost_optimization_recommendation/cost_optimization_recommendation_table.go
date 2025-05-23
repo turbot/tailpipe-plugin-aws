@@ -5,7 +5,6 @@ import (
 
 	"github.com/rs/xid"
 
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
@@ -68,11 +67,7 @@ func (t *CostOptimizationRecommendationsTable) EnrichRow(row *CostOptimizationRe
 	row.TpDate = row.LastRefreshTimestamp.Truncate(24 * time.Hour)
 
 	// TpIndex
-	if typehelpers.SafeString(row.AccountID) != "" {
-		row.TpIndex = typehelpers.SafeString(row.AccountID)
-	} else {
-		row.TpIndex = schema.DefaultIndex
-	}
+	row.TpIndex = schema.DefaultIndex
 
 	if row.ResourceARN != nil {
 		row.TpAkas = append(row.TpAkas, *row.ResourceARN)
