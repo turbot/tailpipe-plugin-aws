@@ -1,3 +1,22 @@
+## v0.10.0 [2025-05-23]
+
+_What's new?_
+
+- New sources added:
+  - [aws_cloudwatch_log_group](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group) ([#169](https://github.com/turbot/tailpipe-plugin-aws/pull/169))
+
+_Enhancements_
+
+- The `tp_index` column for the `aws_cost_and_usage_focus`, `aws_cost_and_usage_report`, and `aws_cost_optimization_recommendation` tables is now always set to the value `default` instead of an AWS account ID to improve query times. ([#179](https://github.com/turbot/tailpipe-plugin-aws/pull/179))
+
+_Dependencies_
+
+- Bumped github.com/aws/aws-sdk-go-v2/feature/s3/manager from 1.17.73 to 1.17.75. ([#171](https://github.com/turbot/tailpipe-plugin-aws/pull/171))
+- Bumped github.com/aws/aws-sdk-go-v2/service/guardduty from 1.54.1 to 1.54.5. ([#170](https://github.com/turbot/tailpipe-plugin-aws/pull/170))
+- Bumped github.com/aws/aws-sdk-go-v2/service/s3 from 1.79.2 to 1.79.3. ([#167](https://github.com/turbot/tailpipe-plugin-aws/pull/167))
+- Bumped github.com/turbot/pipe-fittings/v2 from 2.3.4 to 2.4.1. ([#176](https://github.com/turbot/tailpipe-plugin-aws/pull/176))
+- Bumped golang.org/x/sync from 0.13.0 to 0.14.0. ([#172](https://github.com/turbot/tailpipe-plugin-aws/pull/172))
+
 ## v0.9.2 [2025-05-16]
 
 _Bug fixes_
