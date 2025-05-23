@@ -87,7 +87,6 @@ func (c *CostOptimizationRecommendation) GetColumnDescriptions() map[string]stri
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "The list of resource ARNs associated with a cost and usage recommendation.",
-		"tp_index":     "The AWS account ID associated with the recommendation.",
 		"tp_timestamp": "The timestamp when the recommendation was last refreshed, in ISO 8601 format.",
 	}
 }

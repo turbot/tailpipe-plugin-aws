@@ -104,8 +104,7 @@ select
   account_id,
   current_resource_type,
   last_refresh_timestamp,
-  estimated_monthly_savings_after_discount as savings_amount,
-  tp_index
+  estimated_monthly_savings_after_discount as savings_amount
 from
   aws_cost_optimization_recommendation
 where
@@ -156,8 +155,7 @@ select
   recommended_resource_type,
   implementation_effort,
   restart_needed,
-  estimated_monthly_savings_after_discount as savings_amount,
-  tp_index
+  estimated_monthly_savings_after_discount as savings_amount
 from
   aws_cost_optimization_recommendation
 where

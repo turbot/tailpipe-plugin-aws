@@ -15,7 +15,6 @@ Limitations and notes:
   - `BillingPeriodStart`
   - `BillingPeriodEnd`
   - If none of the columns above are present, logs will not be collected, and Tailpipe will report these as errors.
-- If the export does not include the `SubAccountId` column, logs will be collected, but all rows will be indexed under `default` instead of an AWS account ID.
 
 ## Configure
 

@@ -10,7 +10,6 @@ The `aws_cost_optimization_recommendation` table allows you to query [AWS cost o
 Limitations and notes:
 - This table currently supports collecting from `.gzip` files only.
 - If the export does not include the `last_refresh_timestamp` column, logs will **not** be collected since this is the only timestamp related column in the report.
-- If the export does not include the `account_ID` column, logs will be collected, but all rows will be indexed under `default` instead of an AWS account ID.
 
 ## Configure
 
