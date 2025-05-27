@@ -1,6 +1,8 @@
 package vpc_flow_log
 
 import (
+	"fmt"
+
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch_log_group"
@@ -254,10 +256,15 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz"),
 	}
 
-	// ask our CustomTableImpl for the mapper
-	mapper, err := c.Format.GetMapper()
+	// Create a custom CloudWatch mapper that can extract the message from the complete event JSON
+	format, ok := c.Format.(*VPCFlowLogTableFormat)
+	if !ok {
+		return nil, fmt.Errorf("invalid format type: expected *VPCFlowLogTableFormat")
+	}
+
+	cloudWatchMapper, err := NewVPCFlowLogCloudWatchMapper(format)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create CloudWatch mapper: %w", err)
 	}
 
 	return []*table.SourceMetadata[*types.DynamicRow]{
@@ -272,7 +279,7 @@ func (c *VpcFlowLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*types.Dy
 		{
 			// CloudWatch source
 			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
-			Mapper:     mapper,
+			Mapper:     cloudWatchMapper,
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithRowPerLine(),
 			},
