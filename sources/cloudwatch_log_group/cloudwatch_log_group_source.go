@@ -226,13 +226,8 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 				continue
 			}
 
-			// Assigning TpTimestamp to ensure accurate event ordering and processing.
-			// This is particularly important for Lambda logs, where the timestamp might not be present in the log message itself.
-			sourceEnrichmentFields.CommonFields.TpTimestamp = timestamp
-
-			// Create row data with the event message and enrichment
 			row := &types.RowData{
-				Data:             *event.Message,
+				Data:             event,
 				SourceEnrichment: sourceEnrichmentFields,
 			}
 
