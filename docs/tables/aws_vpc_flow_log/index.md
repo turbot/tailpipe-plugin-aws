@@ -7,14 +7,6 @@ description: "AWS VPC flow logs capture information about IP traffic going to an
 
 The `aws_vpc_flow_log` table allows you to query data from [AWS VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html). This table provides detailed insights into network traffic within your VPC, including source and destination IP addresses, ports, protocols, and more.
 
-**Note**:
-- When determining each log's timestamp, the table uses the `start` field first, with the `end` field as a fallback. If neither field is available, then that log line will not be collected and Tailpipe will return an error.
-- When determining each log's index, the table uses the following order of precedence:
-  - `interface_id`
-  - `subnet_id`
-  - `vpc_id`
-  - If neither field is present, the log will use `default` as the index instead of an AWS account ID.
-
 ## Configure
 
 Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_vpc_flow_log` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_vpc_flow_log#example-configurations)):
@@ -299,7 +291,6 @@ partition "aws_vpc_flow_log" "cw_log_group_logs" {
 Collect logs that were exported from CloudWatch to an S3 bucket, where the logs do not include a header line. Since the exported logs contain raw log lines only, a format block is defined to map the layout of each field.
 
 **Note**:
-
 - When logs are **exported from CloudWatch to S3**, they typically **do not include a header line**, so the `format` block becomes **required**. If not specified, a **default format** will be applied.
 - The field, `export-timestamp`, is not part of the original log event. It is automatically added by AWS during the export process from CloudWatch to S3. This timestamp represents the time when the log was exported, not when the event occurred.
 
@@ -346,3 +337,11 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument    | Default                                                                                                                                                     |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/vpcflowlogs/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/(%{NUMBER:hour}/)?%{DATA}.log.gz` |
+
+### aws_cloudwatch_log_group
+
+This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
+
+| Argument         | Default |
+| ---------------- | ------- |
+| log_stream_names | `["*"]` |
