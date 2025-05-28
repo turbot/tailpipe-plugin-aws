@@ -204,7 +204,7 @@ partition "aws_waf_traffic_log" "cw_log_group_logs_specific" {
   source "aws_cloudwatch_log_group" {
     connection       = connection.aws.logging_account
     log_group_name   = "aws-waf-log-testLogGroup2"
-    log_stream_names = ["us-east-1_TestWebACL_*"]
+    log_stream_names = ["us-east-1_TestWebACL_123456789012"]
     region           = "us-east-1"
   }
 }
@@ -247,3 +247,11 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 | Argument    | Default                                                                                                                                                                                                                |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/WAFLogs/%{DATA:cloudfront_or_region}/%{DATA:cloudfront_name_or_resource_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{MINUTE:minute}/%{DATA}.gz` |
+
+### aws_cloudwatch_log_group
+
+This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
+
+| Argument         | Default |
+| ---------------- | ------- |
+| log_stream_names | `["*"]` |
