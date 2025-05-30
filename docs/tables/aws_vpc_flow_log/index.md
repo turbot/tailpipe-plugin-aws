@@ -256,7 +256,7 @@ Collect logs from a CloudWatch log group where each log stream corresponds to an
 
 ```hcl
 format "aws_vpc_flow_log" "custom" {
-  layout = "instance-id interface-id pkt-srcaddr pkt-dstaddr pkt-src-aws-service az-id flow-direction start log-status packets protocol srcaddr dstaddr srcport end subnet-id"
+  layout = `instance-id interface-id pkt-srcaddr pkt-dstaddr pkt-src-aws-service az-id flow-direction start log-status packets protocol srcaddr dstaddr srcport end subnet-id`
 }
 ```
 
@@ -282,7 +282,7 @@ Collect logs that were exported from CloudWatch to an S3 bucket, where the logs 
 
 ```hcl
 format "aws_vpc_flow_log" "exported_log_format" {
-  layout = "export-timestamp instance-id interface-id pkt-srcaddr pkt-dstaddr pkt-src-aws-service az-id flow-direction start log-status packets protocol srcaddr dstaddr srcport end subnet-id"
+  layout = `export-timestamp instance-id interface-id pkt-srcaddr pkt-dstaddr pkt-src-aws-service az-id flow-direction start log-status packets protocol srcaddr dstaddr srcport end subnet-id`
 }
 ```
 
