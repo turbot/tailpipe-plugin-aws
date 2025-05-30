@@ -61,8 +61,8 @@ partition "aws_cloudtrail_log" "cw_log_group_logs_prefix" {
 
 ### Collect CloudTrail logs with special character stream names
 
-Collect CloudTrail logs from a CloudWatch log group where the log stream names include special characters (such as `/`, `[`, `]`, etc.). These characters need to be properly escaped when querying to ensure accurate results.
-
+Collect CloudTrail logs from a CloudWatch log group where the log stream names include [special characters](https://pkg.go.dev/path/filepath#Match), e.g., `/`, `[`, `]`. These characters need to be properly escaped with `\\` when querying to ensure accurate results.
+}
 ```hcl
 partition "aws_cloudtrail_log" "cw_special_chars" {
   source "aws_cloudwatch_log_group" {
