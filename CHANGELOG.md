@@ -1,3 +1,13 @@
+## v0.11.0 [2025-05-30]
+
+_Enhancements_
+
+- The `aws_vpc_flow_log` table now works with [formats](https://tailpipe.io/docs/reference/config-files/format) and can be collected with the `aws_cloudwatch_log_group` source. ([#137](https://github.com/turbot/tailpipe-plugin-aws/pull/137))
+
+_Bug fixes_
+
+- Updated `aws_cloudwatch_log_group` source to pass the full event in `RowData` instead of only the message. ([#185](https://github.com/turbot/tailpipe-plugin-aws/pull/185))
+
 ## v0.10.0 [2025-05-23]
 
 _What's new?_
