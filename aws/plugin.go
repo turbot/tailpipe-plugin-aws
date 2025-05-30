@@ -38,12 +38,18 @@ func init() {
 	table.RegisterTable[*guardduty_finding.GuardDutyFinding, *guardduty_finding.GuardDutyFindingTable]()
 	table.RegisterTable[*nlb_access_log.NlbAccessLog, *nlb_access_log.NlbAccessLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
-	table.RegisterTable[*vpc_flow_log.VpcFlowLog, *vpc_flow_log.VpcFlowLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
+
+	// register custom table
+	table.RegisterCustomTable[*vpc_flow_log.VpcFlowLogTable]()
 
 	// register sources
 	row_source.RegisterRowSource[*s3_bucket.AwsS3BucketSource]()
 	row_source.RegisterRowSource[*cloudwatch_log_group.AwsCloudWatchLogGroupSource]()
+
+	// register formats
+	table.RegisterFormatPresets(vpc_flow_log.VPCFlowLogTableFormatPresets...)
+	table.RegisterFormat[*vpc_flow_log.VPCFlowLogTableFormat]()
 }
 
 func NewPlugin() (_ plugin.TailpipePlugin, err error) {
