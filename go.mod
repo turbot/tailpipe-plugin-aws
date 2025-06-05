@@ -20,7 +20,7 @@ require (
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/turbot/go-kit v1.3.0
 	github.com/turbot/pipe-fittings/v2 v2.5.0
-	github.com/turbot/tailpipe-plugin-sdk v0.7.1
+	github.com/turbot/tailpipe-plugin-sdk v0.7.2
 	golang.org/x/sync v0.14.0
 )
 
