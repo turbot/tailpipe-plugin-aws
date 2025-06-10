@@ -95,9 +95,6 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 
 	if s.Config.Prefix != nil {
 		prefix = *s.Config.Prefix
-		if !strings.HasSuffix(prefix, "/") {
-			prefix = prefix + "/"
-		}
 		var newOptionalLayouts []string
 		for _, l := range optionalLayouts {
 			newOptionalLayouts = append(newOptionalLayouts, fmt.Sprintf("%s%s", prefix, l))
@@ -189,6 +186,19 @@ func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix st
 		return err
 	}
 
+	// Add support for collecting logs from S3 buckets that use a flat structure (i.e., without directory-style prefixes).
+	// Currently, if a prefix is specified in the config, it is prepended to the layout pattern.
+	// For example, if the prefix is "2025-06-06" and the layout is "%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}",
+	// the resulting layout becomes "2025-06-06%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}",
+	// which breaks log collection from buckets using a flat file structure.
+	// To address this, we're preserving the existing behavior for directory-style buckets,
+	// while adding support for flat buckets as a new, optional configuration path.
+	if prefix != "" {
+		for _, layout := range layouts {
+			layouts = append(layouts, strings.Replace(layout, prefix, "", 1))
+		}
+	}
+
 	paginator := s3.NewListObjectsV2Paginator(s.client, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
 		Prefix:    aws.String(prefix),
@@ -227,6 +237,7 @@ func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix st
 			}
 		}
 
+		// slog.Debug("page.Contents ===>>>>>", "contents", page.Contents)
 		// Files
 		for _, obj := range page.Contents {
 			objKey := typehelpers.SafeString(*obj.Key)
