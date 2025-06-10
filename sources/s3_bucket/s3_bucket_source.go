@@ -237,7 +237,6 @@ func (s *AwsS3BucketSource) walkS3(ctx context.Context, bucket string, prefix st
 			}
 		}
 
-		// slog.Debug("page.Contents ===>>>>>", "contents", page.Contents)
 		// Files
 		for _, obj := range page.Contents {
 			objKey := typehelpers.SafeString(*obj.Key)
