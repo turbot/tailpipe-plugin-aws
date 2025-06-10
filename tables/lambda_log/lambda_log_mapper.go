@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"slices"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
+	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 )
 
 type LambdaLogMapper struct {
@@ -41,8 +43,19 @@ type jsonFormatApplicationLog struct {
 	RequestID string `json:"requestId"`
 }
 
+// While storing the logs in the S3 bucket, the logs are stored in the following format:
+type s3FormatLog struct {
+	AccountId *string `json:"accountId"`
+	LogGroup  *string `json:"logGroup"`
+	LogStream *string `json:"logStream"`
+	Id        *string `json:"id"`
+	Timestamp *int64  `json:"timestamp"`
+	Message   *string `json:"message"`
+}
+
 func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*LambdaLog]) (*LambdaLog, error) {
 	row := &LambdaLog{}
+	isCwLog := false
 
 	var raw string
 	switch v := a.(type) {
@@ -52,15 +65,54 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 		raw = v
 	case *string:
 		raw = *v
+	case cwTypes.FilteredLogEvent:
+		raw = *v.Message
+		t := time.UnixMilli(*v.Timestamp)
+		row.Timestamp = &t
+		isCwLog = true
 	default:
 		return nil, fmt.Errorf("expected string or []byte, got %T", a)
 	}
+
+	// Handle S3 bucket logs
+	s3Format := &s3FormatLog{}
+	isTextFormat := true
+	if err := s3Format.UnmarshalJSON([]byte(raw)); err == nil && !isCwLog {
+		// if s3Format.LogGroup != nil {
+		// if row.TpTimestamp.IsZero() {
+		slog.Error("S3 format log", "Timestamp", *s3Format.Timestamp)
+		t := time.UnixMilli(*s3Format.Timestamp)
+		slog.Error("S3 format log", "Timestamp", *s3Format.Timestamp, "Time", t)
+		if err == nil {
+			row.Timestamp = &t
+		}
+
+		if s3Format.LogGroup != nil {
+			row.LogGroupName = s3Format.LogGroup
+		}
+
+		// raw = strings.TrimSpace(*s3Format.Message)
+		msgStr, err := strconv.Unquote(*s3Format.Message)
+		if err == nil {
+			isTextFormat = true
+			raw = strings.TrimSpace(msgStr)
+		}
+		if err != nil {
+			// In the case if the message is a JSON object we will not have the unescape character.
+			isTextFormat = false
+			raw = strings.TrimSpace(*s3Format.Message)
+			slog.Error("Error unquoting message", "error", err)
+		}
+	}
+
 	raw = strings.TrimSpace(raw)
-	if strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") {
+	if strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") || strings.HasPrefix(raw, "EXTENSION") || strings.HasPrefix(raw, "TELEMETRY") || (isTextFormat && !isTimestamp(strings.Fields(raw)[0])){
 		lambdaLog, err := parseLambdaPainTextLog(raw)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
 		}
+		lambdaLog.Timestamp = row.Timestamp
+		lambdaLog.RawMessage = &raw
 		return lambdaLog, nil
 	}
 
@@ -109,7 +161,7 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 					row.MaxMemoryUsed = &mem
 				}
 			}
-
+			row.RawMessage = &raw
 			return row, nil
 		} else if _, hasLevel := probe["level"]; hasLevel {
 			// Fallback to application log (JSON format with timestamp, level, message, requestId)
@@ -125,12 +177,14 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			row.LogLevel = &appLog.Level
 			row.Message = &appLog.Message
 			row.RequestID = &appLog.RequestID
-
+			row.RawMessage = &raw	
 			return row, nil
 		}
-	} else if len(strings.Fields(raw)) >= 4 && isTimestamp(strings.Fields(raw)[0]) { // plain text application log
+	} 
+	if len(strings.Fields(raw)) >= 4 && isTimestamp(strings.Fields(raw)[0]) { // plain text application log
 		// Handle plain text application logs (format: timestamp requestID logLevel message)
 		// Example: 2024-10-27T19:17:45.586Z 79b4f56e-95b1-4643-9700-2807f4e68189 INFO some log message
+		// [INFO]	2025-05-26T06:42:27.551Z	66e2e287-e14b-471e-8185-faca26d2c310	This is a function log
 		fields := strings.Fields(raw)
 		// Timestamp
 		if t, err := time.Parse(time.RFC3339, fields[0]); err == nil {
@@ -150,9 +204,34 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			msg := strings.Join(fields[3:], " ")
 			row.Message = &msg
 		}
+		row.RawMessage = &raw
+	} else {
+		row.Message = &raw
+		row.RawMessage = &raw
 	}
 
 	return row, nil
+}
+
+func (s *s3FormatLog) UnmarshalJSON(data []byte) error {
+	type Alias s3FormatLog
+	aux := &struct {
+		Message json.RawMessage `json:"message"`
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+
+	// slog.Error("U11111111111", "data", string(data))
+	if err := json.Unmarshal(data, &aux); err != nil {
+		slog.Error("Error unmarshalling s3 format log", "error", err)
+		return err
+	}
+
+	msgStr := string(aux.Message)
+	s.Message = &msgStr
+	// slog.Error("22222222222222", "data", string(msgStr))
+	return nil
 }
 
 // parseLambdaPainTextLog handles the legacy plain text format for Lambda system logs
@@ -174,8 +253,8 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 		log.LogType = ptr("START")
 		if id := extractAfter(line, "START RequestId: "); id != "" {
 			log.RequestID = ptr(strings.Fields(id)[0])
-			if len(strings.Split(line, "RequestId: " + id)[1]) > 0 {
-				log.Message = &strings.Split(line, "RequestId: " + id)[1]
+			if len(strings.Split(line, "RequestId: "+id)[1]) > 0 {
+				log.Message = &strings.Split(line, "RequestId: "+id)[1]
 			}
 		} else {
 			log.Message = ptr(line)
@@ -185,11 +264,11 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 		log.LogType = ptr("INIT_START")
 		if id := extractAfter(line, "INIT_START RequestId: "); id != "" {
 			log.RequestID = ptr(strings.Fields(id)[0])
-			if len(strings.Split(line, "RequestId: " + id)[1]) > 0 {
-				log.Message = &strings.Split(line, "RequestId: " + id)[1]
+			if len(strings.Split(line, "RequestId: "+id)[1]) > 0 {
+				log.Message = &strings.Split(line, "RequestId: "+id)[1]
 			}
 		} else {
-			msg := strings.Split(line, "INIT_START " + id)[1]
+			msg := strings.Split(line, "INIT_START "+id)[1]
 			log.Message = &msg
 		}
 	case strings.HasPrefix(line, "END RequestId:"):
@@ -197,8 +276,8 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 		log.LogType = ptr("END")
 		if id := extractAfter(line, "END RequestId: "); id != "" {
 			log.RequestID = ptr(strings.Fields(id)[0])
-			if len(strings.Split(line, "RequestId: " + id)[1]) > 0 {
-				log.Message = &strings.Split(line, "RequestId: " + id)[1]
+			if len(strings.Split(line, "RequestId: "+id)[1]) > 0 {
+				log.Message = &strings.Split(line, "RequestId: "+id)[1]
 			}
 		} else {
 			log.Message = ptr(line)
@@ -233,6 +312,25 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 				log.MaxMemoryUsed = &i
 			}
 		}
+
+	case strings.HasPrefix(line, "EXTENSION"):
+		// Parse START log line
+		log.LogType = ptr("EXTENSION")
+		log.RequestID = ptr(strings.Fields("EXTENSION")[0])
+		if len(strings.Split(line, "EXTENSION")[1]) > 0 {
+			log.Message = ptr(strings.TrimSpace(strings.Split(line, "EXTENSION")[1]))
+		}
+
+	case strings.HasPrefix(line, "TELEMETRY"):
+		// Parse START log line
+		log.LogType = ptr("TELEMETRY")
+		log.RequestID = ptr(strings.Fields("TELEMETRY")[0])
+		if len(strings.Split(line, "TELEMETRY")[1]) > 0 {
+			log.Message = ptr(strings.TrimSpace(strings.Split(line, "TELEMETRY")[1]))
+		}
+
+	default:
+		log.Message = ptr(line)
 	}
 
 	return log, nil
