@@ -98,7 +98,6 @@ func (c *AlbConnectionLog) GetColumnDescriptions() map[string]string {
 		"tls_verify_status":              "The status of the TLS verification ('Success' if established, otherwise 'Failed:$error_code').",
 
 		// Tailpipe-specific metadata fields
-		"tp_index": "A unique identifier linking connection logs to subsequent access logs for the same connection.",
 		"tp_ips":   "The IP addresses involved in requesting client.",
 	}
 }
