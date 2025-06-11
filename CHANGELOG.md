@@ -1,3 +1,86 @@
+## v0.12.2 [2025-06-05]
+
+- Recompiled plugin with [tailpipe-plugin-sdk v0.7.2](https://github.com/turbot/tailpipe-plugin-sdk/blob/develop/CHANGELOG.md#v072-2025-06-04) that fixes an issue where the end time was not correctly recorded for collections using artifact sources. ([#192](https://github.com/turbot/tailpipe-plugin-aws/pull/192))
+
+## v0.12.1 [2025-06-04]
+
+- Recompiled plugin with [tailpipe-plugin-sdk v0.7.1](https://github.com/turbot/tailpipe-plugin-sdk/blob/develop/CHANGELOG.md#v071-2025-06-04) that fixes an issue affecting collections using a file source. ([#190](https://github.com/turbot/tailpipe-plugin-aws/pull/190))
+
+## v0.12.0 [2025-06-03]
+
+_Dependencies_
+
+- Recompiled plugin with [tailpipe-plugin-sdk v0.7.0](https://github.com/turbot/tailpipe-plugin-sdk/blob/develop/CHANGELOG.md#v070-2025-06-03) that improves how collection end times are tracked, helping make future collections more accurate and reliable.
+
+## v0.11.0 [2025-05-30]
+
+_Enhancements_
+
+- The `aws_vpc_flow_log` table now works with [formats](https://tailpipe.io/docs/reference/config-files/format) and can be collected with the `aws_cloudwatch_log_group` source. ([#137](https://github.com/turbot/tailpipe-plugin-aws/pull/137))
+
+_Bug fixes_
+
+- Updated `aws_cloudwatch_log_group` source to pass the full event in `RowData` instead of only the message. ([#185](https://github.com/turbot/tailpipe-plugin-aws/pull/185))
+
+## v0.10.0 [2025-05-23]
+
+_What's new?_
+
+- New sources added:
+  - [aws_cloudwatch_log_group](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group) ([#169](https://github.com/turbot/tailpipe-plugin-aws/pull/169))
+
+_Enhancements_
+
+- The `tp_index` column for the `aws_cost_and_usage_focus`, `aws_cost_and_usage_report`, and `aws_cost_optimization_recommendation` tables is now always set to the value `default` instead of an AWS account ID to improve query times. ([#179](https://github.com/turbot/tailpipe-plugin-aws/pull/179))
+
+_Dependencies_
+
+- Bumped github.com/aws/aws-sdk-go-v2/feature/s3/manager from 1.17.73 to 1.17.75. ([#171](https://github.com/turbot/tailpipe-plugin-aws/pull/171))
+- Bumped github.com/aws/aws-sdk-go-v2/service/guardduty from 1.54.1 to 1.54.5. ([#170](https://github.com/turbot/tailpipe-plugin-aws/pull/170))
+- Bumped github.com/aws/aws-sdk-go-v2/service/s3 from 1.79.2 to 1.79.3. ([#167](https://github.com/turbot/tailpipe-plugin-aws/pull/167))
+- Bumped github.com/turbot/pipe-fittings/v2 from 2.3.4 to 2.4.1. ([#176](https://github.com/turbot/tailpipe-plugin-aws/pull/176))
+- Bumped golang.org/x/sync from 0.13.0 to 0.14.0. ([#172](https://github.com/turbot/tailpipe-plugin-aws/pull/172))
+
+## v0.9.2 [2025-05-16]
+
+_Bug fixes_
+
+- Fixed error when adding an empty header value for the `aws_cost_and_usage_report` table while collecting rows. ([#174](https://github.com/turbot/tailpipe-plugin-aws/pull/174))
+
+## v0.9.1 [2025-04-25]
+
+_Enhancements_
+
+- Improved error reporting for `aws_s3_bucket` source. ([#159](https://github.com/turbot/tailpipe-plugin-aws/pull/159))
+
+_Bug fixes_
+
+- Fixed a memory consumption issue with `aws_cost_*` tables during log collection. ([#159](https://github.com/turbot/tailpipe-plugin-aws/pull/159))
+
+_Dependencies_
+
+- Bumped github.com/aws/aws-sdk-go-v2/credentials from 1.17.62 to 1.17.67. ([#150](https://github.com/turbot/tailpipe-plugin-aws/pull/150))
+- Bumped github.com/aws/aws-sdk-go-v2/feature/s3/manager. ([#151](https://github.com/turbot/tailpipe-plugin-aws/pull/151))
+- Bumped github.com/turbot/tailpipe-plugin-sdk from v0.2.0 to v0.4.0. ([#159](https://github.com/turbot/tailpipe-plugin-aws/pull/159))
+- Bumped golang.org/x/net from 0.36.0 to 0.38.0. ([#154](https://github.com/turbot/tailpipe-plugin-aws/pull/154))
+
+## v0.9.0 [2025-04-17]
+
+_Enhancements_
+
+- Updated `file_layout` arguments in documentation to wrap values in backticks instead of double quotes to align with Tailpipe CLI v0.2.0 changes. ([#140](https://github.com/turbot/tailpipe-plugin-aws/pull/140))
+
+_Bug fixes_
+
+- The `aws_vpc_flow_log` table no longer skips collecting records with log status `SKIPPED` or `NODATA`.
+- Updated `aws_cost_and_usage_focus`, `aws_cost_and_usage_report` and `aws_cost_optimization_recommendation` tables to store missing column values as `null`. ([#139](https://github.com/turbot/tailpipe-plugin-aws/pull/139))
+- Fixed typo for `file_layout` in `aws_s3_bucket` source doc.
+
+_Dependencies_
+
+- Bumped github.com/turbot/pipe-fittings/v2 from 2.3.0 to 2.3.1. ([#143](https://github.com/turbot/tailpipe-plugin-aws/pull/143))
+- Bumped github.com/turbot/tailpipe-plugin-sdk from v0.1.1 to v0.2.0. ([#136](https://github.com/turbot/tailpipe-plugin-aws/pull/136))
+
 ## v0.8.1 [2025-03-28]
 
 _Bug fixes_

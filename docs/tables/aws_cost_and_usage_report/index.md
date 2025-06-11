@@ -19,7 +19,6 @@ Limitations and notes:
   - `line_item_usage_account_id` (CUR 2.0)/`lineItem/UsageAccountId` (Legacy CUR)
   - `line_item_resource_id` (CUR 2.0)/`lineItem/ResourceId` (Legacy CUR)
     - This column is used if the resource ID is an ARN and is only included in reports if **Include resource IDs** was selected during export creation.
-  - If none of the columns above are present, the log will use `default` as the index instead of an AWS account ID.
 
 ## Configure
 

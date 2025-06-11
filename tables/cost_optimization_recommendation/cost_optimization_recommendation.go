@@ -49,6 +49,14 @@ type CostOptimizationRecommendation struct {
 	Tags                       *map[string]string      `json:"tags,omitempty" parquet:"name=tags"`
 }
 
+func NewCostOptimizationRecommendation() *CostOptimizationRecommendation {
+	return &CostOptimizationRecommendation{
+		CurrentResourceDetails:     &map[string]interface{}{},
+		RecommendedResourceDetails: &map[string]interface{}{},
+		Tags:                       &map[string]string{},
+	}
+}
+
 func (c *CostOptimizationRecommendation) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"account_id":                                   "The account that the recommendation is for.",
@@ -79,7 +87,6 @@ func (c *CostOptimizationRecommendation) GetColumnDescriptions() map[string]stri
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "The list of resource ARNs associated with a cost and usage recommendation.",
-		"tp_index":     "The AWS account ID associated with the recommendation.",
 		"tp_timestamp": "The timestamp when the recommendation was last refreshed, in ISO 8601 format.",
 	}
 }

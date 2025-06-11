@@ -56,7 +56,7 @@ func (s *CloudWatchLogGroupCollectionState) Init(config *AwsCloudWatchLogGroupSo
 		}
 	}
 
-	// Initialize or reinitialize the map if nil
+	// Initialize or reinitialize the maps if nil
 	if s.LogStreams == nil {
 		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionStateImpl)
 	}
@@ -162,6 +162,7 @@ func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, ti
 		timeRangeState = collection_state.NewTimeRangeCollectionStateImpl(collection_state.CollectionOrderChronological)
 		timeRangeState.SetGranularity(s.GetGranularity())
 		s.LogStreams[logStreamName] = timeRangeState
+		// s.ProcessedEventIds = append(s.ProcessedEventIds, eventId)
 	}
 
 	// Call OnCollected on the time range state
@@ -206,9 +207,20 @@ func (s *CloudWatchLogGroupCollectionState) GetToTime() time.Time {
 
 // ShouldCollect determines whether an event with the given timestamp should be collected
 // for the specified log stream based on its time range state.
-func (s *CloudWatchLogGroupCollectionState) ShouldCollect(id string, timestamp time.Time) bool {
-	if state, exists := s.LogStreams[id]; exists {
-		return state.ShouldCollect(id, timestamp)
+func (s *CloudWatchLogGroupCollectionState) ShouldCollect(logStreamName string, timestamp time.Time) bool {
+	if state, exists := s.LogStreams[logStreamName]; exists {
+		//  Granularity defines a small timing window (buffer zone) added after the end time of the last collected event.
+		// It helps decide whether a new event should be considered already collected or needs to be collected.
+		// It compensates for small delays or natural jitter between closely occurring events.
+		//
+		// Based on analysis of CloudWatch log streams:
+		// - Smallest gap between events is ~4-35ms
+		// - Use 6ms for stricter separation
+
+		// When running the command `tailpipe collect <table_name>.<partition>` multiple times with a larger granularity,
+		// duplicate events may be collected if those events were already collected in a previous run.
+		state.Granularity = 6 * time.Millisecond
+		return state.ShouldCollect(logStreamName, timestamp)
 	}
 	return true
 }

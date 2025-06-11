@@ -138,6 +138,16 @@ type CostUsageReport struct {
 	SplitLineItemUnusedCost                                  *float64                `json:"split_line_item_unused_cost,omitempty" parquet:"name=split_line_item_unused_cost"`
 }
 
+func NewCostUsageReport() *CostUsageReport {
+	return &CostUsageReport{
+		Product:      &map[string]interface{}{},
+		Reservation:  &map[string]interface{}{},
+		CostCategory: &map[string]interface{}{},
+		Discount:     &map[string]interface{}{},
+		ResourceTags: &map[string]interface{}{},
+	}
+}
+
 func (c *CostUsageReport) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"bill_billing_entity":                                      "Helps in identify whether the invoices or transactions are for AWS Marketplace or for purchases of other AWS services.",
@@ -268,7 +278,6 @@ func (c *CostUsageReport) GetColumnDescriptions() map[string]string {
 		"split_line_item_unused_cost":                                      "The unused cost for vCPU or memory (based on line_item_usage_type) allocated for the time period to the Amazon ECS task. Unused costs are costs associated with resources (CPU or memory) on the EC2 instance (referenced in the split_line_item_parent_resource_id column) that were not utilized for the specified time period. This includes amortized costs if the EC2 instance (split_line_item_parent_resource_id) has upfront or partial upfront charges for reservations or Savings Plans.",
 
 		// Override table specific tp_* column descriptions
-		"tp_index":     "The AWS account ID associated with the report, determined based on the following priority: LineItemUsageAccountId, BillPayerAccountId, or a default value if neither is available.",
 		"tp_timestamp": "The timestamp representing the start or end date of the usage, depending on availability. If not available, the billing period start or end date is used. The timestamp is in ISO 8601 format.",
 	}
 }

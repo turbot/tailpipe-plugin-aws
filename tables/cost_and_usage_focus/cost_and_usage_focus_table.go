@@ -6,7 +6,6 @@ import (
 
 	"github.com/rs/xid"
 
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
@@ -34,16 +33,20 @@ func (c *CostUsageFocusTable) GetSourceMetadata() ([]*table.SourceMetadata[*Cost
 		{
 			// S3 artifact source
 			SourceName: s3_bucket.AwsS3BucketSourceIdentifier,
+			Mapper:     NewCostAndUsageFocusMapper(),
 			Options: []row_source.RowSourceOption{
 				artifact_source.WithDefaultArtifactSourceConfig(defaultS3ArtifactConfig),
-				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
+				artifact_source.WithRowPerLine(),
+				artifact_source.WithHeaderRowNotification(","),
 			},
 		},
 		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
+			Mapper:     NewCostAndUsageFocusMapper(),
 			Options: []row_source.RowSourceOption{
-				artifact_source.WithArtifactExtractor(NewCostUsageFocusExtractor()),
+				artifact_source.WithRowPerLine(),
+				artifact_source.WithHeaderRowNotification(","),
 			},
 		},
 	}, nil
@@ -56,13 +59,7 @@ func (c *CostUsageFocusTable) EnrichRow(row *CostUsageFocus, sourceEnrichmentFie
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 
-	// TpIndex
-	switch {
-	case typehelpers.SafeString(row.SubAccountId) != "":
-		row.TpIndex = typehelpers.SafeString(row.SubAccountId)
-	default:
-		row.TpIndex = schema.DefaultIndex
-	}
+	row.TpIndex = schema.DefaultIndex
 
 	if row.ChargePeriodStart != nil {
 		row.TpTimestamp = *row.ChargePeriodStart

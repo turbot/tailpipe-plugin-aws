@@ -59,6 +59,14 @@ type CostUsageFocus struct {
 	XUsageType                 *string            `json:"x_UsageType,omitempty" parquet:"name=x_usage_type"`
 }
 
+func NewCostUsageFocus() *CostUsageFocus {
+	return &CostUsageFocus{
+		Tags:            &map[string]string{},
+		XCostCategories: &map[string]string{},
+		XDiscounts:      &map[string]string{},
+	}
+}
+
 func (c *CostUsageFocus) GetColumnDescriptions() map[string]string {
 	return map[string]string{
 		"availability_zone":            "A provider-assigned identifier for a physically separated and isolated area within a Region that provides high availability and fault tolerance.",
@@ -112,7 +120,6 @@ func (c *CostUsageFocus) GetColumnDescriptions() map[string]string {
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "The list of ARNs associated with a cost and usage report. If ResourceId starts with 'arn:', it is included in this list.",
-		"tp_index":     "The account ID associated with the report, determined based on the following priority: SubAccountId, BillingAccountId, or a default value if neither is available.",
 		"tp_timestamp": "The timestamp representing the start or end date of the usage. If available, ChargePeriodStart is used first, followed by ChargePeriodEnd, BillingPeriodStart, or BillingPeriodEnd in that order. The timestamp is stored in ISO 8601 format.",
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
@@ -37,6 +38,8 @@ func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[
 		if err != nil {
 			return nil, fmt.Errorf("error decoding string: %w", err)
 		}
+	case cwTypes.FilteredLogEvent:
+		jsonBytes = []byte(*v.Message)
 	default:
 		return nil, fmt.Errorf("expected byte[], string or rows.CloudTailLog got %T", a)
 	}
