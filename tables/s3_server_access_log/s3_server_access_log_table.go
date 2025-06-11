@@ -3,11 +3,10 @@ package s3_server_access_log
 import (
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-
 	"github.com/rs/xid"
 
 	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -27,7 +26,7 @@ func (c *S3ServerAccessLogTable) Identifier() string {
 	return S3ServerAccessLogTableIdentifier
 }
 
-func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*S3ServerAccessLog] {
+func (c *S3ServerAccessLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*S3ServerAccessLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("(%{NUMBER:account_id}/%{DATA:region}/%{DATA:bucket_name}/%{YEAR:partition_year}/%{MONTHNUM:partition_month}/%{MONTHDAY:partition_day}/)?%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}"),
 	}
@@ -48,7 +47,7 @@ func (c *S3ServerAccessLogTable) GetSourceMetadata() []*table.SourceMetadata[*S3
 			Mapper:     mappers.NewGonxMapper[*S3ServerAccessLog](s3ServerAccessLogFormat, s3ServerAccessLogFormatReduced),
 			Options:    []row_source.RowSourceOption{artifact_source.WithRowPerLine()},
 		},
-	}
+	}, nil
 }
 
 func (c *S3ServerAccessLogTable) EnrichRow(row *S3ServerAccessLog, sourceEnrichmentFields schema.SourceEnrichment) (*S3ServerAccessLog, error) {

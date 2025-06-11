@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	helper "github.com/turbot/tailpipe-plugin-aws/tables"
-	"github.com/turbot/tailpipe-plugin-sdk/table"
+
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type WafMapper struct {
@@ -17,7 +19,7 @@ func (c *WafMapper) Identifier() string {
 	return "aws_waf_traffic_log_mapper"
 }
 
-func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTrafficLog]) (*WafTrafficLog, error) {
+func (c *WafMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*WafTrafficLog]) (*WafTrafficLog, error) {
 	var jsonBytes []byte
 
 	switch v := a.(type) {
@@ -25,6 +27,10 @@ func (c *WafMapper) Map(_ context.Context, a any, _ ...table.MapOption[*WafTraff
 		jsonBytes = v
 	case string:
 		jsonBytes = []byte(v)
+	case *string:
+		jsonBytes = []byte(*v)
+	case cwTypes.FilteredLogEvent:
+		jsonBytes = []byte(*v.Message)
 	default:
 		return nil, fmt.Errorf("expected byte[] or string, got %T", a)
 	}

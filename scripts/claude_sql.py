@@ -70,28 +70,30 @@ Evaluate the query against each of these specific criteria sets:
 6. STRUCT type columns should use dot notation when accessing properties.
 7. JSON type columns should use `->` and `->>` operators when accessing properties.
 8. JSON type columns using `->` and `->>` operators should be wrapped in parenthesis to avoid operator precedence issues.
-9. SQL query syntax uses valid DuckDB syntax.
+9. There should be a space before and after each `->` and `->>`.
+10. SQL query syntax uses valid DuckDB syntax.
 
 # Title and description checks
 1. The query's title should use title case.
 2. The query's title should accurately describe what the query does.
-3. The first sentence of the query description should explain what the query does.
-4. The second sentence of the query description should explain why a user would want to run the query.
-5. Each sentence in the query description should be concise.
+3. If the query contains `limit X`, that number should reflected in the title, e.g., `Top 10 Expensive Services` with `limit 10`.
+4. The first sentence of the query description should explain what the query does.
+5. The second sentence of the query description should explain why a user would want to run the query.
+6. Each sentence in the query description should be concise.
 
 # Query relevance to logs checks
 1. The query should provide useful insights for the specific log type it analyzes.
 2. The query should be relevant to security, operational, or performance monitoring use cases.
 
 # Column selection checks
-1. For aggregated queries, the `tp_index` and `tp_timestamp` (or other log timestamp related columns) should not be included.
-2. For non-aggregated queries, the `tp_timestamp` column should be the first column in the `SELECT` statement.
-3. For non-aggregated queries, the table's primary index (usually `tp_index`) must be included.
-4. For non-aggregated queries, if the log contains information on where resources exist (e.g., `account_id` for AWS logs, `subscription_id` for Azure logs), include those columns.
+1. For aggregated queries, timestamp related columns should not be included.
+2. For non-aggregated queries, the first column in the `SELECT` statement should be the event timestamp.
+3. For non-aggregated queries, if the log contains information on where resources exist (e.g., `account_id` and `region` for AWS CloudTrail logs, `subscription_id` and `resource_group_name` for Azure activity logs), include those columns.
+4. For non-aggregated queries, the columns related to where the resources exist should be the last columns in the `SELECT` statement.
 5. If the query's `WHERE` clause contains a specific value lookup, e.g., `where elb_status_code = 502`, do not include that column in the `SELECT` statement to avoid including redundant information.
 
 # Sorting strategy checks
-1. For non-aggregated queries, the default ordering should be `tp_timestamp desc` so the most recent log data is returned first.
+1. For non-aggregated queries, the default ordering should be `<event timestamp column> desc` so the most recent log data is returned first.
    - However, if another ordering gives more relevant results, e.g., `select timestamp, bucket, key, bytes_sent, operation from aws_s3_server_access_log where bytes_sent > 50000 order by bytes_sent desc;`, that is acceptable.
 2. For aggregated queries, the default ordering should be the main count in descending order, e.g., `select client_ip, count(*) as request_count from aws_alb_access_log group by client_ip order by response_count desc limit 10`.
    - However, if the query is looking at trends over dates or times, the query can be ordered by the relevant time column in ascending order.
@@ -124,6 +126,7 @@ You MUST provide ONLY the following output format, with no additional text:
 | STRUCT type columns use dot notation | [MARK] | [SUGGESTION] |
 | JSON type columns use `->` and `->>` operators | [MARK] | [SUGGESTION] |
 | JSON type columns are wrapped in parenthesis | [MARK] | [SUGGESTION] |
+| Space before and after each `->` and `->>` | [MARK] | [SUGGESTION] |
 | SQL query syntax uses valid DuckDB syntax | [MARK] | [SUGGESTION] |
 
 </details>
@@ -134,6 +137,7 @@ You MUST provide ONLY the following output format, with no additional text:
 |----------|-----------|-------------|
 | Title uses title case | [MARK] | [SUGGESTION] |
 | Title accurately describes the query | [MARK] | [SUGGESTION] |
+| Title contains limit value if in query | [MARK] | [SUGGESTION] |
 | Description explains what the query does | [MARK] | [SUGGESTION] |
 | Description explains why a user would run the query | [MARK] | [SUGGESTION] |
 | Description is concise | [MARK] | [SUGGESTION] |
@@ -153,10 +157,10 @@ You MUST provide ONLY the following output format, with no additional text:
 
 | Criteria | Pass/Fail | Suggestions |
 |----------|-----------|-------------|
-| Aggregated queries should not include tp_index/tp_timestamp | [MARK] | [SUGGESTION] |
-| Non-aggregated queries should have tp_timestamp first | [MARK] | [SUGGESTION] |
-| Non-aggregated queries should include tp_index | [MARK] | [SUGGESTION] |
-| Include resource location columns when available | [MARK] | [SUGGESTION] |
+| Aggregated queries should not include timestamp columns | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should have the log's event timestamp as the first column | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should include columns related to where the resources exist | [MARK] | [SUGGESTION] |
+| Non-aggregated queries should place columns related to where the resources exist last | [MARK] | [SUGGESTION] |
 | Avoid selecting columns with fixed values in WHERE clause | [MARK] | [SUGGESTION] |
 
 </details>
@@ -165,8 +169,8 @@ You MUST provide ONLY the following output format, with no additional text:
 
 | Criteria | Pass/Fail | Suggestions |
 |----------|-----------|-------------|
-| Non-aggregated queries default to tp_timestamp desc | [MARK] | [SUGGESTION] |
-| Aggregated queries ordered by count desc or time asc | [MARK] | [SUGGESTION] |
+| Non-aggregated queries default to `<event timestamp column> desc` | [MARK] | [SUGGESTION] |
+| Aggregated queries ordered by count desc or timestamp asc | [MARK] | [SUGGESTION] |
 
 </details>
 ```

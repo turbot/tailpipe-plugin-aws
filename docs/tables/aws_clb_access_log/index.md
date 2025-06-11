@@ -5,7 +5,7 @@ description: "AWS CLB access logs capture detailed information about requests pr
 
 # Table: aws_clb_access_log - Query AWS CLB access logs
 
-The `aws_clb_access_log` table allows you to query AWS Classic Load Balancer (CLB) access logs. This table provides detailed information about requests processed by your load balancers, including client and backend details, processing times, and SSL parameters.
+The `aws_clb_access_log` table allows you to query [AWS Classic Load Balancer (CLB) access logs](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html). This table provides detailed information about requests processed by your load balancers, including client and backend details, processing times, and SSL parameters.
 
 ## Configure
 
@@ -145,7 +145,7 @@ partition "aws_clb_access_log" "my_clb_logs_prefix" {
 partition "aws_clb_access_log" "local_logs" {
   source "file"  {
     paths       = ["/Users/myuser/clb_logs"]
-    file_layout = "%{DATA}.log"
+    file_layout = `%{DATA}.log`
   }
 }
 ```
@@ -172,7 +172,7 @@ partition "aws_clb_access_log" "my_logs_org" {
   source "aws_s3_bucket" {
     connection  = connection.aws.logging_account
     bucket      = "aws-clb-logs-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log"
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log`
   }
 }
 ```
@@ -184,7 +184,7 @@ partition "aws_clb_access_log" "my_logs_account" {
   source "aws_s3_bucket" {
     connection  = connection.aws.logging_account
     bucket      = "aws-clb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log`
   }
 }
 ```
@@ -196,7 +196,7 @@ partition "aws_clb_access_log" "my_logs_region" {
   source "aws_s3_bucket" {
     connection  = connection.aws.logging_account
     bucket      = "aws-clb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log`
   }
 }
 ```
@@ -208,7 +208,7 @@ partition "aws_clb_access_log" "my_logs_regions" {
   source "aws_s3_bucket" {
     connection  = connection.aws.logging_account
     bucket      = "aws-clb-logs-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{NUMBER:account_id}_elasticloadbalancing_%{DATA:region}_%{DATA}.log`
   }
 }
 ```

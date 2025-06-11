@@ -1,14 +1,15 @@
 package cloudtrail_log
 
 import (
-	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
-	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"strings"
 	"time"
 
 	"github.com/rs/xid"
 
 	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch_log_group"
+	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/tables"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source_config"
 	"github.com/turbot/tailpipe-plugin-sdk/constants"
@@ -22,7 +23,7 @@ const CloudTrailLogTableIdentifier = "aws_cloudtrail_log"
 // CloudTrailLogTable - table for CloudTrailLog logs
 type CloudTrailLogTable struct{}
 
-func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*CloudTrailLog] {
+func (t *CloudTrailLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*CloudTrailLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"),
 	}
@@ -43,7 +44,11 @@ func (t *CloudTrailLogTable) GetSourceMetadata() []*table.SourceMetadata[*CloudT
 				artifact_source.WithArtifactExtractor(NewCloudTrailLogExtractor()),
 			},
 		},
-	}
+		{
+			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
+			Mapper:     &CloudTrailMapper{},
+		},
+	}, nil
 }
 
 // Identifier implements table.Table
@@ -90,6 +95,6 @@ func (t *CloudTrailLogTable) EnrichRow(row *CloudTrailLog, sourceEnrichmentField
 	return row, nil
 }
 
-func (c *CloudTrailLogTable) GetDescription() string {
+func (t *CloudTrailLogTable) GetDescription() string {
 	return "AWS CloudTrail logs capture API activity and user actions within your AWS account."
 }

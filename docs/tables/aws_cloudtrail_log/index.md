@@ -5,7 +5,7 @@ description: "AWS CloudTrail logs capture API activity and user actions within y
 
 # Table: aws_cloudtrail_log - Query AWS CloudTrail Logs
 
-The `aws_cloudtrail_log` table allows you to query data from AWS CloudTrail logs. This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
+The `aws_cloudtrail_log` table allows you to query data from [AWS CloudTrail logs](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-working-with-log-files.html). This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
 
 ## Configure
 
@@ -141,19 +141,6 @@ partition "aws_cloudtrail_log" "my_logs_prefix" {
 }
 ```
 
-### Collect logs from local files
-
-You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/).
-
-```hcl
-partition "aws_cloudtrail_log" "local_logs" {
-  source "file"  {
-    paths       = ["/Users/myuser/cloudtrail_logs"]
-    file_layout = "%{DATA}.json.gz"
-  }
-}
-```
-
 ### Exclude read-only events
 
 Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
@@ -179,7 +166,7 @@ partition "aws_cloudtrail_log" "my_logs_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```
@@ -193,7 +180,7 @@ partition "aws_cloudtrail_log" "my_logs_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```
@@ -207,7 +194,7 @@ partition "aws_cloudtrail_log" "my_logs_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
   }
 }
 ```
@@ -220,7 +207,64 @@ For all accounts, collect logs from us-east-1 and us-east-2.
 partition "aws_cloudtrail_log" "my_logs_regions" {
   source "aws_s3_bucket"  {
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = "AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"
+    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group
+
+Collect CloudTrail logs from all log streams in a CloudWatch log group.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs" {
+  source "aws_cloudwatch_log_group" {
+    connection     = connection.aws.logging_account
+    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
+    region         = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group for a specific account and region
+
+Collect CloudTrail logs for a single region in an account.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_specific" {
+  source "aws_cloudwatch_log_group" {
+    connection       = connection.aws.default
+    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names = ["456789012345_CloudTrail_us-east-1*"]
+    region           = "us-east-1"
+  }
+}
+```
+
+### Collect logs from a CloudWatch log group for all regions in an account
+
+Collect CloudTrail logs for all regions in an account.
+
+```hcl
+partition "aws_cloudtrail_log" "cw_log_group_logs_all_regions" {
+  source "aws_cloudwatch_log_group" {
+    connection       = connection.aws.default
+    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
+    log_stream_names = ["456789012345_CloudTrail_*"]
+    region           = "us-east-1"
+  }
+}
+```
+
+### Collect logs from local files
+
+You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/).
+
+```hcl
+partition "aws_cloudtrail_log" "local_logs" {
+  source "file"  {
+    paths       = ["/Users/myuser/cloudtrail_logs"]
+    file_layout = `%{DATA}.json.gz`
   }
 }
 ```
@@ -231,6 +275,6 @@ partition "aws_cloudtrail_log" "my_logs_regions" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-| Argument      | Default |
-|---------------|---------|
-| file_layout   | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
+| Argument    | Default                                                                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
