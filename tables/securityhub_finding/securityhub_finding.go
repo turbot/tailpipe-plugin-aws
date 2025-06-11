@@ -136,7 +136,6 @@ func (c *SecurityHubFinding) GetColumnDescriptions() map[string]string {
 
 		// Tailpipe-specific metadata fields
 		"tp_akas":      "The list of AWS ARNs associated with the finding.",
-		"tp_index":     "The AWS account ID where the finding was generated.",
 		"tp_timestamp": "The timestamp when the finding was generated.",
 		"tp_date":      "The date when the finding was generated, truncated to day.",
 	}
