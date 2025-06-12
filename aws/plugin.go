@@ -5,6 +5,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-aws/sources/cloudwatch_log_group"
 	"github.com/turbot/tailpipe-plugin-aws/sources/s3_bucket"
+	"github.com/turbot/tailpipe-plugin-aws/tables/alb_connection_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/alb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/clb_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/cloudtrail_log"
@@ -38,6 +39,7 @@ func init() {
 	table.RegisterTable[*guardduty_finding.GuardDutyFinding, *guardduty_finding.GuardDutyFindingTable]()
 	table.RegisterTable[*nlb_access_log.NlbAccessLog, *nlb_access_log.NlbAccessLogTable]()
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
+	table.RegisterTable[*alb_connection_log.AlbConnectionLog, *alb_connection_log.AlbConnectionLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
 
 	// register custom table
