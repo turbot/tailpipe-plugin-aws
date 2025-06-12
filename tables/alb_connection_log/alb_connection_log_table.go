@@ -29,7 +29,7 @@ func (c *AlbConnectionLogTable) Identifier() string {
 func (c *AlbConnectionLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*AlbConnectionLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
 		// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-connection-logs.html#connection-log-file-format
-		FileLayout: utils.ToStringPointer("(%{DATA:logging-prefix}/)?AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/conn_log.%{DATA}.log.gz"),
+		FileLayout: utils.ToStringPointer("(%{DATA:logging_prefix}/)?AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/conn_log.%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*AlbConnectionLog]{
