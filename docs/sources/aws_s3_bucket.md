@@ -11,6 +11,8 @@ Using this source, you can collect, filter, and analyze logs stored in S3 bucket
 
 Most AWS tables define a default `file_layout` for the `aws_s3_bucket` source, so if your AWS logs are stored in default log locations, you don't need to override the `file_layout` argument.
 
+The trailing `/` is not automatically included in the `prefix`. If your log path requires it, be sure to add it explicitly.
+
 ## Example Configurations
 
 ### Collect CloudTrail logs
