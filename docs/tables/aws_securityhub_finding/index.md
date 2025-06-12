@@ -44,7 +44,7 @@ tailpipe collect aws_securityhub_finding.my_findings
 
 ## Query
 
-**[Explore example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_securityhub_finding)**
+**[Explore 8+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_securityhub_finding)**
 
 ### High Severity Findings
 
