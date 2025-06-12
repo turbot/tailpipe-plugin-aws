@@ -44,12 +44,6 @@ func (c *SecurityHubFindingExtractor) Extract(_ context.Context, a any) ([]any, 
 		return nil, fmt.Errorf("error decoding json: %w", err)
 	}
 
-	// Handle kebab-case to snake_case for detail-type
-	if detailType, ok := rawEvent["detail-type"]; ok {
-		rawEvent["detail_type"] = detailType
-		delete(rawEvent, "detail-type")
-	}
-
 	// Re-encode the modified JSON
 	modifiedJSON, err := json.Marshal(rawEvent)
 	if err != nil {

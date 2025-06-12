@@ -69,7 +69,7 @@ type SecurityHubFinding struct {
 type DetailFindingsData struct {
 	Version    *string    `json:"version,omitempty"`
 	ID         *string    `json:"id,omitempty"`
-	DetailType *string    `json:"detail_type,omitempty"`
+	DetailType *string    `json:"detail-type,omitempty"`
 	Source     *string    `json:"source,omitempty"`
 	Account    *string    `json:"account,omitempty"`
 	Time       *time.Time `json:"time,omitempty"`
