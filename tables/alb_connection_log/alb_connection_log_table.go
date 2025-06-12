@@ -17,6 +17,7 @@ import (
 
 const AlbConnectionLogTableIdentifier = "aws_alb_connection_log"
 
+// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-connection-logs.html#connection-log-entry-syntax
 const connectionLogFormat = `$timestamp $client_ip $client_port $listener_port $tls_protocol $tls_cipher $tls_handshake_latency "$leaf_client_cert_subject" $leaf_client_cert_validity $leaf_client_cert_serial_number $tls_verify_status $conn_trace_id`
 
 type AlbConnectionLogTable struct{}
@@ -25,9 +26,10 @@ func (c *AlbConnectionLogTable) Identifier() string {
 	return AlbConnectionLogTableIdentifier
 }
 
-func (c *AlbConnectionLogTable) GetSourceMetadata() []*table.SourceMetadata[*AlbConnectionLog] {
+func (c *AlbConnectionLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*AlbConnectionLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/conn_log.%{DATA}.log.gz"),
+		// https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-connection-logs.html#connection-log-file-format
+		FileLayout: utils.ToStringPointer("(%{DATA:logging-prefix}/)?AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/elasticloadbalancing/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/conn_log.%{DATA}.log.gz"),
 	}
 
 	return []*table.SourceMetadata[*AlbConnectionLog]{
@@ -46,7 +48,7 @@ func (c *AlbConnectionLogTable) GetSourceMetadata() []*table.SourceMetadata[*Alb
 				artifact_source.WithRowPerLine(),
 			},
 		},
-	}
+	}, nil
 }
 
 func (c *AlbConnectionLogTable) EnrichRow(row *AlbConnectionLog, sourceEnrichmentFields schema.SourceEnrichment) (*AlbConnectionLog, error) {
@@ -54,8 +56,13 @@ func (c *AlbConnectionLogTable) EnrichRow(row *AlbConnectionLog, sourceEnrichmen
 
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
+
+	// We will always have the timestamp value, so empty check ignored.
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
+
+	// tp_index
+	row.TpIndex = schema.DefaultIndex
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
