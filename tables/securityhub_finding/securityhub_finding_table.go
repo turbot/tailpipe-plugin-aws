@@ -25,7 +25,10 @@ func (c *SecurityHubFindingTable) Identifier() string {
 
 func (c *SecurityHubFindingTable) GetSourceMetadata() ([]*table.SourceMetadata[*SecurityHubFinding], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz"),
+		// AWS does not provide a default or recommended S3 bucket file path for Security Hub Findings export.
+		// The default file layout defined here is based on the implementation from:
+		// https://github.com/aws-samples/aws-security-hub-findings-export
+		FileLayout: utils.ToStringPointer("AWSLogs/%{NUMBER:account_id}/%{DATA:security_hub_integrrated_product_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json"),
 	}
 
 	return []*table.SourceMetadata[*SecurityHubFinding]{
