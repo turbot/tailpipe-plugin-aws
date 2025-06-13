@@ -44,7 +44,6 @@ func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog
 			},
 		},
 		{	
-			// TODO: Should we keep this, as we don't have a direct way to store the logs in S3 bucket?
 			// S3 artifact source
 			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
 			Mapper:     &LambdaLogMapper{},
@@ -74,6 +73,7 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 		row.TpDate = row.TpTimestamp.Truncate(24 * time.Hour)
 	}
 
+	// tp_index
 	row.TpIndex = schema.DefaultIndex
 
 	var arnRegex = regexp.MustCompile(`arn:aws:[^,\s'"\\]+`)
@@ -94,3 +94,8 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 
 	return row, nil
 }
+
+func (c *LambdaLogTable) GetDescription() string {
+	return "AWS Lambda logs capture detailed information about function executions, including invocation context, console output, errors, and performance metrics. This table provides a structured and queryable view of Lambda log data, enabling easier analysis, troubleshooting, and monitoring."
+}
+
