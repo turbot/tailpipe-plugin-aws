@@ -80,9 +80,7 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 	if err := s3Format.UnmarshalJSON([]byte(raw)); err == nil && !isCwLog {
 		// if s3Format.LogGroup != nil {
 		// if row.TpTimestamp.IsZero() {
-		slog.Error("S3 format log", "Timestamp", *s3Format.Timestamp)
 		t := time.UnixMilli(*s3Format.Timestamp)
-		slog.Error("S3 format log", "Timestamp", *s3Format.Timestamp, "Time", t)
 		if err == nil {
 			row.Timestamp = &t
 		}
