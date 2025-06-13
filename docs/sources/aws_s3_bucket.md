@@ -60,6 +60,20 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 }
 ```
 
+### Collect S3 access logs with a prefix
+
+Collect S3 server access logs from a flat bucket by filtering objects that start with the specified prefix.
+
+```hcl
+partition "aws_s3_server_access_log" "my_s3_logs" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "aws-s3-server-access-logs"
+    prefix     = "2025-06-07"
+  }
+}
+```
+
 ## Arguments
 
 | Argument     | Type            | Required | Default                  | Description                                                                                                                   |

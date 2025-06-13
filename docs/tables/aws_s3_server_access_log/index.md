@@ -168,6 +168,20 @@ partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
 }
 ```
 
+### Collect logs with a prefix (without trailing slash)
+
+Collect S3 server access logs from a flat bucket by filtering objects that start with the specified prefix.
+
+```hcl
+partition "aws_s3_server_access_log" "my_s3_logs_no_trailing_slash" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "s3-server-access-logs-bucket"
+    prefix     = "2025-06-07"
+  }
+}
+```
+
 ## Source Defaults
 
 ### aws_s3_bucket
