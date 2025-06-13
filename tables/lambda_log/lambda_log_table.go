@@ -27,9 +27,6 @@ func (c *LambdaLogTable) Identifier() string {
 
 func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog], error) {
 	defaultS3ArtifactConfig := &artifact_source_config.ArtifactSourceConfigImpl{
-		// TODO: There is not specific file layout for the lambda logs.
-		// Also we can't directly store logs in S3 bucket.
-		// Does the file layout looks good?
 		FileLayout: utils.ToStringPointer("AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/%{DATA:region}/%{DATA:function_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{DATA}.log.zst"),
 	}
 
@@ -49,7 +46,6 @@ func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog
 			Mapper:     &LambdaLogMapper{},
 		},
 		{	
-			// TODO: Should we keep this as we can't download the logs to local from log streams.
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &LambdaLogMapper{},
