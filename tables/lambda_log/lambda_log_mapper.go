@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type LambdaLogMapper struct {
@@ -106,13 +106,13 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 	}
 
 	raw = strings.TrimSpace(raw)
-	if strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") || strings.HasPrefix(raw, "EXTENSION") || strings.HasPrefix(raw, "TELEMETRY") || (isTextFormat && !isTimestamp(strings.Fields(raw)[0])){
+	if strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") || strings.HasPrefix(raw, "EXTENSION") || strings.HasPrefix(raw, "TELEMETRY") || (isTextFormat && !isTimestamp(strings.Fields(raw)[0])) {
 		lambdaLog, err := parseLambdaPainTextLog(raw)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
 		}
 		lambdaLog.Timestamp = row.Timestamp
-		lambdaLog.RawMessage = &raw
+		lambdaLog.Message = &raw
 		return lambdaLog, nil
 	}
 
@@ -161,7 +161,7 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 					row.MaxMemoryUsed = &mem
 				}
 			}
-			row.RawMessage = &raw
+			row.Message = &raw
 			return row, nil
 		} else if _, hasLevel := probe["level"]; hasLevel {
 			// Fallback to application log (JSON format with timestamp, level, message, requestId)
@@ -177,10 +177,10 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			row.LogLevel = &appLog.Level
 			row.Message = &appLog.Message
 			row.RequestID = &appLog.RequestID
-			row.RawMessage = &raw	
+			row.Message = &raw
 			return row, nil
 		}
-	} 
+	}
 	if len(strings.Fields(raw)) >= 4 && isTimestamp(strings.Fields(raw)[0]) { // plain text application log
 		// Handle plain text application logs (format: timestamp requestID logLevel message)
 		// Example: 2024-10-27T19:17:45.586Z 79b4f56e-95b1-4643-9700-2807f4e68189 INFO some log message
@@ -204,11 +204,8 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			msg := strings.Join(fields[3:], " ")
 			row.Message = &msg
 		}
-		row.RawMessage = &raw
-	} else {
-		row.Message = &raw
-		row.RawMessage = &raw
 	}
+	row.Message = &raw
 
 	return row, nil
 }
