@@ -62,7 +62,7 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 
 ### Collect S3 access logs for a specific date from non-date based partition logs
 
-Collect S3 server access logs from a flat bucket by filtering objects that start with the specified prefix.
+Collect logs in an S3 bucket stored with [non-date based partitioning](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html) using a prefix to only retrieve files for a specific day.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs" {
