@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -95,14 +94,18 @@ func (s *AwsS3BucketSource) DiscoverArtifacts(ctx context.Context) error {
 
 	if s.Config.Prefix != nil {
 		prefix = *s.Config.Prefix
-		if !strings.HasSuffix(prefix, "/") {
-			prefix = prefix + "/"
-		}
 		var newOptionalLayouts []string
 		for _, l := range optionalLayouts {
 			newOptionalLayouts = append(newOptionalLayouts, fmt.Sprintf("%s%s", prefix, l))
 		}
-		optionalLayouts = newOptionalLayouts
+		// Add support for collecting logs from S3 buckets that use a flat structure (i.e., without directory-style prefixes).
+		// Currently, if a prefix is specified in the config, it is prepended to the layout pattern.
+		// For example, if the prefix is "2025-06-06" and the layout is "%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}",
+		// the resulting layout becomes "2025-06-06%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}-%{HOUR:hour}-%{MINUTE:minute}-%{SECOND:second}-%{DATA:suffix}",
+		// which breaks log collection from buckets using a flat file structure.
+		// To address this, we're preserving the existing behavior for directory-style buckets,
+		// while adding support for flat buckets as a new, optional configuration path.
+		optionalLayouts = append(optionalLayouts, newOptionalLayouts...)
 	}
 
 	// walkS3 should only return fatal errors

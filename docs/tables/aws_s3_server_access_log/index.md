@@ -168,6 +168,20 @@ partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
 }
 ```
 
+### Collect logs for a specific date from non-date based partition logs
+
+Collect logs in an S3 bucket stored with [non-date based partitioning](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html) using a prefix to only retrieve files for a specific day.
+
+```hcl
+partition "aws_s3_server_access_log" "my_s3_logs_no_trailing_slash" {
+  source "aws_s3_bucket" {
+    connection = connection.aws.logging_account
+    bucket     = "s3-server-access-logs-bucket"
+    prefix     = "2025-06-07"
+  }
+}
+```
+
 ## Source Defaults
 
 ### aws_s3_bucket
