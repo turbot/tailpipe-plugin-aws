@@ -14,6 +14,7 @@ import (
 	"github.com/turbot/tailpipe-plugin-aws/tables/cost_optimization_recommendation"
 	"github.com/turbot/tailpipe-plugin-aws/tables/guardduty_finding"
 	"github.com/turbot/tailpipe-plugin-aws/tables/nlb_access_log"
+	"github.com/turbot/tailpipe-plugin-aws/tables/network_firewall_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/s3_server_access_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/vpc_flow_log"
 	"github.com/turbot/tailpipe-plugin-aws/tables/waf_traffic_log"
@@ -41,6 +42,7 @@ func init() {
 	table.RegisterTable[*s3_server_access_log.S3ServerAccessLog, *s3_server_access_log.S3ServerAccessLogTable]()
 	table.RegisterTable[*alb_connection_log.AlbConnectionLog, *alb_connection_log.AlbConnectionLogTable]()
 	table.RegisterTable[*waf_traffic_log.WafTrafficLog, *waf_traffic_log.WafTrafficLogTable]()
+	table.RegisterTable[*network_firewall_log.NetworkFirewallLog, *network_firewall_log.NetworkFirewallLogTable]()
 
 	// register custom table
 	table.RegisterCustomTable[*vpc_flow_log.VpcFlowLogTable]()
