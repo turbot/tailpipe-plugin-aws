@@ -168,9 +168,9 @@ partition "aws_s3_server_access_log" "my_s3_logs_prefix" {
 }
 ```
 
-### Collect logs with a prefix (without trailing slash)
+### Collect logs for a specific date from non-date based partition logs
 
-Collect S3 server access logs from a flat bucket by filtering objects that start with the specified prefix.
+Collect logs in an S3 bucket stored with [non-date based partitioning](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html) using a prefix to only retrieve files for a specific day.
 
 ```hcl
 partition "aws_s3_server_access_log" "my_s3_logs_no_trailing_slash" {

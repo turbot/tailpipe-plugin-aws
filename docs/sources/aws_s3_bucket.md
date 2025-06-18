@@ -60,7 +60,7 @@ partition "aws_cloudtrail_log" "my_logs_custom_path" {
 }
 ```
 
-### Collect S3 access logs with a prefix
+### Collect S3 access logs for a specific date from non-date based partition logs
 
 Collect S3 server access logs from a flat bucket by filtering objects that start with the specified prefix.
 
