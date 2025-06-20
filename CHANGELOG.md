@@ -1,3 +1,11 @@
+## v0.13.0 [2025-06-20]
+
+_What's new?_
+
+- New tables added:
+  - [aws_alb_connection_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_alb_connection_log) ([#106](https://github.com/turbot/tailpipe-plugin-aws/pull/106))
+  - [aws_securityhub_finding](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_securityhub_finding) ([#156](https://github.com/turbot/tailpipe-plugin-aws/pull/156))
+
 ## v0.12.2 [2025-06-05]
 
 - Recompiled plugin with [tailpipe-plugin-sdk v0.7.2](https://github.com/turbot/tailpipe-plugin-sdk/blob/develop/CHANGELOG.md#v072-2025-06-04) that fixes an issue where the end time was not correctly recorded for collections using artifact sources. ([#192](https://github.com/turbot/tailpipe-plugin-aws/pull/192))
