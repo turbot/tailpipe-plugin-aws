@@ -62,8 +62,6 @@ func (c *SecurityHubFindingTable) EnrichRow(row *SecurityHubFinding, sourceEnric
 		row.TpAkas = append(row.TpAkas, akas...)
 	}
 
-	row.TpIndex = schema.DefaultIndex
-
 	if row.Time != nil {
 		row.TpTimestamp = *row.Time
 		row.TpDate = row.Time.Truncate(24 * time.Hour)
