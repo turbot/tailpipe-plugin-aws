@@ -166,7 +166,7 @@ partition "aws_cloudtrail_log" "my_logs_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -180,7 +180,7 @@ partition "aws_cloudtrail_log" "my_logs_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
+    file_layout = `AWSLogs/123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -194,7 +194,7 @@ partition "aws_cloudtrail_log" "my_logs_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.logging_account
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
+    file_layout = `AWSLogs/%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -207,7 +207,7 @@ For all accounts, collect logs from us-east-1 and us-east-2.
 partition "aws_cloudtrail_log" "my_logs_regions" {
   source "aws_s3_bucket"  {
     bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
+    file_layout = `AWSLogs/%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -275,6 +275,8 @@ partition "aws_cloudtrail_log" "local_logs" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
+AWS does not offer a default or recommended S3 bucket file path for Security Hub Findings export. The default file layout used in this table is based on the implementation provided in the [AWS Security Hub Findings Export Samples](https://github.com/aws-samples/aws-security-hub-findings-export) repository.
+
 | Argument    | Default                                                                                                                                   |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
+| file_layout | `AWSLogs/%{NUMBER:account_id}/%{DATA:security_hub_integrrated_product_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json` |
