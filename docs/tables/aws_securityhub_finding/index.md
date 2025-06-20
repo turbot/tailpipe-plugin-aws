@@ -57,7 +57,6 @@ select
   types,
   severity,
   description,
-  tp_index as account_id,
   region,
   resources,
   remediation.recommendation.text as remediation_text
@@ -98,7 +97,6 @@ select
   types,
   severity,
   resources,
-  tp_index as account_id,
   region,
   (workflow ->> 'status') as workflow_status,
   remediation.recommendation.text as remediation_text
