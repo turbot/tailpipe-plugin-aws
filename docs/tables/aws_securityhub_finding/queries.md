@@ -34,7 +34,7 @@ select
   resources,
   tp_index as account_id,
   region,
-  workflow_state,
+  (workflow ->> 'status') as workflow_status,
   remediation.recommendation.text as remediation_text
 from
   aws_securityhub_finding
@@ -200,7 +200,7 @@ select
   severity.normalized as severity,
   json_extract(resources, '$[0].id') as function_arn,
   json_extract(resources, '$[0].details.awslambdafunction.runtime') as runtime,
-  workflow_state
+  (workflow ->> 'status') as workflow_status
 from
   aws_securityhub_finding
 where
