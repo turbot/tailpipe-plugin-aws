@@ -204,14 +204,6 @@ func toMapSecurityHubFinding(event DetailFindingsData) []SecurityHubFinding {
 			f.Workflow = finding.Workflow
 		}
 
-		// The WorkflowState property has been deprecated by AWS. However, it is still available as of June 12, 2025,
-		// so we are retaining it for now with linting disabled.
-		// Please revisit this field and update the table accordingly once AWS officially removes it.
-		//nolint:staticcheck
-		if finding.WorkflowState != "" {
-			f.WorkflowState = finding.WorkflowState
-		}
-
 		// Map ProductFields
 		if finding.ProductFields != nil {
 			productFields := make(map[string]string)

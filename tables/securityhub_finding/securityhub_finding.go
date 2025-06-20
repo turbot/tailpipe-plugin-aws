@@ -61,7 +61,6 @@ type SecurityHubFinding struct {
 	VerificationState     types.VerificationState      `json:"verification_state" parquet:"name=verification_state"`
 	Vulnerabilities       []types.Vulnerability        `json:"vulnerabilities" parquet:"name=vulnerabilities"`
 	Workflow              *types.Workflow              `json:"workflow" parquet:"name=workflow"`
-	WorkflowState         types.WorkflowState          `json:"workflow_state" parquet:"name=workflow_state"`
 }
 
 // DetailFindingsData maps the `detail` field containing findings
