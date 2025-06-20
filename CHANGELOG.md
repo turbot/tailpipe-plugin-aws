@@ -2,7 +2,7 @@
 
 _What's new?_
 
-- New tables added:
+- New tables added
   - [aws_alb_connection_log](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_alb_connection_log) ([#106](https://github.com/turbot/tailpipe-plugin-aws/pull/106))
   - [aws_securityhub_finding](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_securityhub_finding) ([#156](https://github.com/turbot/tailpipe-plugin-aws/pull/156))
 
