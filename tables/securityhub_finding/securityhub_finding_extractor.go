@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/artifact_source"
 )
@@ -98,7 +99,12 @@ func toMapSecurityHubFinding(event DetailFindingsData) []SecurityHubFinding {
 		}
 		if finding.CreatedAt != nil {
 			createdAtStr := *finding.CreatedAt
-			f.CreatedAt = &createdAtStr
+			createdAt, err := time.Parse(time.RFC3339, createdAtStr)
+			if err != nil {
+				slog.Error("Error parsing created_at", "error", err, "created_at", createdAtStr)
+				continue
+			}
+			f.CreatedAt = &createdAt
 		}
 		if finding.Criticality != nil {
 			f.Criticality = finding.Criticality

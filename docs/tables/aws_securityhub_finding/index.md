@@ -100,12 +100,12 @@ select
   resources,
   tp_index as account_id,
   region,
-  workflow_state,
+  (workflow ->> 'status') as workflow_status,
   remediation.recommendation.text as remediation_text
 from
   aws_securityhub_finding
 where
-  created_at > current_date - interval '7 days'
+  created_at > (current_date - interval '7 days')
 order by
   tp_timestamp desc;
 ```

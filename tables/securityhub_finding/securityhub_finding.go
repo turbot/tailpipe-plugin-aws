@@ -24,7 +24,7 @@ type SecurityHubFinding struct {
 	CompanyName           *string                      `json:"company_name" parquet:"name=company_name"`
 	Compliance            *types.Compliance            `json:"compliance" parquet:"name=compliance"`
 	Confidence            *int32                       `json:"confidence" parquet:"name=confidence"`
-	CreatedAt             *string                      `json:"createdAt" parquet:"name=created_at"`
+	CreatedAt             *time.Time                      `json:"createdAt" parquet:"name=created_at"`
 	Criticality           *int32                       `json:"criticality" parquet:"name=criticality"`
 	Description           *string                      `json:"description" parquet:"name=description"`
 	FirstObservedAt       *string                      `json:"first_observed_at" parquet:"name=first_observed_at"`
