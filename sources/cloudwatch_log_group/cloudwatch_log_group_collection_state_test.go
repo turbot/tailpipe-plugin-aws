@@ -163,10 +163,9 @@ func cloudWatchLogGroupCollectionStateEquals(got, want *CloudWatchLogGroupCollec
 }
 func buildTimeRangeCollectionState(order collection_state.CollectionOrder, granularity time.Duration, ranges ...*collection_state.TimeRangeObjectState) *collection_state.TimeRangeCollectionState {
 	return &collection_state.TimeRangeCollectionState{
-		TimeRanges:     ranges,
-		Granularity:    granularity,
-		ObjectRangeMap: map[string]*collection_state.TimeRangeObjectState{},
-		Order:          order,
+		TimeRanges:  ranges,
+		Granularity: granularity,
+		Order:       order,
 	}
 }
 
