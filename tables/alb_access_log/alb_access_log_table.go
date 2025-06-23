@@ -60,7 +60,6 @@ func (c *AlbAccessLogTable) EnrichRow(row *AlbAccessLog, sourceEnrichmentFields 
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-	row.TpIndex = strings.TrimPrefix(row.Elb, "app/")
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
