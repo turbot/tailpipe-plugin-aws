@@ -240,8 +240,8 @@ github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 h1:bIqFDwgGXXN1Kpp99pDOdKMTTb5d
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3/go.mod h1:H5O/EsxDWyU+LP/V8i5sm8cxoZgc2fdNR9bxlOFrQTo=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.35 h1:th/m+Q18CkajTw1iqx2cKkLCij/uz8NMwJFPK91p2ug=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.35/go.mod h1:dkJuf0a1Bc8HAA0Zm2MoTGm/WDC18Td9vSbrQ1+VqE8=
-github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.50.3 h1:P/O4E8dUHZKXiDAZ27XwsPy/0TppbxASkI7F5bYp6SU=
-github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.50.3/go.mod h1:UseIHRfrm7PqeZo6fcTb6FUCXzCnh1KJbQbmOfxArGM=
+github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.51.0 h1:e5cbPZYTIY2nUEFieZUfVdINOiCTvChOMPfdLnmiLzs=
+github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.51.0/go.mod h1:UseIHRfrm7PqeZo6fcTb6FUCXzCnh1KJbQbmOfxArGM=
 github.com/aws/aws-sdk-go-v2/service/guardduty v1.54.5 h1:50stYsNM6WJKY6XCjMfVLvFt4Iodj5f2O6iC3t4XnGw=
 github.com/aws/aws-sdk-go-v2/service/guardduty v1.54.5/go.mod h1:wkoiUwZWKpLDnd+m3aY7dJV/IptW/FToDzYYEkd67gw=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.3 h1:eAh2A4b5IzM/lum78bZ590jy36+d/aFLgKF/4Vd1xPE=
