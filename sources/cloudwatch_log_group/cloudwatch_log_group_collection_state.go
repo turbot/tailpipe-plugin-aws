@@ -1,64 +1,46 @@
-// Package cloudwatch provides functionality to collect logs from AWS CloudWatch Log Groups
 package cloudwatch_log_group
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log/slog"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/turbot/tailpipe-plugin-sdk/collection_state"
 )
+
+type CloudWatchLogGroupCollectionStateLegacy struct {
+	LogStreams       map[string]*collection_state.TimeRangeCollectionStateLegacy `json:"trunk_states,omitempty"`
+	LastModifiedTime time.Time                                                   `json:"last_modified_time,omitempty"`
+}
 
 // CloudWatchLogGroupCollectionState tracks collection state for multiple log streams within a CloudWatch log group.
 // It maintains a map of log stream names to their individual time range collection states,
 // allowing for incremental collection and resumption of collection from the last processed event.
 type CloudWatchLogGroupCollectionState struct {
 	// Map of log stream name to its time range collection state
-	LogStreams map[string]*collection_state.TimeRangeCollectionStateImpl `json:"log_streams"`
+	LogStreams map[string]*collection_state.TimeRangeCollectionState `json:"log_streams"`
 	// Configuration for the CloudWatch source
-	config *AwsCloudWatchLogGroupSourceConfig
-	// Path to the serialized collection state JSON file
-	jsonPath string
-	// Time when the collection state was last modified
-	LastModifiedTime time.Time `json:"last_modified_time,omitempty"`
-	// Time when the collection state was last saved to disk
-	lastSaveTime time.Time
+	//config *AwsCloudWatchLogGroupSourceConfig
 }
 
 // NewCloudWatchLogGroupCollectionState creates a new CloudWatchCollectionState instance.
 // It initializes an empty map for log streams and sets the initial modification time.
-func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
+func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState {
 	return &CloudWatchLogGroupCollectionState{
-		LogStreams:       make(map[string]*collection_state.TimeRangeCollectionStateImpl),
-		LastModifiedTime: time.Now(),
+		LogStreams: make(map[string]*collection_state.TimeRangeCollectionState),
 	}
 }
 
 // Init initializes the collection state with the provided configuration and state file path.
 // If a state file exists at the given path, it loads and deserializes the state.
 // If no file exists or the state is empty, it initializes a new empty state.
-func (s *CloudWatchLogGroupCollectionState) Init(config *AwsCloudWatchLogGroupSourceConfig, path string) error {
-	s.jsonPath = path
-	s.config = config
-
-	// If there is a file at the path, load it
-	if _, err := os.Stat(path); err == nil {
-		jsonBytes, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read collection state file: %w", err)
-		}
-
-		if err := json.Unmarshal(jsonBytes, s); err != nil {
-			return fmt.Errorf("failed to unmarshal collection state: %w", err)
-		}
-	}
+func (s *CloudWatchLogGroupCollectionState) Init(timeRange *collection_state.CollectionTimeRange) error {
+	//s.config = config
 
 	// Initialize or reinitialize the maps if nil
 	if s.LogStreams == nil {
-		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionStateImpl)
+		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionState)
 	}
 
 	return nil
@@ -69,51 +51,9 @@ func (s *CloudWatchLogGroupCollectionState) IsEmpty() bool {
 	return len(s.LogStreams) == 0
 }
 
-// Save persists the current collection state to disk if it has been modified since the last save.
-// The state is serialized as JSON and written to the configured file path.
-// It creates any necessary directories and updates the last save time on success.
-func (s *CloudWatchLogGroupCollectionState) Save() error {
-	// Skip save if no modifications since last save
-	if s.lastSaveTime.After(s.LastModifiedTime) {
-		return nil
-	}
-
-	jsonBytes, err := json.Marshal(s)
-	if err != nil {
-		return fmt.Errorf("failed to marshal collection state: %w", err)
-	}
-
-	// Ensure the target file path is valid
-	if s.jsonPath == "" {
-		return fmt.Errorf("collection state path is not set")
-	}
-
-	// Create directory if it doesn't exist
-	dir := filepath.Dir(s.jsonPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", dir, err)
-	}
-
-	// Write the JSON data to the file, overwriting any existing data
-	if err := os.WriteFile(s.jsonPath, jsonBytes, 0644); err != nil {
-		return fmt.Errorf("failed to write collection state to file: %w", err)
-	}
-
-	// Update the last save time
-	s.lastSaveTime = time.Now()
-	slog.Debug("Successfully saved collection state", "path", s.jsonPath, "size", len(jsonBytes))
-
-	return nil
-}
-
-// GetConfig returns the current CloudWatch source configuration
-func (s *CloudWatchLogGroupCollectionState) GetConfig() *AwsCloudWatchLogGroupSourceConfig {
-	return s.config
-}
-
 // SetConfig updates the CloudWatch source configuration
 func (s *CloudWatchLogGroupCollectionState) SetConfig(config *AwsCloudWatchLogGroupSourceConfig) {
-	s.config = config
+	//s.config = config
 }
 
 // GetStartTime returns an empty time.Time since global start time is not tracked
@@ -144,22 +84,15 @@ func (s *CloudWatchLogGroupCollectionState) SetGranularity(granularity time.Dura
 	// No-op since we use a fixed granularity
 }
 
-// Clear resets the collection state by removing all log stream states
-func (s *CloudWatchLogGroupCollectionState) Clear() {
-	s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionStateImpl)
-}
-
 // OnCollected updates the collection state for a specific log stream when an event is processed.
 // It creates a new time range state for the stream if it doesn't exist,
 // and updates the last modified time to trigger a state save.
 func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, timestamp time.Time) error {
-	// Update last modified time
-	s.LastModifiedTime = time.Now()
-
 	// Get or create time range state for this log stream
 	timeRangeState, exists := s.LogStreams[logStreamName]
 	if !exists {
-		timeRangeState = collection_state.NewTimeRangeCollectionStateImpl(collection_state.CollectionOrderChronological)
+		timeRangeState = collection_state.NewTimeRangeCollectionState().(*collection_state.TimeRangeCollectionState)
+		timeRangeState.Order = collection_state.CollectionOrderChronological
 		timeRangeState.SetGranularity(s.GetGranularity())
 		s.LogStreams[logStreamName] = timeRangeState
 		// s.ProcessedEventIds = append(s.ProcessedEventIds, eventId)
@@ -173,13 +106,18 @@ func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, ti
 	return nil
 }
 
+func (s *CloudWatchLogGroupCollectionState) OnCollectionComplete() error {
+	//TODO implement me
+	panic("implement me")
+}
+
 // GetFromTime returns the earliest start time across all log streams.
 // This represents the earliest point in time from which we have collected events.
 func (s *CloudWatchLogGroupCollectionState) GetFromTime() time.Time {
 	var earliestTime time.Time
 
 	for _, state := range s.LogStreams {
-		startTime := state.GetStartTime()
+		startTime := state.GetFromTime()
 
 		if earliestTime.IsZero() || startTime.Before(earliestTime) {
 			earliestTime = startTime
@@ -195,7 +133,7 @@ func (s *CloudWatchLogGroupCollectionState) GetToTime() time.Time {
 	var latestTime time.Time
 
 	for _, state := range s.LogStreams {
-		endTime := state.GetEndTime()
+		endTime := state.GetToTime()
 
 		if latestTime.IsZero() || endTime.After(latestTime) {
 			latestTime = endTime
@@ -229,7 +167,7 @@ func (s *CloudWatchLogGroupCollectionState) ShouldCollect(logStreamName string, 
 // If the stream doesn't exist in the state, returns zero time.
 func (s *CloudWatchLogGroupCollectionState) GetStartTimeForStream(logStreamName string) time.Time {
 	if state, exists := s.LogStreams[logStreamName]; exists {
-		return state.GetStartTime()
+		return state.GetFromTime()
 	}
 	return time.Time{}
 }
@@ -238,7 +176,60 @@ func (s *CloudWatchLogGroupCollectionState) GetStartTimeForStream(logStreamName 
 // If the stream doesn't exist in the state, returns zero time.
 func (s *CloudWatchLogGroupCollectionState) GetEndTimeForStream(logStreamName string) time.Time {
 	if state, exists := s.LogStreams[logStreamName]; exists {
-		return state.GetEndTime()
+		return state.GetToTime()
 	}
 	return time.Time{}
+}
+
+func (s *CloudWatchLogGroupCollectionState) Clear(timeRange *collection_state.CollectionTimeRange) {
+	for _, state := range s.LogStreams {
+		if state != nil {
+			state.Clear(timeRange)
+		}
+	}
+
+}
+
+func (s *CloudWatchLogGroupCollectionState) MigrateFromLegacyState(bytes []byte) error {
+	legacyState := &CloudWatchLogGroupCollectionStateLegacy{}
+	err := json.Unmarshal(bytes, legacyState)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal legacy collection state: %w", err)
+	}
+
+	// Convert each trunk state from legacy format to new format
+	for trunkPath, legacyTrunkState := range legacyState.LogStreams {
+		if legacyTrunkState == nil {
+			// Skip nil trunk states
+			continue
+		}
+
+		// Use the new constructor for legacy trunk states
+		s.LogStreams[trunkPath] = collection_state.NewTimeRangeCollectionStateFromLegacy(legacyTrunkState)
+	}
+
+	// Set the granularity from the first trunk state if available
+	if len(s.LogStreams) > 0 {
+		for _, trunkState := range s.LogStreams {
+			if trunkState != nil {
+				s.SetGranularity(trunkState.GetGranularity())
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *CloudWatchLogGroupCollectionState) Validate() error {
+	var errorList []error
+	for _, trunkState := range s.LogStreams {
+		if trunkErr := trunkState.Validate(); trunkErr != nil {
+			errorList = append(errorList, trunkErr)
+		}
+	}
+	if len(errorList) > 0 {
+		return fmt.Errorf("validation failed for artifact collection state: %w", errors.Join(errorList...))
+	}
+	return nil
 }
