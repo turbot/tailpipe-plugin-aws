@@ -35,7 +35,7 @@ func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState {
 // Init initializes the collection state with the provided configuration and state file path.
 // If a state file exists at the given path, it loads and deserializes the state.
 // If no file exists or the state is empty, it initializes a new empty state.
-func (s *CloudWatchLogGroupCollectionState) Init(timeRange *collection_state.CollectionTimeRange) error {
+func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.CollectionTimeRange) {
 	//s.config = config
 
 	// Initialize or reinitialize the maps if nil
@@ -43,7 +43,7 @@ func (s *CloudWatchLogGroupCollectionState) Init(timeRange *collection_state.Col
 		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionState)
 	}
 
-	return nil
+	return
 }
 
 // IsEmpty returns true if no log streams have been collected yet
@@ -181,7 +181,7 @@ func (s *CloudWatchLogGroupCollectionState) GetEndTimeForStream(logStreamName st
 	return time.Time{}
 }
 
-func (s *CloudWatchLogGroupCollectionState) Clear(timeRange *collection_state.CollectionTimeRange) {
+func (s *CloudWatchLogGroupCollectionState) Clear(timeRange collection_state.CollectionTimeRange) {
 	for _, state := range s.LogStreams {
 		if state != nil {
 			state.Clear(timeRange)
