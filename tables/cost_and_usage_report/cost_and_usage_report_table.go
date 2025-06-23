@@ -114,8 +114,6 @@ func (t *CostUsageReportTable) EnrichRow(row *CostUsageReport, sourceEnrichmentF
 		row.TpDate = row.BillBillingPeriodEndDate.Truncate(24 * time.Hour)
 	}
 
-	row.TpIndex = schema.DefaultIndex
-
 	return row, nil
 }
 

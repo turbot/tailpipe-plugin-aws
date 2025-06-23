@@ -61,7 +61,6 @@ func (c *S3ServerAccessLogTable) EnrichRow(row *S3ServerAccessLog, sourceEnrichm
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
-	row.TpIndex = row.Bucket
 	row.TpSourceIP = &row.RemoteIP
 	row.TpIps = append(row.TpIps, row.RemoteIP)
 

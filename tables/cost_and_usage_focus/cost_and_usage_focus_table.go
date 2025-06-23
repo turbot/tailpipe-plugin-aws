@@ -59,8 +59,6 @@ func (c *CostUsageFocusTable) EnrichRow(row *CostUsageFocus, sourceEnrichmentFie
 	row.TpID = xid.New().String()
 	row.TpIngestTimestamp = time.Now()
 
-	row.TpIndex = schema.DefaultIndex
-
 	if row.ChargePeriodStart != nil {
 		row.TpTimestamp = *row.ChargePeriodStart
 		row.TpDate = row.ChargePeriodStart.Truncate(24 * time.Hour)

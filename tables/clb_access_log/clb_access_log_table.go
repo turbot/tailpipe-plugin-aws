@@ -58,8 +58,6 @@ func (c *ClbAccessLogTable) EnrichRow(row *ClbAccessLog, sourceEnrichmentFields 
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
-	row.TpIndex = row.Elb
-
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
 	if row.BackendIP != nil {

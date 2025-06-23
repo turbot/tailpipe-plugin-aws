@@ -55,7 +55,6 @@ func (c *GuardDutyFindingTable) EnrichRow(row *GuardDutyFinding, sourceEnrichmen
 	row.TpTimestamp = row.CreatedAt
 	row.TpIngestTimestamp = time.Now()
 	row.TpDate = row.CreatedAt.Truncate(24 * time.Hour)
-	row.TpIndex = *row.AccountId
 
 	row.TpAkas = append(row.TpAkas, *row.Arn)
 

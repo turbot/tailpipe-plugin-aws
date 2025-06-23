@@ -80,8 +80,6 @@ func (c *WafTrafficLogTable) EnrichRow(row *WafTrafficLog, sourceEnrichmentField
 		}
 	}
 
-	row.TpIndex = *row.WebAclId
-
 	return row, nil
 }
 

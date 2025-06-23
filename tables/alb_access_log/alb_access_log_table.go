@@ -1,7 +1,6 @@
 package alb_access_log
 
 import (
-	"strings"
 	"time"
 
 	"github.com/rs/xid"
