@@ -178,7 +178,7 @@ partition "aws_securityhub_finding" "my_findings_org" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.security_account
     bucket      = "securityhub-findings-bucket"
-    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz`
+    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/%{DATA:security_hub_integrrated_product_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -192,7 +192,7 @@ partition "aws_securityhub_finding" "my_findings_account" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.security_account
     bucket      = "securityhub-findings-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/SecurityHub/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz`
+    file_layout = `AWSLogs/123456789012/%{DATA:security_hub_integrrated_product_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -206,7 +206,7 @@ partition "aws_securityhub_finding" "my_findings_region" {
   source "aws_s3_bucket"  {
     connection  = connection.aws.security_account
     bucket      = "securityhub-findings-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/SecurityHub/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz`
+    file_layout = `AWSLogs/%{NUMBER:account_id}/%{DATA:security_hub_integrrated_product_name}/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json`
   }
 }
 ```
@@ -219,4 +219,4 @@ This table sets the following defaults for the [aws_s3_bucket source](https://hu
 
 | Argument      | Default |
 |--------------|---------|
-| file_layout  | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/SecurityHub/%{DATA:region_path}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.jsonl.gz` | 
+| file_layout  | `AWSLogs/%{NUMBER:account_id}/%{DATA:security_hub_integrrated_product_name}/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json` | 
