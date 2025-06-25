@@ -22,6 +22,10 @@ type CloudWatchLogGroupCollectionState struct {
 	LogStreams map[string]*collection_state.TimeRangeCollectionState `json:"log_streams"`
 	// Configuration for the CloudWatch source
 	//config *AwsCloudWatchLogGroupSourceConfig
+	// the time range for the underway collection - populated by Init
+	currentCollectionTimeRange *collection_state.CollectionTimeRange
+	// Granularity defines the time resolution for collection state updates
+	Granularity time.Duration `json:"granularity,omitempty"`
 }
 
 // NewCloudWatchLogGroupCollectionState creates a new CloudWatchCollectionState instance.
@@ -35,13 +39,15 @@ func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState {
 // Init initializes the collection state with the provided configuration and state file path.
 // If a state file exists at the given path, it loads and deserializes the state.
 // If no file exists or the state is empty, it initializes a new empty state.
-func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.CollectionTimeRange) {
+func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.CollectionTimeRange, granularity time.Duration) {
 	//s.config = config
 
 	// Initialize or reinitialize the maps if nil
 	if s.LogStreams == nil {
 		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionState)
 	}
+
+	s.currentCollectionTimeRange = &timeRange
 
 	return
 }
@@ -73,27 +79,21 @@ func (s *CloudWatchLogGroupCollectionState) SetEndTime(endTime time.Time) {
 	// No-op in this implementation
 }
 
-// GetGranularity returns the time granularity for collection state tracking
-// Uses a fixed granularity of one minute
-func (s *CloudWatchLogGroupCollectionState) GetGranularity() time.Duration {
-	return time.Minute
-}
-
-// SetGranularity is a no-op since we use a fixed granularity
-func (s *CloudWatchLogGroupCollectionState) SetGranularity(granularity time.Duration) {
-	// No-op since we use a fixed granularity
-}
-
 // OnCollected updates the collection state for a specific log stream when an event is processed.
 // It creates a new time range state for the stream if it doesn't exist,
 // and updates the last modified time to trigger a state save.
 func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, timestamp time.Time) error {
+	if s.currentCollectionTimeRange == nil {
+		return fmt.Errorf("currentCollectionTimeRange is nil - Init must be called before OnCollected")
+	}
+
 	// Get or create time range state for this log stream
 	timeRangeState, exists := s.LogStreams[logStreamName]
 	if !exists {
 		timeRangeState = collection_state.NewTimeRangeCollectionState().(*collection_state.TimeRangeCollectionState)
+		timeRangeState.Init(*s.currentCollectionTimeRange, s.Granularity)
 		timeRangeState.Order = collection_state.CollectionOrderChronological
-		timeRangeState.SetGranularity(s.GetGranularity())
+
 		s.LogStreams[logStreamName] = timeRangeState
 		// s.ProcessedEventIds = append(s.ProcessedEventIds, eventId)
 	}
@@ -206,16 +206,6 @@ func (s *CloudWatchLogGroupCollectionState) MigrateFromLegacyState(bytes []byte)
 
 		// Use the new constructor for legacy trunk states
 		s.LogStreams[trunkPath] = collection_state.NewTimeRangeCollectionStateFromLegacy(legacyTrunkState)
-	}
-
-	// Set the granularity from the first trunk state if available
-	if len(s.LogStreams) > 0 {
-		for _, trunkState := range s.LogStreams {
-			if trunkState != nil {
-				s.SetGranularity(trunkState.GetGranularity())
-				break
-			}
-		}
 	}
 
 	return nil

@@ -49,6 +49,11 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 		return NewCloudWatchLogGroupCollectionState()
 	}
 
+	// NOTE: set the granularity to be 1 minute
+	// (we actually set a func on our base RowSourceImpl to get the granularity
+	// this is to avoid an initialisation ordering issue when setting artifact source granularity)
+	s.RowSourceImpl.GetGranularityFunc = s.getGranularity
+
 	// Initialize the base implementation
 	if err := s.RowSourceImpl.Init(ctx, params, opts...); err != nil {
 		return err
@@ -64,6 +69,11 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	s.errorList = []error{}
 
 	return nil
+}
+
+// getGranularity returns the granularity for this source type, which is set to 1 minute.
+func (s *AwsCloudWatchLogGroupSource) getGranularity() time.Duration {
+	return time.Minute
 }
 
 // Identifier returns the unique identifier for this source type, used in the plugin system.

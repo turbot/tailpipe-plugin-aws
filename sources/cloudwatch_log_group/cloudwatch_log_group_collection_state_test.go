@@ -156,9 +156,9 @@ func cloudWatchLogGroupCollectionStateEquals(got, want *CloudWatchLogGroupCollec
 			return false, fmt.Sprintf("trunk %v: %s", k, msg)
 		}
 	}
-	if got.GetGranularity() != want.GetGranularity() {
-		return false, fmt.Sprintf("granularity = %v, want %v", got.GetGranularity(), want.GetGranularity())
-	}
+	//if got.GetGranularity() != want.GetGranularity() {
+	//	return false, fmt.Sprintf("granularity = %v, want %v", got.GetGranularity(), want.GetGranularity())
+	//}
 	return true, ""
 }
 func buildTimeRangeCollectionState(order collection_state.CollectionOrder, granularity time.Duration, ranges ...*collection_state.TimeRangeObjectState) *collection_state.TimeRangeCollectionState {
