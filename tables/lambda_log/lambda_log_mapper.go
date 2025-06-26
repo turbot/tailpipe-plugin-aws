@@ -326,8 +326,6 @@ func parseLambdaPainTextLog(line string, log *LambdaLog) (*LambdaLog, error) {
 	if id := extractAfter(line, "RequestId: "); id != "" {
 		log.RequestID = &id
 	}
-	// TODO: Handle other Platform event type of logs if any.
-	// https://docs.aws.amazon.com/lambda/latest/dg/telemetry-api.html
 	switch {
 	case strings.HasPrefix(line, "START RequestId:"):
 		// Parse START log line
