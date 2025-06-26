@@ -9,21 +9,21 @@ import (
 type LambdaLog struct {
 	schema.CommonFields
 
-	Timestamp      *time.Time             `json:"timestamp,omitempty"`
-	RequestID      *string                `json:"request_id,omitempty"`
-	LogType        *string                `json:"log_type,omitempty"`
-	LogLevel       *string                `json:"log_level,omitempty"`
-	Message        *string                `json:"message,omitempty"`
-	MessageJson    map[string]interface{} `json:"message_json,omitempty"`
-	RawMessage     *string                `json:"raw_message,omitempty"`
-	RawMessageJson map[string]interface{} `json:"raw_message_json,omitempty"`
-	LogGroupName   *string                `json:"log_group_name,omitempty"`
+	Timestamp      *time.Time             `json:"timestamp,omitempty" parquet:"name=timestamp"`
+	RequestID      *string                `json:"request_id,omitempty" parquet:"name=request_id"`
+	LogType        *string                `json:"log_type,omitempty" parquet:"name=log_type"`
+	LogLevel       *string                `json:"log_level,omitempty" parquet:"name=log_level"`
+	Message        *string                `json:"message,omitempty" parquet:"name=message"`
+	MessageJson    map[string]interface{} `json:"message_json,omitempty" parquet:"name=message_json, type=JSON"`
+	RawMessage     *string                `json:"raw_message,omitempty" parquet:"name=raw_message"`
+	RawMessageJson map[string]interface{} `json:"raw_message_json,omitempty" parquet:"name=raw_message_json, type=JSON"`
+	LogGroupName   *string                `json:"log_group_name,omitempty" parquet:"name=log_group_name"`
 
 	// Report Specific Fields
-	Duration       *float64 `json:"duration,omitempty"`
-	BilledDuration *float64 `json:"billed_duration,omitempty"`
-	MemorySize     *int     `json:"memory_size,omitempty"`
-	MaxMemoryUsed  *int     `json:"max_memory_used,omitempty"`
+	Duration       *float64 `json:"duration,omitempty" parquet:"name=duration"`
+	BilledDuration *float64 `json:"billed_duration,omitempty" parquet:"name=billed_duration"`
+	MemorySize     *int     `json:"memory_size,omitempty" parquet:"name=memory_size"`
+	MaxMemoryUsed  *int     `json:"max_memory_used,omitempty" parquet:"name=max_memory_used"`
 }
 
 func (c *LambdaLogTable) GetColumnDescriptions() map[string]string {
