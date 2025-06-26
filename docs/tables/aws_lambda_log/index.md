@@ -193,17 +193,8 @@ partition "aws_lambda_log" "local_logs" {
 
 ### aws_s3_bucket
 
-// TODO: Change/remove the file layout
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
 | Argument    | Default                                                         |
 | ----------- | --------------------------------------------------------------- |
-| file_layout | `%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.log.gz` |
-
-### aws_cloudwatch_log_group
-
-This table sets the following defaults for the [aws_cloudwatch_log_group source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_cloudwatch_log_group#arguments):
-
-| Argument         | Default |
-| ---------------- | ------- |
-| log_stream_names | `["*"]` |
+| file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/%{DATA:region}/%{DATA:function_name}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{HOUR:hour}/%{DATA}.log.zst` |
