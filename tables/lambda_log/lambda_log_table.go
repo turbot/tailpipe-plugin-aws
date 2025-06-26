@@ -1,7 +1,6 @@
 package lambda_log
 
 import (
-	"log/slog"
 	"regexp"
 	"time"
 
@@ -59,8 +58,6 @@ func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog
 
 func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema.SourceEnrichment) (*LambdaLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
-
-	slog.Error("EnrichRow ===>>", "row", row)
 
 	// Record standardization
 	row.TpID = xid.New().String()
