@@ -10,7 +10,7 @@ select
   request_id,
   log_type,
   log_level,
-  message,
+  raw_message,
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
   log_group_name
 from
@@ -88,7 +88,7 @@ select
   tp_timestamp,
   log_type,
   log_level,
-  substring(message, 1, 200) as message_preview,
+  substring(raw_message, 1, 200) as message_preview,
   case
     when log_type in ('START', 'END', 'REPORT', 'INIT_START') then 'System Log'
     when log_level is not null then 'Application Log'
@@ -120,11 +120,11 @@ select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
   log_group_name,
   request_id,
-  message,
+  raw_message,
   case
-    when message ilike '%timed out%' then 'Timeout'
-    when message ilike '%memory size exceeded%' then 'Memory Exceeded'
-    when message ilike '%process exited before completing request%' then 'Process Exited'
+    when raw_message ilike '%timed out%' then 'Timeout'
+    when raw_message ilike '%memory size exceeded%' then 'Memory Exceeded'
+    when raw_message ilike '%process exited before completing request%' then 'Process Exited'
     when log_level = 'ERROR' then 'Application Error'
     else 'Other Error'
   end as error_type
@@ -132,9 +132,9 @@ from
   aws_lambda_log
 where
   log_level = 'ERROR'
-  or message ilike '%timed out%'
-  or message ilike '%memory size exceeded%'
-  or message ilike '%process exited before completing request%'
+  or raw_message ilike '%timed out%'
+  or raw_message ilike '%memory size exceeded%'
+  or raw_message ilike '%process exited before completing request%'
 order by
   tp_timestamp desc
 limit
@@ -185,20 +185,21 @@ This query analyzes Lambda cold starts by counting initialization events for eac
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
   log_group_name,
-  count(distinct request_id) as total_executions,
-  count(distinct case when message ilike '%init duration%' then request_id end) as cold_start_count,
-  round(count(distinct case when message ilike '%init duration%' then request_id end) * 100.0 /
-    nullif(count(distinct request_id), 0), 2) as cold_start_percentage,
-  avg(case when message ilike '%init duration%'
-    then cast(regexp_extract(message, 'Init Duration: ([0-9.]+) ms', 1) as double) end) as avg_init_duration_ms
+  count(distinct case when log_type = 'START' then request_id end) as total_executions,
+  count(distinct case when raw_message ilike '%init duration%' then request_id end) as cold_start_count,
+  round(count(distinct case when raw_message ilike '%init duration%' then request_id end) * 100.0 /
+    nullif(count(distinct case when log_type = 'START' then request_id end), 0), 2) as cold_start_percentage,
+  avg(case when raw_message ilike '%init duration%'
+    then cast(regexp_extract(raw_message, 'Init Duration: ([0-9.]+) ms', 1) as double) end) as avg_init_duration_ms
 from
   aws_lambda_log
 where
   tp_timestamp >= current_timestamp - interval '7 day'
-  and (log_type = 'INIT_START' or message ilike '%init duration%')
 group by
   lambda_function_name,
   log_group_name
+having
+  count(distinct case when log_type = 'START' then request_id end) > 0
 order by
   cold_start_count desc;
 ```
@@ -217,8 +218,8 @@ select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
   log_group_name,
   count(*) as total_logs,
-  count(case when message ilike '%function was throttled%' then 1 end) as throttle_count,
-  round(count(case when message ilike '%function was throttled%' then 1 end) * 100.0 / nullif(count(*), 0), 2) as throttle_percentage
+  count(case when raw_message ilike '%function was throttled%' then 1 end) as throttle_count,
+  round(count(case when raw_message ilike '%function was throttled%' then 1 end) * 100.0 / nullif(count(*), 0), 2) as throttle_percentage
 from
   aws_lambda_log
 where
@@ -228,7 +229,7 @@ group by
   lambda_function_name,
   log_group_name
 having
-  count(case when message ilike '%function was throttled%' then 1 end) > 0
+  count(case when raw_message ilike '%function was throttled%' then 1 end) > 0
 order by
   hour desc,
   throttle_count desc;
@@ -331,10 +332,10 @@ with request_phases as (
     count(case when log_level = 'ERROR' then 1 end) as error_log_count,
     count(case when log_level = 'WARN' then 1 end) as warn_log_count,
     count(case when log_level = 'DEBUG' then 1 end) as debug_log_count,
-    bool_or(message ilike '%timed out%') as has_timeout,
-    bool_or(message ilike '%init duration%') as has_cold_start,
-    bool_or(message ilike '%memory size%' and message ilike '%max memory used%') as has_memory_metrics,
-    bool_or(message ilike '%error%' or message ilike '%exception%' or message ilike '%fail%') as has_error_keywords
+    bool_or(raw_message ilike '%timed out%') as has_timeout,
+    bool_or(raw_message ilike '%init duration%') as has_cold_start,
+    bool_or(raw_message ilike '%memory size%' and raw_message ilike '%max memory used%') as has_memory_metrics,
+    bool_or(raw_message ilike '%error%' or raw_message ilike '%exception%' or raw_message ilike '%fail%') as has_error_keywords
   from
     aws_lambda_log
   where
@@ -348,11 +349,11 @@ with request_phases as (
 message_samples as (
   select
     request_id,
-    array_agg(message) as message_samples
+    array_agg(raw_message) as message_samples
   from
     (select
       request_id,
-      message,
+      raw_message,
       row_number() over (partition by request_id order by tp_timestamp) as rn
     from
       aws_lambda_log
@@ -446,11 +447,11 @@ select
   log_group_name,
   count(case when log_type = 'START' then 1 end) as invocation_count,
   count(case when log_level = 'ERROR' then 1 end) as error_count,
-  count(case when message ilike '%timed out%' then 1 end) as timeout_count,
-  count(case when message ilike '%function was throttled%' then 1 end) as throttle_count,
+  count(case when raw_message ilike '%timed out%' then 1 end) as timeout_count,
+  count(case when raw_message ilike '%function was throttled%' then 1 end) as throttle_count,
   round(count(case when log_level = 'ERROR'
-    or message ilike '%timed out%'
-    or message ilike '%function was throttled%' then 1 end) * 100.0 /
+    or raw_message ilike '%timed out%'
+    or raw_message ilike '%function was throttled%' then 1 end) * 100.0 /
     nullif(count(case when log_type = 'START' then 1 end), 0), 2) as error_percentage
 from
   aws_lambda_log
@@ -554,7 +555,7 @@ This query identifies the most common error patterns across Lambda functions. Fi
 select
   regexp_replace(tp_source_name, '^/aws/lambda/', '') as lambda_function_name,
   log_group_name,
-  regexp_replace(message, '([a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}|[\d\.]+|"[^"]*"|''[^'']*'')', 'X') as normalized_error_pattern,
+  regexp_replace(raw_message, '([a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}|[\d\.]+|"[^"]*"|''[^'']*'')', 'X') as normalized_error_pattern,
   count(*) as occurrence_count,
   min(tp_timestamp) as first_occurrence,
   max(tp_timestamp) as last_occurrence
@@ -562,9 +563,9 @@ from
   aws_lambda_log
 where
   log_level = 'ERROR'
-  or message ilike '%error:%'
-  or message ilike '%exception:%'
-  or message ilike '%timed out%'
+  or raw_message ilike '%error:%'
+  or raw_message ilike '%exception:%'
+  or raw_message ilike '%timed out%'
 group by
   lambda_function_name,
   log_group_name,

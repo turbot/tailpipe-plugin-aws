@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -58,6 +57,10 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 	isCwLog := false
 
 	var raw string
+	// Declare s3Format and isTextFormat at the start for use in lambda log stored in S3 bucket handling
+	s3Format := &s3FormatLog{}
+	isTextFormat := true
+
 	switch v := a.(type) {
 	case []byte:
 		raw = string(v)
@@ -74,12 +77,9 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 		return nil, fmt.Errorf("expected string or []byte, got %T", a)
 	}
 
-	// Handle S3 bucket logs
-	s3Format := &s3FormatLog{}
-	isTextFormat := true
+	// --- Lambda log stored in S3 bucket handling ---
+	// If the log is in the format stored in an S3 bucket, unmarshal and extract timestamp, log group, and message
 	if err := s3Format.UnmarshalJSON([]byte(raw)); err == nil && !isCwLog {
-		// if s3Format.LogGroup != nil {
-		// if row.TpTimestamp.IsZero() {
 		t := time.UnixMilli(*s3Format.Timestamp)
 		if err == nil {
 			row.Timestamp = &t
@@ -89,60 +89,80 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 			row.LogGroupName = s3Format.LogGroup
 		}
 
-		// raw = strings.TrimSpace(*s3Format.Message)
+		// Try to unquote the message (if it's a string)
 		msgStr, err := strconv.Unquote(*s3Format.Message)
 		if err == nil {
 			isTextFormat = true
 			raw = strings.TrimSpace(msgStr)
 		}
 		if err != nil {
-			// In the case if the message is a JSON object we will not have the unescape character.
+			// If message is a JSON object, unquoting will fail; treat as JSON
 			isTextFormat = false
 			raw = strings.TrimSpace(*s3Format.Message)
+			parsedData := isParsableJson(raw)
+			if parsedData != nil {
+				data := *parsedData
+				if v, ok := data["message"].(string); ok {
+					onlyMessageParsable := isParsableJson(v)
+					if onlyMessageParsable != nil {
+						row.MessageJson = *onlyMessageParsable
+					} else {
+						row.Message = &v
+					}
+				}
+			}
 			slog.Error("Error unquoting message", "error", err)
 		}
 	}
 
+	// --- Main log parsing logic ---
 	raw = strings.TrimSpace(raw)
-	if strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") || strings.HasPrefix(raw, "EXTENSION") || strings.HasPrefix(raw, "TELEMETRY") || (isTextFormat && !isTimestamp(strings.Fields(raw)[0])) {
-		lambdaLog, err := parseLambdaPainTextLog(raw)
+	parsableJsonData := isParsableJson(raw)
+	// Handle plain text system logs (START, END, REPORT, etc.) that are not JSON
+	if (strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") || strings.HasPrefix(raw, "EXTENSION") || strings.HasPrefix(raw, "TELEMETRY") || (isTextFormat && !isTimestamp(strings.Fields(raw)[0]) && !strings.HasPrefix(raw, "["))) && parsableJsonData == nil {
+		lambdaLog, err := parseLambdaPainTextLog(raw, row)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
 		}
 		lambdaLog.Timestamp = row.Timestamp
-		lambdaLog.Message = &raw
+		lambdaLog.RawMessage = &raw
+		parsedData := isParsableJson(raw)
+		if parsedData != nil {
+			data := *parsedData
+			if v, ok := data["message"].(string); ok {
+				lambdaLog.Message = &v
+			}
+			if v, ok := data["requestId"].(string); ok {
+				lambdaLog.RequestID = &v
+			}
+			if v, ok := data["level"].(string); ok {
+				lambdaLog.LogLevel = &v
+			}
+			lambdaLog.MessageJson = *parsedData
+		}
 		return lambdaLog, nil
 	}
 
-	// First unmarshal into a minimal structure to detect log type
+	// --- JSON log detection and parsing ---
 	var probe map[string]json.RawMessage
 	if err := json.Unmarshal([]byte(raw), &probe); err == nil {
-		// Check for system log keys (platform events with time, type, record structure)
+		// System log (platform event) JSON
 		if _, hasType := probe["type"]; hasType {
 			var systemLog jsonFormatSystemLog
 			if err := json.Unmarshal([]byte(raw), &systemLog); err != nil {
 				return nil, fmt.Errorf("error unmarshalling as system log: %w", err)
 			}
 
-			// Parse system log fields based on AWS JSON format for system logs
+			// Parse timestamp and type
 			if t, err := time.Parse(time.RFC3339, systemLog.Time); err == nil {
 				row.Timestamp = &t
 			}
 			row.LogType = &systemLog.Type
-			if msgBytes, err := json.Marshal(systemLog.Record); err == nil {
-				message := string(msgBytes)
-				row.Message = &message
-			} else {
-				// fallback in case of marshal error
-				message := fmt.Sprintf("%v", systemLog.Record)
-				row.Message = &message
-			}
 
-			// Extract specific fields from platform event record
+			// Extract requestId and metrics if present
 			if requestId, ok := systemLog.Record["requestId"].(string); ok {
 				row.RequestID = &requestId
 			}
-			// Extract metrics from platform.report events
 			if metrics, ok := systemLog.Record["metrics"].(map[string]interface{}); ok {
 				if v, ok := metrics["durationMs"].(float64); ok {
 					row.Duration = &v
@@ -159,55 +179,117 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 					row.MaxMemoryUsed = &mem
 				}
 			}
-			row.Message = &raw
+
+			// Attach full JSON as RawMessageJson
+			jsonLog := convertRawMessageMap(probe)
+			if jsonLog != nil {
+				row.RawMessageJson = *jsonLog
+			}
+
+			// Extract message as JSON or string
+			if msg, ok := (*jsonLog)["message"]; ok {
+				parsedData := isParsableJson(msg)
+				if parsedData != nil {
+					row.MessageJson = *parsedData
+				} else {
+					str, ok := msg.(string)
+					if ok {
+						row.Message = &str
+					}
+				}
+			}
+
+			row.RawMessage = &raw
 			return row, nil
 		} else if _, hasLevel := probe["level"]; hasLevel {
-			// Fallback to application log (JSON format with timestamp, level, message, requestId)
+			// Application log (JSON format)
 			var appLog jsonFormatApplicationLog
 			if err := json.Unmarshal([]byte(raw), &appLog); err != nil {
 				return nil, fmt.Errorf("error unmarshalling as application log: %w", err)
 			}
 
-			// Parse application log fields based on AWS JSON format for app logs
 			if t, err := time.Parse(time.RFC3339, appLog.Timestamp); err == nil {
 				row.Timestamp = &t
 			}
 			row.LogLevel = &appLog.Level
-			row.Message = &appLog.Message
 			row.RequestID = &appLog.RequestID
-			row.Message = &raw
+
+			jsonLog := convertRawMessageMap(probe)
+			if jsonLog != nil {
+				row.RawMessageJson = *jsonLog
+			}
+
+			if msg, ok := (*jsonLog)["message"]; ok {
+				parsedData := isParsableJson(msg)
+				if parsedData != nil {
+					row.MessageJson = *parsedData
+				} else {
+					str, ok := msg.(string)
+					if ok {
+						row.Message = &str
+					}
+				}
+			}
+
+			row.RawMessage = &raw
 			return row, nil
 		}
 	}
-	if len(strings.Fields(raw)) >= 4 && isTimestamp(strings.Fields(raw)[0]) { // plain text application log
+	if len(strings.Fields(raw)) >= 4 && (isTimestamp(strings.Fields(raw)[0]) || isTimestamp(strings.Fields(raw)[1])) {
+		// plain text application log
 		// Handle plain text application logs (format: timestamp requestID logLevel message)
 		// Example: 2024-10-27T19:17:45.586Z 79b4f56e-95b1-4643-9700-2807f4e68189 INFO some log message
 		// [INFO]	2025-05-26T06:42:27.551Z	66e2e287-e14b-471e-8185-faca26d2c310	This is a function log
 		fields := strings.Fields(raw)
-		// Timestamp
+		// Try to parse timestamp from first or second field
 		if t, err := time.Parse(time.RFC3339, fields[0]); err == nil {
 			row.Timestamp = &t
 		}
-		// RequestID
-		var uuidRegex = regexp.MustCompile(`^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$`)
-		if uuidRegex.MatchString(fields[1]) {
-			row.RequestID = &fields[1]
+		if t1, err := time.Parse(time.RFC3339, fields[1]); err == nil {
+			row.Timestamp = &t1
 		}
-		// LogLevel
-		if slices.Contains([]string{"INFO", "DEBUG", "WARN", "ERROR", "FATAL", "TRACE", ""}, fields[2]) {
-			row.LogLevel = &fields[2]
+
+		// Extract log level and request ID
+		uuidRegex := regexp.MustCompile(`[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`)
+		logLevelRegex := regexp.MustCompile(`\[?(INFO|DEBUG|WARN|ERROR|FATAL|TRACE)\]?`)
+
+		if logLevelMatch := logLevelRegex.FindStringSubmatch(raw); len(logLevelMatch) > 1 {
+			row.LogLevel = &logLevelMatch[1]
 		}
-		// Message
+		if uuidMatch := uuidRegex.FindString(raw); uuidMatch != "" {
+			row.RequestID = &uuidMatch
+		}
 		if len(fields) >= 4 {
 			msg := strings.Join(fields[3:], " ")
-			row.Message = &msg
+			parsableJsonMessage := isParsableJson(msg)
+			if parsableJsonMessage != nil {
+				row.MessageJson = *parsableJsonMessage
+			} else {
+				row.Message = &msg
+			}
 		}
+		row.RawMessage = &raw
 	}
-	row.Message = &raw
 
 	return row, nil
 }
 
+func convertRawMessageMap(probe map[string]json.RawMessage) *map[string]interface{} {
+	result := make(map[string]interface{})
+
+	for key, raw := range probe {
+		var value interface{}
+		if err := json.Unmarshal(raw, &value); err != nil {
+			// Handle or skip on error
+			continue
+		}
+		result[key] = value
+	}
+
+	return &result
+}
+
+// Custom unmarshaller for s3FormatLog
 func (s *s3FormatLog) UnmarshalJSON(data []byte) error {
 	type Alias s3FormatLog
 	aux := &struct {
@@ -217,15 +299,20 @@ func (s *s3FormatLog) UnmarshalJSON(data []byte) error {
 		Alias: (*Alias)(s),
 	}
 
-	// slog.Error("U11111111111", "data", string(data))
 	if err := json.Unmarshal(data, &aux); err != nil {
-		slog.Error("Error unmarshalling s3 format log", "error", err)
-		return err
+		return fmt.Errorf("error unmarshalling base struct: %w", err)
 	}
 
-	msgStr := string(aux.Message)
-	s.Message = &msgStr
-	// slog.Error("22222222222222", "data", string(msgStr))
+	// Try unmarshalling message as string
+	var strMsg string
+	if err := json.Unmarshal(aux.Message, &strMsg); err == nil {
+		s.Message = &strMsg
+		return nil
+	}
+
+	// Else fallback to raw JSON object (e.g., {"time": ..., ...})
+	rawMsg := string(aux.Message)
+	s.Message = &rawMsg
 	return nil
 }
 
@@ -235,8 +322,7 @@ func (s *s3FormatLog) UnmarshalJSON(data []byte) error {
 // START RequestId: 8b133862-5331-4ded-ac5d-1ad5da5aee81
 // END RequestId: 8b133862-5331-4ded-ac5d-1ad5da5aee81
 // REPORT RequestId: 8b133862-5331-4ded-ac5d-1ad5da5aee81 Duration: 123.45 ms Billed Duration: 124 ms Memory Size: 128 MB Max Memory Used: 84 MB
-func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
-	log := &LambdaLog{}
+func parseLambdaPainTextLog(line string, log *LambdaLog) (*LambdaLog, error) {
 	if id := extractAfter(line, "RequestId: "); id != "" {
 		log.RequestID = &id
 	}
@@ -311,7 +397,6 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 	case strings.HasPrefix(line, "EXTENSION"):
 		// Parse START log line
 		log.LogType = ptr("EXTENSION")
-		log.RequestID = ptr(strings.Fields("EXTENSION")[0])
 		if len(strings.Split(line, "EXTENSION")[1]) > 0 {
 			log.Message = ptr(strings.TrimSpace(strings.Split(line, "EXTENSION")[1]))
 		}
@@ -319,7 +404,6 @@ func parseLambdaPainTextLog(line string) (*LambdaLog, error) {
 	case strings.HasPrefix(line, "TELEMETRY"):
 		// Parse START log line
 		log.LogType = ptr("TELEMETRY")
-		log.RequestID = ptr(strings.Fields("TELEMETRY")[0])
 		if len(strings.Split(line, "TELEMETRY")[1]) > 0 {
 			log.Message = ptr(strings.TrimSpace(strings.Split(line, "TELEMETRY")[1]))
 		}
@@ -359,6 +443,34 @@ func extractBetween(s, start, end string) string {
 	return strings.TrimSpace(s[i : i+j])
 }
 
+func isParsableJson(message interface{}) *map[string]interface{} {
+	var raw interface{}
+
+	switch v := message.(type) {
+	case string:
+		// Try unmarshalling the JSON string directly
+		if err := json.Unmarshal([]byte(v), &raw); err != nil {
+			return nil
+		}
+	default:
+		// Marshal to JSON bytes
+		jsonData, err := json.Marshal(message)
+		if err != nil {
+			return nil
+		}
+		if err := json.Unmarshal(jsonData, &raw); err != nil {
+			return nil
+		}
+	}
+
+	// Try asserting to map[string]interface{}
+	if parsedMap, ok := raw.(map[string]interface{}); ok {
+		return &parsedMap
+	}
+
+	return nil
+}
+
 // isTimestamp checks if the input string matches any common Go time formats.
 // Used to identify if a plain text log starts with a timestamp
 func isTimestamp(s string) bool {
@@ -385,51 +497,3 @@ func isTimestamp(s string) bool {
 
 	return false
 }
-
-// Commented out legacy code
-// rawRow = strings.TrimSuffix(rawRow, "\n")
-// 	fields := strings.Fields(rawRow)
-
-// 	switch fields[0] {
-// 	case "START", "END":
-// 		row.LogType = &fields[0]
-// 		row.RequestID = &fields[2]
-// 	case "REPORT":
-// 		row.LogType = &fields[0]
-// 		row.RequestID = &fields[2]
-// 		duration, err := strconv.ParseFloat(fields[4], 64)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error parsing duration: %w", err)
-// 		}
-// 		row.Duration = &duration
-// 		billed, err := strconv.ParseFloat(fields[8], 64)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error parsing billed duration: %w", err)
-// 		}
-// 		row.BilledDuration = &billed
-// 		mem, err := strconv.Atoi(fields[12])
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error parsing memory size: %w", err)
-// 		}
-// 		row.MemorySize = &mem
-// 		maxMem, err := strconv.Atoi(fields[17])
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error parsing max memory used: %w", err)
-// 		}
-// 		row.MaxMemoryUsed = &maxMem
-// 	default:
-// 		t := "LOG"
-// 		row.LogType = &t
-
-// 		ts, err := time.Parse(time.RFC3339, fields[0])
-// 		if err != nil {
-// 			return nil, fmt.Errorf("error parsing timestamp: %w", err)
-// 		}
-// 		row.Timestamp = &ts
-
-// 		row.RequestID = &fields[1]
-// 		row.LogLevel = &fields[2]
-// 		strip := fmt.Sprintf("%s%s", strings.Join(fields[:3], "\t"), "\t")
-// 		stripped := strings.TrimPrefix(rawRow, strip)
-// 		row.Message = &stripped
-// 	}

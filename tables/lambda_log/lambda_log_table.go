@@ -1,6 +1,7 @@
 package lambda_log
 
 import (
+	"log/slog"
 	"regexp"
 	"time"
 
@@ -40,12 +41,12 @@ func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog
 				artifact_source.WithRowPerLine(),
 			},
 		},
-		{	
+		{
 			// S3 artifact source
 			SourceName: cloudwatch_log_group.AwsCloudwatchLogGroupSourceIdentifier,
 			Mapper:     &LambdaLogMapper{},
 		},
-		{	
+		{
 			// any artifact source
 			SourceName: constants.ArtifactSourceIdentifier,
 			Mapper:     &LambdaLogMapper{},
@@ -58,6 +59,8 @@ func (c *LambdaLogTable) GetSourceMetadata() ([]*table.SourceMetadata[*LambdaLog
 
 func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema.SourceEnrichment) (*LambdaLog, error) {
 	row.CommonFields = sourceEnrichmentFields.CommonFields
+
+	slog.Error("EnrichRow ===>>", "row", row)
 
 	// Record standardization
 	row.TpID = xid.New().String()
@@ -94,4 +97,3 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 func (c *LambdaLogTable) GetDescription() string {
 	return "AWS Lambda logs capture detailed information about function executions, including invocation context, console output, errors, and performance metrics. This table provides a structured and queryable view of Lambda log data, enabling easier analysis, troubleshooting, and monitoring."
 }
-
