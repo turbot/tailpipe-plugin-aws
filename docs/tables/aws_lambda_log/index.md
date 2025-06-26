@@ -7,6 +7,29 @@ description: "AWS Lambda logs capture invocation details and function output wit
 
 The `aws_lambda_log` table allows you to query data from [AWS Lambda logs](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html). This table provides detailed information about Lambda function invocations, including request ID, log level, message content, timestamps, and more.
 
+## Message Format and Parsing
+
+The `aws_lambda_log` table provides multiple message fields to handle different log formats across Lambda runtimes:
+
+### Message Fields
+
+- **`message`** (string) – Extracted and parsed message content when possible. Always populated if a message can be extracted, including from JSON-formatted logs.
+- **`message_json`** (json) – Extracted message parsed as JSON. Populated only if the extracted message is valid JSON and can be converted.
+- **`raw_message`** (string) – Complete original message string as received from the log source. Always populated regardless of format.
+- **`raw_message_json`** (json) – Full original message parsed as JSON. Populated only if the original message is native JSON or convertible to JSON.
+
+### Runtime Behavior
+
+The table handles logs consistently across most AWS Lambda runtimes (Node.js, Python, .NET, Go, Ruby), with automatic parsing of both plain text and JSON-formatted logs.
+
+**Note:** PowerShell runtime emits logs in a different format compared to other runtimes, which may affect message extraction and parsing. Refer to the [AWS Lambda runtime documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html) for runtime-specific log format details.
+
+### JSON Log Handling
+
+- JSON-formatted logs are automatically parsed and stored in `raw_message_json`
+- If the extracted message portion is also valid JSON, it's additionally parsed into `message_json`
+- This dual approach ensures you can query both structured JSON data and extract specific message content
+
 ## Configure
 
 Create a [partition](https://tailpipe.io/docs/manage/partition) for `aws_lambda_log` ([examples](https://hub.tailpipe.io/plugins/turbot/aws/tables/aws_lambda_log#example-configurations)):
@@ -54,7 +77,7 @@ Find recent error messages from Lambda functions.
 ```sql
 select
   timestamp,
-  function_name,
+  tp_source_name as function_name,
   log_level,
   message
 from
@@ -72,16 +95,16 @@ Identify Lambda functions with long execution times.
 
 ```sql
 select
-  function_name,
+  tp_source_name as function_name,
   request_id,
-  duration_ms,
+  duration * 1000 as duration_ms,
   timestamp
 from
   aws_lambda_log
 where
-  duration_ms > 5000
+  duration > 5
 order by
-  duration_ms desc
+  duration desc
 limit 20;
 ```
 
@@ -91,18 +114,18 @@ Find Lambda functions approaching their memory limits.
 
 ```sql
 select
-  function_name,
+  tp_source_name as function_name,
   request_id,
-  memory_used_mb,
-  memory_limit_mb,
-  round((memory_used_mb::float / memory_limit_mb::float) * 100, 2) as memory_utilization_percent,
+  max_memory_used as memory_used_mb,
+  memory_size as memory_limit_mb,
+  round((max_memory_used::float / memory_size::float) * 100, 2) as memory_utilization_percent,
   timestamp
 from
   aws_lambda_log
 where
-  memory_used_mb is not null
-  and memory_limit_mb is not null
-  and (memory_used_mb::float / memory_limit_mb::float) > 0.8
+  max_memory_used is not null
+  and memory_size is not null
+  and (max_memory_used::float / memory_size::float) > 0.8
 order by
   memory_utilization_percent desc;
 ```
