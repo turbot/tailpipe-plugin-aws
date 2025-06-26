@@ -1,417 +1,340 @@
-## Activity Examples
+---
+title: "Sample Queries: aws_cloudtrail_log - Query AWS CloudTrail Logs"
+description: "Sample queries for AWS CloudTrail logs to help with security analysis, resource tracking, and compliance auditing."
+---
 
-### Daily Activity Trends
+# Sample Queries: aws_cloudtrail_log
 
-Count events per day to identify activity trends over time.
+## Security Analysis
 
-```sql
-select
-  strftime(event_time, '%Y-%m-%d') AS event_date,
-  count(*) AS event_count
-from
-  aws_cloudtrail_log
-group by
-  event_date
-order by
-  event_date asc;
-```
+### Unauthorized API calls
 
-```yaml
-folder: Account
-```
-
-### Top 10 Events
-
-List the 10 most frequently called events.
+Find unauthorized API calls to investigate potential security breaches:
 
 ```sql
 select
+  event_time,
   event_source,
   event_name,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-group by
-  event_source,
-  event_name,
-order by
-  event_count desc
-limit 10;
-```
-
-```yaml
-folder: Account
-```
-
-### Top Events by Account
-
-Count and group events by account ID, event source, and event name to analyze activity across accounts.
-
-```sql
-select
-  event_source,
-  event_name,
-  recipient_account_id,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-group by
-  event_source,
-  event_name,
-  recipient_account_id
-order by
-  event_count desc;
-```
-
-```yaml
-folder: Account
-```
-
-### Top Error Codes
-
-Identify the most frequent error codes.
-
-```sql
-select
   error_code,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-where
-  error_code is not null
-group by
-  error_code
-order by
-  event_count desc;
-```
-
-```yaml
-folder: Account
-```
-
-## Detection Examples
-
-### Default EBS Encryption Disabled in a Region
-
-Detect when default EBS encryption was disabled in a region.
-
-```sql
-select
-  event_time,
-  event_source,
-  event_name,
-  user_identity.arn as user_arn,
+  error_message,
   source_ip_address,
-  aws_region,
-  recipient_account_id as account_id
+  user_identity->>'userName' as user_name,
+  aws_region
 from
   aws_cloudtrail_log
 where
-  event_source = 'ec2.amazonaws.com'
-  and event_name = 'DisableEbsEncryptionByDefault'
-  and error_code is null
+  error_code = 'UnauthorizedOperation'
+  or error_code = 'AccessDenied'
 order by
   event_time desc;
 ```
 
-```yaml
-folder: EBS
-```
+### Console login activity
 
-### CloudTrail Trail Logging Stopped
-
-Detect when logging was stopped for a CloudTrail trail.
+Monitor AWS Management Console login events:
 
 ```sql
 select
   event_time,
-  event_source,
   event_name,
-  user_identity.arn as user_arn,
+  user_identity->>'userName' as user_name,
   source_ip_address,
   aws_region,
-  recipient_account_id as account_id
+  user_agent,
+  error_message
 from
   aws_cloudtrail_log
 where
-  event_source = 'cloudtrail.amazonaws.com'
-  and event_name in ('StopLogging', 'DeleteTrail')
+  event_name = 'ConsoleLogin'
+order by
+  event_time desc;
+```
+
+### List all failed console logins
+```sql
+select
+  event_time,
+  source_ip_address,
+  user_identity->>'userName' as user_name,
+  error_code,
+  error_message
+from
+  aws_cloudtrail_log
+where
+  event_name = 'ConsoleLogin'
   and error_code is not null
 order by
   event_time desc;
 ```
 
-```yaml
-folder: CloudTrail
-```
-
-### Unsuccessful AWS Console Login Attempts
-
-Find failed console login attempts, highlighting potential unauthorized access attempts.
-
+### Find root account usage
 ```sql
 select
   event_time,
   event_name,
-  user_identity.arn as user_arn,
-  source_ip_address,
-  user_agent,
-  aws_region,
-  recipient_account_id as account_id,
-  additional_event_data
-from
-  aws_cloudtrail_log
-where
-  event_source = 'signin.amazonaws.com'
-  and event_name = 'ConsoleLogin'
-  and error_code is not null
-order by
-  event_time desc;
-```
-
-```yaml
-folder: IAM
-```
-
-### Root Activity
-
-Track any actions performed by the root user.
-
-```sql
-select
-  event_time,
-  event_name,
-  source_ip_address,
-  user_agent,
-  aws_region,
-  recipient_account_id as account_id
-from
-  aws_cloudtrail_log
-where
-  user_identity.type = 'Root'
-order by
-  event_time desc;
-```
-
-```yaml
-folder: IAM
-```
-
-### Activity in Unapproved Regions
-
-Identify actions occurring in AWS regions outside an approved list.
-
-```sql
-select
-  event_time,
   event_source,
-  event_name,
-  user_identity.arn as user_arn,
   source_ip_address,
-  aws_region,
-  recipient_account_id as account_id
+  user_identity->>'type' as identity_type
 from
   aws_cloudtrail_log
 where
-  aws_region not in ('us-east-1', 'us-west-1')
+  user_identity->>'type' = 'Root'
 order by
   event_time desc;
 ```
 
-```yaml
-folder: Account
-```
-
-### Activity from Unapproved IP Addresses
-
-Flag activity originating from IP addresses outside an approved list.
-
+### Track IAM policy changes
 ```sql
 select
   event_time,
-  event_source,
   event_name,
-  user_identity.arn as user_arn,
-  source_ip_address,
-  aws_region,
-  recipient_account_id as account_id
-from
-  aws_cloudtrail_log
-where
-  source_ip_address not in ('192.0.2.146', '206.253.208.100')
-order by
-  event_time desc;
-```
-
-```yaml
-folder: Account
-```
-
-## Operational Examples
-
-### VPC Security Group Rule Updates
-
-Track changes to VPC security group ingress and egress rules.
-
-```sql
-select
-  event_time,
-  event_source,
-  event_name,
-  user_identity.arn as user_arn,
-  source_ip_address,
-  aws_region,
-  recipient_account_id as account_id
-from
-  aws_cloudtrail_log
-where
-  event_source = 'ec2.amazonaws.com'
-  and event_name in ('AuthorizeSecurityGroupEgress', 'AuthorizeSecurityGroupIngress', 'RevokeSecurityGroupEgress', 'RevokeSecurityGroupIngress')
-  and error_code is null
-order by
-  event_time desc;
-```
-
-```yaml
-folder: VPC
-```
-
-### IAM User Permission Updates
-
-List events where an IAM user has added or removed permissions through managed policies, inline policies, or groups.
-
-```sql
-select
-  event_time,
-  event_source,
-  event_name,
-  request_parameters,
-  user_identity.arn as user_arn,
-  source_ip_address,
-  aws_region,
-  recipient_account_id as account_id
+  user_identity->>'userName' as user_name,
+  request_parameters->>'policyName' as policy_name,
+  request_parameters->>'policyDocument' as policy_document
 from
   aws_cloudtrail_log
 where
   event_source = 'iam.amazonaws.com'
-  and event_name in ('AddUserToGroup', 'AttachUserPolicy', 'DeleteUserPolicy', 'DetachUserPolicy', 'PutUserPolicy', 'RemoveUserFromGroup')
+  and event_name like '%Policy%'
 order by
   event_time desc;
 ```
 
-```yaml
-folder: IAM
-```
-
-## Volume Examples
-
-### High Volume of S3 Bucket Access Requests
-
-Detect unusually high access activity to S3 buckets and objects.
-
+### Monitor security group changes
 ```sql
 select
-  user_identity.arn as user_arn,
-  count(*) as event_count,
-  date_trunc('minute', event_time) as event_minute
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'groupId' as security_group_id,
+  request_parameters->>'ipPermissions' as ip_permissions
 from
   aws_cloudtrail_log
 where
-  event_source = 's3.amazonaws.com'
-  and event_name in ('GetObject', 'PutObject', 'ListBucket')
-group by
-  user_identity.arn,
-  event_minute
-having
-  count(*) > 100
+  event_source = 'ec2.amazonaws.com'
+  and event_name like '%SecurityGroup%'
 order by
-  event_count desc;
+  event_time desc;
 ```
 
-```yaml
-folder: S3
-```
+## Resource Changes
 
-### Excessive IAM Role Assumptions
+### EC2 instance changes
 
-Identify IAM roles being assumed at an unusually high frequency.
-
-```sql
-select
-  user_identity.arn as user_arn,
-  count(*) as event_count,
-  date_trunc('hour', event_time) as event_hour
-from
-  aws_cloudtrail_log
-where
-  event_source = 'sts.amazonaws.com'
-  and event_name = 'AssumeRole'
-group by
-  user_identity.arn,
-  event_hour
-having
-  count(*) > 10
-order by
-  event_hour desc,
-  event_count desc;
-```
-
-```yaml
-folder: IAM
-```
-
-## Baseline Examples
-
-### Unrecognized User Source IP Addresses
-
-Detect user activity from unexpected or new source IP addresses.
-
-```sql
-select
-  user_identity.arn as user_arn,
-  source_ip_address,
-  count(*) as access_count,
-  date_trunc('day', event_time) as access_day
-from
-  aws_cloudtrail_log
-where
-  source_ip_address not like '%.amazonaws.com'
-  and source_ip_address not in (select distinct source_ip_address from aws_cloudtrail_log)
-group by
-  user_identity.arn, source_ip_address, access_day
-having
-  access_count > 5
-order by
-  access_count desc;
-```
-
-```yaml
-folder: Account
-```
-
-### Activity Outside of Normal Hours
-
-Flag activity occurring outside of standard working hours, e.g., activity bewteen 8 PM and 6 AM.
+Track EC2 instance lifecycle events:
 
 ```sql
 select
   event_time,
-  event_source,
   event_name,
-  request_parameters,
-  user_identity.arn as user_arn,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'instanceId' as instance_id,
   source_ip_address,
-  aws_region,
-  recipient_account_id as account_id
+  aws_region
 from
   aws_cloudtrail_log
 where
-  extract('hour' from timestamp) >= 20 -- 8 PM
-  or extract('hour' from timestamp) < 6 -- 6 AM
+  event_source = 'ec2.amazonaws.com'
+  and event_name in (
+    'RunInstances',
+    'StartInstances',
+    'StopInstances',
+    'TerminateInstances'
+  )
 order by
   event_time desc;
 ```
 
-```yaml
-folder: Account
+### S3 bucket policy changes
+
+Monitor changes to S3 bucket policies:
+
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'bucketName' as bucket_name,
+  source_ip_address,
+  aws_region
+from
+  aws_cloudtrail_log
+where
+  event_source = 's3.amazonaws.com'
+  and event_name in (
+    'PutBucketPolicy',
+    'DeleteBucketPolicy',
+    'PutBucketAcl'
+  )
+order by
+  event_time desc;
 ```
+
+### Monitor S3 bucket configuration changes
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'bucketName' as bucket_name
+from
+  aws_cloudtrail_log
+where
+  event_source = 's3.amazonaws.com'
+  and event_name like '%Bucket%'
+order by
+  event_time desc;
+```
+
+### Track EC2 instance state changes
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'instanceId' as instance_id
+from
+  aws_cloudtrail_log
+where
+  event_source = 'ec2.amazonaws.com'
+  and event_name in ('StartInstances', 'StopInstances', 'TerminateInstances')
+order by
+  event_time desc;
+```
+
+### List resource deletions
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  user_identity->>'userName' as user_name,
+  resources[0]->>'resourceType' as resource_type,
+  resources[0]->>'resourceName' as resource_name
+from
+  aws_cloudtrail_log
+where
+  event_name like 'Delete%'
+order by
+  event_time desc;
+```
+
+## Compliance Monitoring
+
+### IAM policy changes
+
+Track changes to IAM policies:
+
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'policyName' as policy_name,
+  source_ip_address,
+  aws_region
+from
+  aws_cloudtrail_log
+where
+  event_source = 'iam.amazonaws.com'
+  and event_name like '%Policy%'
+order by
+  event_time desc;
+```
+
+### Track changes to security groups
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'groupId' as security_group_id
+from
+  aws_cloudtrail_log
+where
+  event_source = 'ec2.amazonaws.com'
+  and event_name like '%SecurityGroup%'
+order by
+  event_time desc;
+```
+
+### Monitor KMS key usage
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'keyId' as key_id
+from
+  aws_cloudtrail_log
+where
+  event_source = 'kms.amazonaws.com'
+order by
+  event_time desc;
+```
+
+### List changes to CloudWatch alarms
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'alarmName' as alarm_name
+from
+  aws_cloudtrail_log
+where
+  event_source = 'monitoring.amazonaws.com'
+  and event_name like '%Alarm%'
+order by
+  event_time desc;
+```
+
+## User Activity
+
+### Find API calls from specific IP addresses
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  source_ip_address,
+  user_identity->>'userName' as user_name
+from
+  aws_cloudtrail_log
+where
+  source_ip_address = '192.0.2.1'
+order by
+  event_time desc;
+```
+
+### Track user activity by service
+```sql
+select
+  event_source,
+  count(*) as event_count,
+  count(distinct user_identity->>'userName') as unique_users
+from
+  aws_cloudtrail_log
+where
+  tp_date >= current_date - interval '7 days'
+group by
+  event_source
+order by
+  event_count desc;
+```
+
+### List read-only vs write operations
+```sql
+select
+  read_only,
+  count(*) as event_count
+from
+  aws_cloudtrail_log
+where
+  tp_date >= current_date - interval '7 days'
+group by
+  read_only
+order by
+  event_count desc;
+``` 

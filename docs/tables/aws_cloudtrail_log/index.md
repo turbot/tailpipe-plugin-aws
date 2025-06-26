@@ -1,11 +1,146 @@
 ---
 title: "Tailpipe Table: aws_cloudtrail_log - Query AWS CloudTrail Logs"
-description: "AWS CloudTrail logs capture API activity and user actions within your AWS account."
+description: "AWS CloudTrail logs record detailed information about API calls and resource changes in your AWS account, helping track user activity, security analysis, and compliance auditing."
 ---
 
-# Table: aws_cloudtrail_log - Query AWS CloudTrail Logs
+# Table: aws_cloudtrail_log
 
-The `aws_cloudtrail_log` table allows you to query data from [AWS CloudTrail logs](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-working-with-log-files.html). This table provides detailed information about API calls made within your AWS account, including the event name, source IP address, user identity, and more.
+AWS CloudTrail logs record detailed information about API calls and resource changes in your AWS account. These logs are essential for security analysis, resource change tracking, and compliance auditing.
+
+## Examples
+
+### Basic log analysis
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  source_ip_address,
+  user_identity->>'userName' as user_name,
+  error_code
+from
+  aws_cloudtrail_log
+where
+  tp_date >= current_date - interval '7 days'
+order by
+  event_time desc;
+```
+
+### Find unauthorized API calls
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  source_ip_address,
+  user_identity->>'userName' as user_name,
+  error_code,
+  error_message
+from
+  aws_cloudtrail_log
+where
+  error_code like '%Unauthorized%'
+  or error_code like '%AccessDenied%'
+order by
+  event_time desc;
+```
+
+### Track root account usage
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  source_ip_address,
+  user_identity->>'type' as identity_type
+from
+  aws_cloudtrail_log
+where
+  user_identity->>'type' = 'Root'
+order by
+  event_time desc;
+```
+
+### Monitor IAM policy changes
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'policyName' as policy_name,
+  request_parameters->>'policyDocument' as policy_document
+from
+  aws_cloudtrail_log
+where
+  event_source = 'iam.amazonaws.com'
+  and event_name like '%Policy%'
+order by
+  event_time desc;
+```
+
+### List resource deletions
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  user_identity->>'userName' as user_name,
+  resources[0]->>'resourceType' as resource_type,
+  resources[0]->>'resourceName' as resource_name
+from
+  aws_cloudtrail_log
+where
+  event_name like 'Delete%'
+order by
+  event_time desc;
+```
+
+### Find API calls from specific IP addresses
+```sql
+select
+  event_time,
+  event_name,
+  event_source,
+  source_ip_address,
+  user_identity->>'userName' as user_name
+from
+  aws_cloudtrail_log
+where
+  source_ip_address = '192.0.2.1'
+order by
+  event_time desc;
+```
+
+### Track changes to security groups
+```sql
+select
+  event_time,
+  event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'groupId' as security_group_id,
+  request_parameters->>'ipPermissions' as ip_permissions
+from
+  aws_cloudtrail_log
+where
+  event_source = 'ec2.amazonaws.com'
+  and event_name like '%SecurityGroup%'
+order by
+  event_time desc;
+```
+
+## Source Configuration
+
+### S3 Source
+
+CloudTrail logs can be read from S3 buckets. The default file layout pattern is:
+
+```
+AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz
+```
+
+### CloudWatch Logs Source
+
+CloudTrail logs can also be read from CloudWatch Log Groups where CloudTrail is configured to deliver logs.
 
 ## Configure
 
@@ -42,231 +177,91 @@ Or for a single partition:
 tailpipe collect aws_cloudtrail_log.my_logs
 ```
 
-## Query
+## Query Examples
 
-**[Explore 100+ example queries for this table →](https://hub.tailpipe.io/plugins/turbot/aws/queries/aws_cloudtrail_log)**
+### List IAM user creation events
 
-### Root Activity
+Find all events where IAM users were created:
 
-Find any actions taken by the root user.
+```sql
+select
+  event_time,
+  event_source,
+  event_name,
+  user_identity->>'userName' as actor,
+  request_parameters->>'userName' as created_user,
+  source_ip_address,
+  aws_region
+from
+  aws_cloudtrail_log
+where
+  event_name = 'CreateUser'
+  and event_source = 'iam.amazonaws.com'
+order by
+  event_time desc;
+```
+
+### Failed API calls
+
+Find failed API calls to investigate potential security issues or misconfigurations:
+
+```sql
+select
+  event_time,
+  event_source,
+  event_name,
+  error_code,
+  error_message,
+  source_ip_address,
+  user_identity->>'userName' as user_name,
+  aws_region
+from
+  aws_cloudtrail_log
+where
+  error_code is not null
+order by
+  event_time desc;
+```
+
+### Security group changes
+
+Monitor changes to security groups:
 
 ```sql
 select
   event_time,
   event_name,
+  user_identity->>'userName' as user_name,
+  request_parameters->>'groupId' as security_group_id,
   source_ip_address,
-  user_agent,
-  aws_region,
-  recipient_account_id as account_id
+  aws_region
 from
   aws_cloudtrail_log
 where
-  user_identity.type = 'Root'
+  event_source = 'ec2.amazonaws.com'
+  and event_name like '%SecurityGroup%'
 order by
   event_time desc;
 ```
 
-### Top 10 Events
+### Root account activity
 
-List the top 10 events and how many times they were called.
-
-```sql
-select
-  event_source,
-  event_name,
-  count(*) as event_count
-from
-  aws_cloudtrail_log
-group by
-  event_source,
-  event_name,
-order by
-  event_count desc
-limit 10;
-```
-
-### High Volume S3 Access Requests
-
-Find users generating a high volume of S3 access requests to identify potential anomalous activity.
+Monitor AWS root account usage:
 
 ```sql
 select
-  user_identity.arn as user_arn,
-  count(*) as event_count,
-  date_trunc('minute', event_time) as event_minute
+  event_time,
+  event_source,
+  event_name,
+  source_ip_address,
+  aws_region,
+  user_agent
 from
   aws_cloudtrail_log
 where
-  event_source = 's3.amazonaws.com'
-  and event_name in ('GetObject', 'ListBucket')
-group by
-  user_identity.arn,
-  event_minute
-having
-  count(*) > 100
+  user_identity->>'type' = 'Root'
 order by
-  event_count desc;
-```
-
-## Example Configurations
-
-### Collect logs from an S3 bucket
-
-Collect CloudTrail logs stored in an S3 bucket that use the [default log file name format](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/get-and-view-cloudtrail-log-files.html).
-
-```hcl
-connection "aws" "logging_account" {
-  profile = "my-logging-account"
-}
-
-partition "aws_cloudtrail_log" "my_logs" {
-  source "aws_s3_bucket" {
-    connection = connection.aws.logging_account
-    bucket     = "aws-cloudtrail-logs-bucket"
-  }
-}
-```
-
-### Collect logs from an S3 bucket with a prefix
-
-Collect CloudTrail logs stored in an S3 bucket using a prefix.
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs_prefix" {
-  source "aws_s3_bucket" {
-    connection = connection.aws.logging_account
-    bucket     = "aws-cloudtrail-logs-bucket"
-    prefix     = "my/prefix/"
-  }
-}
-```
-
-### Exclude read-only events
-
-Use the filter argument in your partition to exclude read-only events and reduce the size of local log storage.
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs_write" {
-  # Avoid saving read-only events, which can drastically reduce local log size
-  filter = "not read_only"
-
-  source "aws_s3_bucket" {
-    connection = connection.aws.logging_account
-    bucket     = "aws-cloudtrail-logs-bucket"
-  }
-}
-```
-
-### Collect logs for all accounts in an organization
-
-For a specific organization, collect logs for all accounts and regions.
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs_org" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.logging_account
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/o-aa111bb222/%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
-  }
-}
-```
-
-### Collect logs for a single account
-
-For a specific account, collect logs for all regions.
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs_account" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.logging_account
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?123456789012/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
-  }
-}
-```
-
-### Collect logs for a single region
-
-For all accounts, collect logs from us-east-1.
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs_region" {
-  source "aws_s3_bucket"  {
-    connection  = connection.aws.logging_account
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/us-east-1/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
-  }
-}
-```
-
-### Collect logs for multiple regions
-
-For all accounts, collect logs from us-east-1 and us-east-2.
-
-```hcl
-partition "aws_cloudtrail_log" "my_logs_regions" {
-  source "aws_s3_bucket"  {
-    bucket      = "cloudtrail-s3-log-bucket"
-    file_layout = `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/(us-east-1|us-east-2)/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz`
-  }
-}
-```
-
-### Collect logs from a CloudWatch log group
-
-Collect CloudTrail logs from all log streams in a CloudWatch log group.
-
-```hcl
-partition "aws_cloudtrail_log" "cw_log_group_logs" {
-  source "aws_cloudwatch_log_group" {
-    connection     = connection.aws.logging_account
-    log_group_name = "aws-cloudtrail-logs-123456789012-fd33b044"
-    region         = "us-east-1"
-  }
-}
-```
-
-### Collect logs from a CloudWatch log group for a specific account and region
-
-Collect CloudTrail logs for a single region in an account.
-
-```hcl
-partition "aws_cloudtrail_log" "cw_log_group_logs_specific" {
-  source "aws_cloudwatch_log_group" {
-    connection       = connection.aws.default
-    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
-    log_stream_names = ["456789012345_CloudTrail_us-east-1*"]
-    region           = "us-east-1"
-  }
-}
-```
-
-### Collect logs from a CloudWatch log group for all regions in an account
-
-Collect CloudTrail logs for all regions in an account.
-
-```hcl
-partition "aws_cloudtrail_log" "cw_log_group_logs_all_regions" {
-  source "aws_cloudwatch_log_group" {
-    connection       = connection.aws.default
-    log_group_name   = "aws-cloudtrail-logs-123456789012-fd33b044"
-    log_stream_names = ["456789012345_CloudTrail_*"]
-    region           = "us-east-1"
-  }
-}
-```
-
-### Collect logs from local files
-
-You can also collect CloudTrail logs from local files, like the [flaws.cloud public dataset](https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/).
-
-```hcl
-partition "aws_cloudtrail_log" "local_logs" {
-  source "file"  {
-    paths       = ["/Users/myuser/cloudtrail_logs"]
-    file_layout = `%{DATA}.json.gz`
-  }
-}
+  event_time desc;
 ```
 
 ## Source Defaults
@@ -275,8 +270,7 @@ partition "aws_cloudtrail_log" "local_logs" {
 
 This table sets the following defaults for the [aws_s3_bucket source](https://hub.tailpipe.io/plugins/turbot/aws/sources/aws_s3_bucket#arguments):
 
-AWS does not offer a default or recommended S3 bucket file path for Security Hub Findings export. The default file layout used in this table is based on the implementation provided in the [AWS Security Hub Findings Export Samples](https://github.com/aws-samples/aws-security-hub-findings-export) repository.
-
-| Argument    | Default                                                                                                                                   |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Argument    | Default |
+|------------|---------|
 | file_layout | `AWSLogs/(%{DATA:org_id}/)?%{NUMBER:account_id}/CloudTrail/%{DATA:region}/%{YEAR:year}/%{MONTHNUM:month}/%{MONTHDAY:day}/%{DATA}.json.gz` |
+``` 
