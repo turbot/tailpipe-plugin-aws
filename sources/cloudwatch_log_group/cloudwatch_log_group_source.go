@@ -262,6 +262,7 @@ func (s *AwsCloudWatchLogGroupSource) filterLogEvents(ctx context.Context, input
 	paginator := cloudwatchlogs.NewFilterLogEventsPaginator(s.client, input)
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(ctx)
+		slog.Debug("Filtering log events ===>>>>", "log_group", s.Config.LogGroupName, "output", len(output.Events))
 		if err != nil {
 			return nil, err
 		}

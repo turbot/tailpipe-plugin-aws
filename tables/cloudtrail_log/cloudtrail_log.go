@@ -128,7 +128,6 @@ func (c *CloudTrailLog) GetColumnDescriptions() map[string]string {
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "Resource ARNs associated with the event.",
-		"tp_index":     "The AWS account ID that received the request.",
 		"tp_ips":       "IP addresses associated with the event, including the source IP address.",
 		"tp_timestamp": "The date and time the event occurred, in ISO 8601 format.",
 		"tp_usernames": "Usernames or access key IDs associated with the event.",

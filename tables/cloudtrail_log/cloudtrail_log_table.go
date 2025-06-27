@@ -87,8 +87,6 @@ func (t *CloudTrailLogTable) EnrichRow(row *CloudTrailLog, sourceEnrichmentField
 		row.TpUsernames = append(row.TpUsernames, *row.UserIdentity.UserName)
 	}
 
-	// Hive fields
-	row.TpIndex = row.RecipientAccountId
 	// convert to date in format yy-mm-dd
 	row.TpDate = row.EventTime.Truncate(24 * time.Hour)
 
