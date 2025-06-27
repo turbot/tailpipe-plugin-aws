@@ -158,7 +158,6 @@ func (c *S3ServerAccessLog) GetColumnDescriptions() map[string]string {
 		"version_id":          "The version ID of the object, if versioning is enabled.",
 
 		// Tailpipe-specific metadata fields
-		"tp_index":     "The name of the S3 bucket where the request was made.",
 		"tp_ips":       "All IP addresses associated with the request, including the remote IP.",
 		"tp_usernames": "Canonical user IDs or role ARNs associated with the request.",
 	}

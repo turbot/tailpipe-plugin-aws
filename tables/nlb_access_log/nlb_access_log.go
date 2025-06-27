@@ -155,7 +155,6 @@ func (l *NlbAccessLog) GetColumnDescriptions() map[string]string {
 
 		// Tailpipe-specific metadata fields
 		"tp_akas":      "The ARN of the certificate served to the client.",
-		"tp_index":     "The resource ID of the load balancer handling the request.",
 		"tp_ips":       "All IP addresses associated with the request, including the client IP and destination IP.",
 		"tp_source_ip": "The IP address of the client initiating the connection.",
 	}

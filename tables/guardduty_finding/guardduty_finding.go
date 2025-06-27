@@ -135,7 +135,6 @@ func (c *GuardDutyFinding) GetColumnDescriptions() map[string]string {
 
 		// Tailpipe-specific metadata fields
 		"tp_akas":      "The Amazon Resource Names (ARNs) associated with the finding.",
-		"tp_index":     "The AWS account ID where the finding was generated.",
 		"tp_usernames": "Usernames associated with the finding, including IAM users and access key IDs.",
 	}
 }

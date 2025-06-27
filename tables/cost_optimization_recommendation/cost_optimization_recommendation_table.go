@@ -66,9 +66,6 @@ func (t *CostOptimizationRecommendationsTable) EnrichRow(row *CostOptimizationRe
 	// convert to date in format yyyy-mm-dd
 	row.TpDate = row.LastRefreshTimestamp.Truncate(24 * time.Hour)
 
-	// TpIndex
-	row.TpIndex = schema.DefaultIndex
-
 	if row.ResourceARN != nil {
 		row.TpAkas = append(row.TpAkas, *row.ResourceARN)
 	}

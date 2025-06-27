@@ -130,7 +130,6 @@ func (c *WafTrafficLog) GetColumnDescriptions() map[string]string {
 
 		// Override table specific tp_* column descriptions
 		"tp_akas":      "List of ARNs (Amazon Resource Names) associated with the event, if applicable.",
-		"tp_index":     "The AWS Web ACL ID that processed or received the request.",
 		"tp_ips":       "IP addresses related to the request, including the source (client) IP and any intermediary addresses.",
 		"tp_timestamp": "The timestamp when the request was made, formatted in ISO 8601 (UTC).",
 	}

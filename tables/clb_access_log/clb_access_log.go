@@ -145,7 +145,6 @@ func (c *ClbAccessLog) GetColumnDescriptions() map[string]string {
 		"user_agent":               "A User-Agent string that identifies the client that originated the request.",
 
 		// Tailpipe-specific metadata fields
-		"tp_index":          "The name of the load balancer.",
 		"tp_source_ip":      "The IP address of the requesting client.",
 		"tp_ips":            "The IP addresses of the requesting client and the registered instance that processed the request.",
 		"tp_destination_ip": "The IP address of the registered instance that processed the request.",

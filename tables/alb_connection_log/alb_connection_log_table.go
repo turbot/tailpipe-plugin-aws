@@ -61,9 +61,6 @@ func (c *AlbConnectionLogTable) EnrichRow(row *AlbConnectionLog, sourceEnrichmen
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
 
-	// tp_index
-	row.TpIndex = schema.DefaultIndex
-
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)
 	return row, nil
