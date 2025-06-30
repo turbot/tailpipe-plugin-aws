@@ -73,7 +73,7 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 
 // getGranularity returns the granularity for this source type, which is set to 1 minute.
 func (s *AwsCloudWatchLogGroupSource) getGranularity() time.Duration {
-	return time.Minute
+	return time.Millisecond
 }
 
 // Identifier returns the unique identifier for this source type, used in the plugin system.
