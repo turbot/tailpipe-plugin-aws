@@ -46,6 +46,12 @@ func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.Dire
 	if s.LogStreams == nil {
 		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionState)
 	}
+	// init all log streams with the provided time range and granularity
+	for _, state := range s.LogStreams {
+		if state != nil {
+			state.Init(timeRange, granularity)
+		}
+	}
 
 	s.currentDirectionalTimeRange = &timeRange
 
