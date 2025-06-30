@@ -107,8 +107,17 @@ func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, ti
 }
 
 func (s *CloudWatchLogGroupCollectionState) OnCollectionComplete() error {
-	//TODO implement me
-	panic("implement me")
+	for _, logStreamState := range s.LogStreams {
+		if logStreamState == nil {
+			continue
+		}
+		// set the end time of the trunk state to the end time of the current collection
+		err := logStreamState.OnCollectionComplete()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // GetFromTime returns the earliest start time across all log streams.
