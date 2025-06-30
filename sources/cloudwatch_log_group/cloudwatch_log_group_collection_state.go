@@ -40,7 +40,7 @@ func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState {
 // If a state file exists at the given path, it loads and deserializes the state.
 // If no file exists or the state is empty, it initializes a new empty state.
 func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.DirectionalTimeRange, granularity time.Duration) {
-	//s.config = config
+	s.Granularity = granularity
 
 	// Initialize or reinitialize the maps if nil
 	if s.LogStreams == nil {
