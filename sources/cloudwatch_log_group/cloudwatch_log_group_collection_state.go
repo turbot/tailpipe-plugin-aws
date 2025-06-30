@@ -95,7 +95,6 @@ func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, ti
 		timeRangeState.Order = collection_state.CollectionOrderChronological
 
 		s.LogStreams[logStreamName] = timeRangeState
-		// s.ProcessedEventIds = append(s.ProcessedEventIds, eventId)
 	}
 
 	// Call OnCollected on the time range state
