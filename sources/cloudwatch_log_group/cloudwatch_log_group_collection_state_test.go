@@ -197,7 +197,7 @@ func buildTimeRangeState(fromStr, toStr string, granularity time.Duration, order
 		endObjectsMap[obj] = struct{}{}
 	}
 	return &collection_state.TimeRangeObjectState{
-		TimeRange: collection_state.CollectionTimeRange{
+		TimeRange: collection_state.DirectionalTimeRange{
 			From:            from,
 			To:              to,
 			CollectionOrder: order,

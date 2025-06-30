@@ -23,7 +23,7 @@ type CloudWatchLogGroupCollectionState struct {
 	// Configuration for the CloudWatch source
 	//config *AwsCloudWatchLogGroupSourceConfig
 	// the time range for the underway collection - populated by Init
-	currentCollectionTimeRange *collection_state.CollectionTimeRange
+	currentDirectionalTimeRange *collection_state.DirectionalTimeRange
 	// Granularity defines the time resolution for collection state updates
 	Granularity time.Duration `json:"granularity,omitempty"`
 }
@@ -39,7 +39,7 @@ func NewCloudWatchLogGroupCollectionState() collection_state.CollectionState {
 // Init initializes the collection state with the provided configuration and state file path.
 // If a state file exists at the given path, it loads and deserializes the state.
 // If no file exists or the state is empty, it initializes a new empty state.
-func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.CollectionTimeRange, granularity time.Duration) {
+func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.DirectionalTimeRange, granularity time.Duration) {
 	//s.config = config
 
 	// Initialize or reinitialize the maps if nil
@@ -47,7 +47,7 @@ func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.Coll
 		s.LogStreams = make(map[string]*collection_state.TimeRangeCollectionState)
 	}
 
-	s.currentCollectionTimeRange = &timeRange
+	s.currentDirectionalTimeRange = &timeRange
 
 	return
 }
@@ -83,15 +83,15 @@ func (s *CloudWatchLogGroupCollectionState) SetEndTime(endTime time.Time) {
 // It creates a new time range state for the stream if it doesn't exist,
 // and updates the last modified time to trigger a state save.
 func (s *CloudWatchLogGroupCollectionState) OnCollected(logStreamName string, timestamp time.Time) error {
-	if s.currentCollectionTimeRange == nil {
-		return fmt.Errorf("currentCollectionTimeRange is nil - Init must be called before OnCollected")
+	if s.currentDirectionalTimeRange == nil {
+		return fmt.Errorf("currentDirectionalTimeRange is nil - Init must be called before OnCollected")
 	}
 
 	// Get or create time range state for this log stream
 	timeRangeState, exists := s.LogStreams[logStreamName]
 	if !exists {
 		timeRangeState = collection_state.NewTimeRangeCollectionState().(*collection_state.TimeRangeCollectionState)
-		timeRangeState.Init(*s.currentCollectionTimeRange, s.Granularity)
+		timeRangeState.Init(*s.currentDirectionalTimeRange, s.Granularity)
 		timeRangeState.Order = collection_state.CollectionOrderChronological
 
 		s.LogStreams[logStreamName] = timeRangeState
@@ -181,7 +181,7 @@ func (s *CloudWatchLogGroupCollectionState) GetEndTimeForStream(logStreamName st
 	return time.Time{}
 }
 
-func (s *CloudWatchLogGroupCollectionState) Clear(timeRange collection_state.CollectionTimeRange) {
+func (s *CloudWatchLogGroupCollectionState) Clear(timeRange collection_state.DirectionalTimeRange) {
 	for _, state := range s.LogStreams {
 		if state != nil {
 			state.Clear(timeRange)

@@ -142,9 +142,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 	slog.Info("Starting collection", "total_streams", len(logStreamCollection))
 
-	batchLogStream := [][]string{}
+	var batchLogStream [][]string
 
-	streamNames := []string{}
+	var streamNames []string
 
 	for _, stream := range logStreamCollection {
 		streamNames = append(streamNames, *stream.LogStreamName)
@@ -167,7 +167,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 			"batch", batchCount,
 			"log_group", s.Config.LogGroupName)
 		// Convert time range to milliseconds for CloudWatch API
-		startTimeMillis := s.FromTime.UnixMilli()
+		startTimeMillis := s.CollectionTimeRange.StartTime().UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
 
 		input := &cloudwatchlogs.FilterLogEventsInput{
@@ -311,7 +311,7 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 			lastEventTime := time.UnixMilli(*ls.LastEventTimestamp)
 
 			// If LastEventTimestamp is before FromTime, break the loop
-			if lastEventTime.Before(s.FromTime) {
+			if lastEventTime.Before(s.CollectionTimeRange.StartTime()) {
 				stopPagination = true
 				break
 			}

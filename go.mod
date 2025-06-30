@@ -4,7 +4,7 @@ go 1.24
 
 toolchain go1.24.1
 
-replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
+//replace github.com/turbot/tailpipe-plugin-sdk => ../tailpipe-plugin-sdk
 
 require (
 	github.com/aws/aws-sdk-go v1.55.7
@@ -22,8 +22,8 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/turbot/go-kit v1.3.0
-	github.com/turbot/pipe-fittings/v2 v2.5.0
-	github.com/turbot/tailpipe-plugin-sdk v0.7.2
+	github.com/turbot/pipe-fittings/v2 v2.5.2
+	github.com/turbot/tailpipe-plugin-sdk v0.9.0-rc.1
 	golang.org/x/sync v0.15.0
 )
 
