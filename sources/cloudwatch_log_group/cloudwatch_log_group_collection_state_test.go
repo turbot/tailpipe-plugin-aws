@@ -22,10 +22,10 @@ func TestCloudWatchLogGroupCollectionState_MigrateFromLegacyState(t *testing.T) 
 			}, timeString("2023-12-01 12:00:00")),
 			expected: buildCloudWatchLogGroupCollectionState(map[string]*collection_state.TimeRangeCollectionState{
 				"/trunk1": buildTimeRangeCollectionState(collection_state.CollectionOrderChronological, time.Hour*24,
-					buildTimeRangeState("2023-10-01 00:00:00", "2023-11-30 01:00:00", time.Hour*24, collection_state.CollectionOrderChronological, "object1", "object2"),
+					buildTimeRangeState("2023-10-01 00:00:00", "2023-12-01 01:00:00", time.Hour*24, collection_state.CollectionOrderChronological, "object1", "object2"),
 				),
 				"/trunk2": buildTimeRangeCollectionState(collection_state.CollectionOrderReverse, time.Hour*24,
-					buildTimeRangeState("2023-11-30 00:00:00", "2023-11-01 00:00:00", time.Hour*24, collection_state.CollectionOrderReverse, "object3"),
+					buildTimeRangeState("2023-11-01 00:00:00", "2023-11-30 00:00:00", time.Hour*24, collection_state.CollectionOrderReverse, "object3"),
 				),
 			}, time.Hour*24),
 		},
@@ -48,7 +48,7 @@ func TestCloudWatchLogGroupCollectionState_MigrateFromLegacyState(t *testing.T) 
 			}, timeString("2023-12-01 12:00:00")),
 			expected: buildCloudWatchLogGroupCollectionState(map[string]*collection_state.TimeRangeCollectionState{
 				"/trunk1": buildTimeRangeCollectionState(collection_state.CollectionOrderChronological, time.Hour*24,
-					buildTimeRangeState("2023-10-01 00:00:00", "2023-11-30 01:00:00", time.Hour*24, collection_state.CollectionOrderChronological),
+					buildTimeRangeState("2023-10-01 00:00:00", "2023-12-01 01:00:00", time.Hour*24, collection_state.CollectionOrderChronological),
 				),
 			}, time.Hour*24),
 		},
@@ -60,10 +60,10 @@ func TestCloudWatchLogGroupCollectionState_MigrateFromLegacyState(t *testing.T) 
 			}, timeString("2023-12-01 12:00:00")),
 			expected: buildCloudWatchLogGroupCollectionState(map[string]*collection_state.TimeRangeCollectionState{
 				"/trunk1": buildTimeRangeCollectionState(collection_state.CollectionOrderChronological, time.Hour*24,
-					buildTimeRangeState("2023-10-01 00:00:00", "2023-11-30 01:00:00", time.Hour*24, collection_state.CollectionOrderChronological, "object1"),
+					buildTimeRangeState("2023-10-01 00:00:00", "2023-12-01 01:00:00", time.Hour*24, collection_state.CollectionOrderChronological, "object1"),
 				),
 				"/trunk2": buildTimeRangeCollectionState(collection_state.CollectionOrderReverse, time.Hour,
-					buildTimeRangeState("2023-11-30 00:00:00", "2023-11-01 00:00:00", time.Hour, collection_state.CollectionOrderReverse, "object2"),
+					buildTimeRangeState("2023-11-01 00:00:00", "2023-11-30 00:00:00", time.Hour, collection_state.CollectionOrderReverse, "object2"),
 				),
 			}, time.Hour*24),
 		},
@@ -74,7 +74,7 @@ func TestCloudWatchLogGroupCollectionState_MigrateFromLegacyState(t *testing.T) 
 			}, timeString("2023-12-01 12:00:00")),
 			expected: buildCloudWatchLogGroupCollectionState(map[string]*collection_state.TimeRangeCollectionState{
 				"/trunk1": buildTimeRangeCollectionState(collection_state.CollectionOrderReverse, time.Hour*24,
-					buildTimeRangeState("2023-12-01 01:00:00", "2023-10-01 00:00:00", time.Hour*24, collection_state.CollectionOrderReverse, "object1", "object2"),
+					buildTimeRangeState("2023-10-01 00:00:00", "2023-12-01 01:00:00", time.Hour*24, collection_state.CollectionOrderReverse, "object1", "object2"),
 				),
 			}, time.Hour*24),
 		},
@@ -85,7 +85,7 @@ func TestCloudWatchLogGroupCollectionState_MigrateFromLegacyState(t *testing.T) 
 			}, timeString("2023-12-01 12:00:00")),
 			expected: buildCloudWatchLogGroupCollectionState(map[string]*collection_state.TimeRangeCollectionState{
 				"/trunk1": buildTimeRangeCollectionState(collection_state.CollectionOrderChronological, time.Hour*24,
-					buildTimeRangeState("2023-10-01 00:00:00", "2023-10-01 00:00:00", time.Hour*24, collection_state.CollectionOrderChronological, "object1"),
+					buildTimeRangeState("2023-10-01 00:00:00", "2023-10-02 00:00:00", time.Hour*24, collection_state.CollectionOrderChronological, "object1"),
 				),
 			}, time.Hour*24),
 		},
@@ -198,8 +198,8 @@ func buildTimeRangeState(fromStr, toStr string, granularity time.Duration, order
 	}
 	return &collection_state.TimeRangeObjectState{
 		TimeRange: collection_state.DirectionalTimeRange{
-			From:            from,
-			To:              to,
+			LowerBoundary:   from,
+			UpperBoundary:   to,
 			CollectionOrder: order,
 		},
 		EndObjects:  endObjectsMap,
