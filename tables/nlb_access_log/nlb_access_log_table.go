@@ -1,7 +1,6 @@
 package nlb_access_log
 
 import (
-	"strings"
 	"time"
 
 	"github.com/rs/xid"
@@ -58,7 +57,6 @@ func (c *NlbAccessLogTable) EnrichRow(row *NlbAccessLog, sourceEnrichmentFields 
 	row.TpIngestTimestamp = time.Now()
 	row.TpTimestamp = row.Timestamp
 	row.TpDate = row.Timestamp.Truncate(24 * time.Hour)
-	row.TpIndex = strings.TrimPrefix(row.Elb, "net/")
 
 	row.TpSourceIP = &row.ClientIP
 	row.TpIps = append(row.TpIps, row.ClientIP)

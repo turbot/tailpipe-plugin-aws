@@ -14,7 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
-
 	"github.com/turbot/tailpipe-plugin-aws/config"
 	"github.com/turbot/tailpipe-plugin-sdk/collection_state"
 	"github.com/turbot/tailpipe-plugin-sdk/row_source"
@@ -38,7 +37,7 @@ type AwsCloudWatchLogGroupSource struct {
 	// errorList accumulates errors encountered during collection for reporting.
 	errorList []error
 	// state tracks progress and supports incremental collection across log streams.
-	state *CloudWatchLogGroupCollectionState
+	//state *CloudWatchLogGroupCollectionState
 }
 
 // Init sets up the CloudWatch log group source with the provided parameters and options.
@@ -46,9 +45,14 @@ type AwsCloudWatchLogGroupSource struct {
 // If a specific start time is provided, it clears the previous collection state to force recollection.
 func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_source.RowSourceParams, opts ...row_source.RowSourceOption) error {
 	// Set up the collection state constructor
-	s.NewCollectionStateFunc = func() collection_state.CollectionState[*AwsCloudWatchLogGroupSourceConfig] {
+	s.NewCollectionStateFunc = func() collection_state.CollectionState {
 		return NewCloudWatchLogGroupCollectionState()
 	}
+
+	// NOTE: set the granularity to be 1 minute
+	// (we actually set a func on our base RowSourceImpl to get the granularity
+	// this is to avoid an initialisation ordering issue when setting artifact source granularity)
+	s.RowSourceImpl.GetGranularityFunc = s.getGranularity
 
 	// Initialize the base implementation
 	if err := s.RowSourceImpl.Init(ctx, params, opts...); err != nil {
@@ -64,36 +68,17 @@ func (s *AwsCloudWatchLogGroupSource) Init(ctx context.Context, params *row_sour
 	s.client = client
 	s.errorList = []error{}
 
-	// Get and validate the collection state from the base implementation
-	state, ok := s.CollectionState.(*CloudWatchLogGroupCollectionState)
-	if !ok {
-		return fmt.Errorf("invalid collection state type: expected *CloudWatchLogGroupCollectionState")
-	}
-	s.state = state
-
-	// If explicit from time was provided (with --from flag), clear the collection state
-	// It should recollect the log forcefully
-	if !params.From.IsZero() {
-		if err := s.Clear(); err != nil {
-			return fmt.Errorf("failed to clear collection state: %w", err)
-		}
-	}
-
 	return nil
+}
+
+// getGranularity returns the granularity for this source type, which is set to 1 minute.
+func (s *AwsCloudWatchLogGroupSource) getGranularity() time.Duration {
+	return time.Millisecond
 }
 
 // Identifier returns the unique identifier for this source type, used in the plugin system.
 func (s *AwsCloudWatchLogGroupSource) Identifier() string {
 	return AwsCloudwatchLogGroupSourceIdentifier
-}
-
-// Clear resets the collection state by removing all log stream states and saving the cleared state.
-func (s *AwsCloudWatchLogGroupSource) Clear() error {
-	if s.state != nil {
-		s.state.Clear()
-		return s.SaveCollectionState()
-	}
-	return nil
 }
 
 // matchesAnyPattern returns true if the target string matches any of the provided patterns (supports wildcards).
@@ -157,9 +142,9 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 	slog.Info("Starting collection", "total_streams", len(logStreamCollection))
 
-	batchLogStream := [][]string{}
+	var batchLogStream [][]string
 
-	streamNames := []string{}
+	var streamNames []string
 
 	for _, stream := range logStreamCollection {
 		streamNames = append(streamNames, *stream.LogStreamName)
@@ -182,7 +167,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 			"batch", batchCount,
 			"log_group", s.Config.LogGroupName)
 		// Convert time range to milliseconds for CloudWatch API
-		startTimeMillis := s.FromTime.UnixMilli()
+		startTimeMillis := s.CollectionTimeRange.StartTime().UnixMilli()
 		endTimeMillis := time.Now().UnixMilli()
 
 		input := &cloudwatchlogs.FilterLogEventsInput{
@@ -219,7 +204,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 
 			timestamp := time.UnixMilli(*event.Timestamp)
 			// Skip already collected events based on state
-			if !s.state.ShouldCollect(*event.LogStreamName, timestamp) {
+			if !s.CollectionState.ShouldCollect(*event.LogStreamName, timestamp) {
 				slog.Debug("Skipping already collected event",
 					"stream", *event.LogStreamName,
 					"timestamp", timestamp.Format(time.RFC3339))
@@ -232,7 +217,7 @@ func (s *AwsCloudWatchLogGroupSource) Collect(ctx context.Context) error {
 			}
 
 			// Update collection state with the processed event
-			if err := s.state.OnCollected(*event.LogStreamName, timestamp); err != nil {
+			if err := s.CollectionState.OnCollected(*event.LogStreamName, timestamp); err != nil {
 				s.errorList = append(s.errorList, fmt.Errorf("failed to update collection state for stream %s: %w", *event.LogStreamName, err))
 				continue
 			}
@@ -326,7 +311,7 @@ func (s *AwsCloudWatchLogGroupSource) getLogStreamsToCollect(ctx context.Context
 			lastEventTime := time.UnixMilli(*ls.LastEventTimestamp)
 
 			// If LastEventTimestamp is before FromTime, break the loop
-			if lastEventTime.Before(s.FromTime) {
+			if lastEventTime.Before(s.CollectionTimeRange.StartTime()) {
 				stopPagination = true
 				break
 			}

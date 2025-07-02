@@ -350,9 +350,6 @@ func (c *VpcFlowLogTable) EnrichRow(row *types.DynamicRow, sourceEnrichmentField
 		row.OutputColumns[constants.TpIps] = ips
 	}
 
-	// tp_index
-	row.OutputColumns[constants.TpIndex] = schema.DefaultIndex
-
 	// tp_akas
 	var akas []string
 	if ecsClusterArn, ok := row.GetSourceValue("ecs_cluster_arn"); ok && ecsClusterArn != VpcFlowLogTableNilValue {
