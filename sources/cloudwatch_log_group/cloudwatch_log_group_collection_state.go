@@ -54,8 +54,6 @@ func (s *CloudWatchLogGroupCollectionState) Init(timeRange collection_state.Dire
 	}
 
 	s.currentDirectionalTimeRange = &timeRange
-
-	return
 }
 
 // IsEmpty returns true if no log streams have been collected yet
