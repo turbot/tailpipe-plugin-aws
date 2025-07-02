@@ -10,7 +10,7 @@ import (
 )
 
 type CloudWatchLogGroupCollectionStateLegacy struct {
-	LogStreams       map[string]*collection_state.TimeRangeCollectionStateLegacy `json:"trunk_states,omitempty"`
+	LogStreams       map[string]*collection_state.TimeRangeCollectionStateLegacy `json:"log_streams,omitempty"`
 	LastModifiedTime time.Time                                                   `json:"last_modified_time,omitempty"`
 }
 
