@@ -69,9 +69,6 @@ func (c *LambdaLogTable) EnrichRow(row *LambdaLog, sourceEnrichmentFields schema
 		row.TpDate = row.TpTimestamp.Truncate(24 * time.Hour)
 	}
 
-	// tp_index
-	row.TpIndex = schema.DefaultIndex
-
 	var arnRegex = regexp.MustCompile(`arn:aws:[^,\s'"\\]+`)
 
 	seen := map[string]struct{}{}
