@@ -122,7 +122,7 @@ func (m *LambdaLogMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*
 	if (strings.HasPrefix(raw, "REPORT") || strings.HasPrefix(raw, "END") || strings.HasPrefix(raw, "START") || strings.HasPrefix(raw, "INIT_START") || strings.HasPrefix(raw, "EXTENSION") || strings.HasPrefix(raw, "TELEMETRY") || (isTextFormat && !isTimestamp(strings.Fields(raw)[0]) && !strings.HasPrefix(raw, "["))) && parsableJsonData == nil {
 		lambdaLog, err := parseLambdaPainTextLog(raw, row)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing lambda pain text log: %w", err)
+			return nil, fmt.Errorf("error parsing lambda plain text log: %w", err)
 		}
 		lambdaLog.Timestamp = row.Timestamp
 		lambdaLog.RawMessage = &raw
