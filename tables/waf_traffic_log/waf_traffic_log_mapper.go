@@ -19,7 +19,7 @@ func (c *WafMapper) Identifier() string {
 	return "aws_waf_traffic_log_mapper"
 }
 
-func (c *WafMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*WafTrafficLog]) (*WafTrafficLog, error) {
+func (c *WafMapper) Map(_ context.Context, a any, _ ...mappers.MapOption) (*WafTrafficLog, error) {
 	var jsonBytes []byte
 
 	switch v := a.(type) {

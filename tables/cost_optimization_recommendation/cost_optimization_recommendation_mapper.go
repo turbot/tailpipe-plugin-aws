@@ -15,7 +15,6 @@ import (
 )
 
 type CostOptimizationRecommendationMapper struct {
-	headers []string
 }
 
 func NewCostOptimizationRecommendationMapper() *CostOptimizationRecommendationMapper {
@@ -26,21 +25,17 @@ func (m *CostOptimizationRecommendationMapper) Identifier() string {
 	return "cost_optimization_recommendation_mapper"
 }
 
-// OnHeader implements mappers.HeaderHandler so that when the collector is notified of a header, we set headers
-func (m *CostOptimizationRecommendationMapper) OnHeader(header []string) {
-	m.headers = header
-}
-
-func (m *CostOptimizationRecommendationMapper) Map(_ context.Context, a any, opts ...mappers.MapOption[*CostOptimizationRecommendation]) (*CostOptimizationRecommendation, error) {
+func (m *CostOptimizationRecommendationMapper) Map(_ context.Context, a any, opts ...mappers.MapOption) (*CostOptimizationRecommendation, error) {
 	var input []byte
 
 	// apply opts
+	var config = &mappers.MapConfig{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(m)
+			opt(config)
 		}
 	}
-
+	header := config.Header
 	// validate input type
 	switch v := a.(type) {
 	case []byte:
@@ -61,8 +56,8 @@ func (m *CostOptimizationRecommendationMapper) Map(_ context.Context, a any, opt
 	}
 
 	// validate header/value count
-	if len(record) != len(m.headers) {
-		slog.Error("CostOptimizationRecommendationMapper.Map failed to map row due to header/value count mismatch", "expected", len(m.headers), "got", len(record))
+	if len(record) != len(header) {
+		slog.Error("CostOptimizationRecommendationMapper.Map failed to map row due to header/value count mismatch", "expected", len(header), "got", len(record))
 		return nil, error_types.NewRowErrorWithMessage("row fields doesn't match count of headers")
 	}
 
@@ -74,7 +69,7 @@ func (m *CostOptimizationRecommendationMapper) Map(_ context.Context, a any, opt
 
 	// map to struct
 	for i, value := range record {
-		field := strings.ToLower(m.headers[i])
+		field := strings.ToLower(header[i])
 
 		switch field {
 		case "account_id":

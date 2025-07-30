@@ -15,7 +15,7 @@ func (m *SecurityHubFindingMapper) Identifier() string {
 	return "security_hub_finding_mapper"
 }
 
-func (m *SecurityHubFindingMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*SecurityHubFinding]) (*SecurityHubFinding, error) {
+func (m *SecurityHubFindingMapper) Map(_ context.Context, a any, _ ...mappers.MapOption) (*SecurityHubFinding, error) {
 	var b SecurityHubFinding
 
 	switch data := a.(type) {

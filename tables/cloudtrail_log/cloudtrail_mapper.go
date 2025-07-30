@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 
 	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
-	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type CloudTrailMapper struct {
@@ -16,7 +16,7 @@ func (m *CloudTrailMapper) Identifier() string {
 	return "cloudtrail_mapper"
 }
 
-func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...mappers.MapOption[*CloudTrailLog]) (*CloudTrailLog, error) {
+func (m *CloudTrailMapper) Map(_ context.Context, a any, _ ...mappers.MapOption) (*CloudTrailLog, error) {
 	var log CloudTrailLog
 	var jsonBytes []byte
 	var err error

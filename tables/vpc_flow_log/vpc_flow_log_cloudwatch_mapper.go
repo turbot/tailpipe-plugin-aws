@@ -36,7 +36,7 @@ func (m *VPCFlowLogCloudWatchMapper) Identifier() string {
 }
 
 // Map processes CloudWatch event data by extracting the message field and processing it with the regex mapper
-func (m *VPCFlowLogCloudWatchMapper) Map(ctx context.Context, a any, opts ...mappers.MapOption[*types.DynamicRow]) (*types.DynamicRow, error) {
+func (m *VPCFlowLogCloudWatchMapper) Map(ctx context.Context, a any, opts ...mappers.MapOption) (*types.DynamicRow, error) {
 	var input []byte
 
 	// Handle different input types

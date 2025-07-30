@@ -5,16 +5,15 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"log/slog"
 	"strconv"
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/error_types"
-	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type CostAndUsageFocusMapper struct {
-	headers []string
 }
 
 func NewCostAndUsageFocusMapper() *CostAndUsageFocusMapper {
@@ -25,18 +24,14 @@ func (m *CostAndUsageFocusMapper) Identifier() string {
 	return "cost_and_usage_focus_mapper"
 }
 
-// OnHeader implements mappers.HeaderHandler so that when the collector is notified of a header, we set headers
-func (m *CostAndUsageFocusMapper) OnHeader(header []string) {
-	m.headers = header
-}
-
-func (m *CostAndUsageFocusMapper) Map(_ context.Context, a any, opts ...mappers.MapOption[*CostUsageFocus]) (*CostUsageFocus, error) {
+func (m *CostAndUsageFocusMapper) Map(_ context.Context, a any, opts ...mappers.MapOption) (*CostUsageFocus, error) {
 	var input []byte
 
 	// apply opts
+	var config = &mappers.MapConfig{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(m)
+			opt(config)
 		}
 	}
 
@@ -60,8 +55,8 @@ func (m *CostAndUsageFocusMapper) Map(_ context.Context, a any, opts ...mappers.
 	}
 
 	// validate header/value count
-	if len(record) != len(m.headers) {
-		slog.Error("CostAndUsageFocusMapper.Map failed to map row due to header/value count mismatch", "expected", len(m.headers), "got", len(record))
+	if len(record) != len(config.Header) {
+		slog.Error("CostAndUsageFocusMapper.Map failed to map row due to header/value count mismatch", "expected", len(config.Header), "got", len(record))
 		return nil, error_types.NewRowErrorWithMessage("row fields doesn't match count of headers")
 	}
 
@@ -70,7 +65,7 @@ func (m *CostAndUsageFocusMapper) Map(_ context.Context, a any, opts ...mappers.
 
 	// map to struct
 	for i, value := range record {
-		field := m.headers[i]
+		field := config.Header[i]
 
 		switch field {
 		case "AvailabilityZone":
