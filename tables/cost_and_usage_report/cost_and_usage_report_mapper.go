@@ -10,15 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stoewer/go-strcase"
-
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/tailpipe-plugin-sdk/error_types"
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 )
 
 type CostAndUsageReportMapper struct {
-	headers []string
 }
 
 func NewCostAndUsageReportMapper() *CostAndUsageReportMapper {
@@ -29,11 +26,18 @@ func (c *CostAndUsageReportMapper) Identifier() string {
 	return "cost_and_usage_report_mapper"
 }
 
-func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers.MapOption[*CostUsageReport]) (*CostUsageReport, error) {
+func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers.MapOption) (*CostUsageReport, error) {
+	config := &mappers.MapConfig{}
+	// apply options to config
+	for _, opt := range opts {
+		opt(config)
+	}
+	headers := config.Header
+
 	var input []byte
 	// apply opts
 	for _, opt := range opts {
-		opt(c)
+		opt(config)
 	}
 
 	// validate input type
@@ -56,8 +60,8 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 	}
 
 	// validate header/value count
-	if len(record) != len(c.headers) {
-		slog.Error("CostAndUsageReportMapper.Map failed to map row due to header/value count mismatch", "expected", len(c.headers), "got", len(record))
+	if len(record) != len(headers) {
+		slog.Error("CostAndUsageReportMapper.Map failed to map row due to header/value count mismatch", "expected", len(headers), "got", len(record))
 		return nil, error_types.NewRowErrorWithMessage("row fields doesn't match count of headers")
 	}
 
@@ -66,7 +70,7 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 
 	// map to struct (normalize headers)
 	for i, value := range record {
-		field := c.headers[i]
+		field := headers[i]
 
 		switch field {
 		case "bill_billing_entity":
@@ -487,16 +491,4 @@ func (c *CostAndUsageReportMapper) Map(_ context.Context, a any, opts ...mappers
 	}
 
 	return output, nil
-}
-
-// OnHeader implementOnHeader so that when the collector is notified of a header row, we get notified
-func (c *CostAndUsageReportMapper) OnHeader(header []string) {
-	newHeaders := make([]string, len(header))
-	// set headers but normalize first
-	for i, h := range header {
-		v := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(h, "/", "_"), ":", "_"), " ", "_"), ".", "_"), "a_r_n", "arn")
-		v = strcase.SnakeCase(v)
-		newHeaders[i] = strings.ToLower(v)
-	}
-	c.headers = newHeaders
 }
