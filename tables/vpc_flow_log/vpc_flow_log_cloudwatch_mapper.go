@@ -13,6 +13,12 @@ import (
 // ErrNoDataRecord is returned when a NODATA record is encountered.
 // NODATA records indicate no traffic was recorded during the aggregation interval
 // and don't have timestamp data by design - they should be skipped.
+//
+// NOTE: Unlike the extractor (used for S3/file sources) which can silently skip NODATA
+// records, the mapper interface doesn't support skipping rows without returning an error.
+// This means NODATA records from CloudWatch sources will still be counted as errors in
+// the collection status. To fix this properly, the SDK would need to support a "skip row"
+// return type from mappers. See: https://github.com/turbot/tailpipe-plugin-aws/issues/277
 var ErrNoDataRecord = errors.New("skipping NODATA record: no traffic was recorded during aggregation interval")
 
 // VPCFlowLogCloudWatchMapper is a custom mapper for VPC flow logs from CloudWatch sources.
