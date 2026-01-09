@@ -2,12 +2,18 @@ package vpc_flow_log
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	cwTypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/turbot/tailpipe-plugin-sdk/mappers"
 	"github.com/turbot/tailpipe-plugin-sdk/types"
 )
+
+// ErrNoDataRecord is returned when a NODATA record is encountered.
+// NODATA records indicate no traffic was recorded during the aggregation interval
+// and don't have timestamp data by design - they should be skipped.
+var ErrNoDataRecord = errors.New("skipping NODATA record: no traffic was recorded during aggregation interval")
 
 // VPCFlowLogCloudWatchMapper is a custom mapper for VPC flow logs from CloudWatch sources.
 // It extracts the message field from the complete CloudWatch event JSON and processes it
@@ -35,7 +41,8 @@ func (m *VPCFlowLogCloudWatchMapper) Identifier() string {
 	return "vpc_flow_log_cloudwatch_mapper"
 }
 
-// Map processes CloudWatch event data by extracting the message field and processing it with the regex mapper
+// Map processes CloudWatch event data by extracting the message field and processing it with the regex mapper.
+// Returns ErrNoDataRecord for NODATA records which should be skipped (they have no traffic data by design).
 func (m *VPCFlowLogCloudWatchMapper) Map(ctx context.Context, a any, opts ...mappers.MapOption[*types.DynamicRow]) (*types.DynamicRow, error) {
 	var input []byte
 
@@ -58,5 +65,18 @@ func (m *VPCFlowLogCloudWatchMapper) Map(ctx context.Context, a any, opts ...map
 	}
 
 	// Use the regex mapper to process the message
-	return m.mapper.Map(ctx, string(input), opts...)
+	row, err := m.mapper.Map(ctx, string(input), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for NODATA records - these are valid VPC flow log entries that indicate
+	// no traffic was recorded during the aggregation interval. They don't have
+	// timestamp data by design and should be skipped rather than treated as errors.
+	// See: https://docs.aws.amazon.com/vpc/latest/userguide/flow-log-records.html
+	if logStatus, ok := row.GetSourceValue("log_status"); ok && logStatus == VpcFlowLogStatusNoData {
+		return nil, ErrNoDataRecord
+	}
+
+	return row, nil
 }

@@ -21,6 +21,11 @@ import (
 const VpcFlowLogTableIdentifier = "aws_vpc_flow_log"
 const VpcFlowLogTableNilValue = "-"
 
+// VpcFlowLogStatusNoData is the log_status value indicating no traffic was recorded
+// during the aggregation interval. These records don't have timestamp data by design.
+// See: https://docs.aws.amazon.com/vpc/latest/userguide/flow-log-records.html
+const VpcFlowLogStatusNoData = "NODATA"
+
 // VpcFlowLogTable - table for VPC Flow Logs
 type VpcFlowLogTable struct {
 	table.CustomTableImpl

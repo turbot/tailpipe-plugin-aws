@@ -45,6 +45,15 @@ func (c *VPCFlowLogExtractor) Extract(_ context.Context, a any) ([]any, error) {
 	res := make([]any, 0, len(mappedData))
 
 	for _, record := range mappedData {
+		// Skip NODATA records - these are valid VPC flow log entries that indicate
+		// no traffic was recorded during the aggregation interval. They don't have
+		// timestamp data by design and should be silently skipped rather than
+		// treated as errors. See: https://docs.aws.amazon.com/vpc/latest/userguide/flow-log-records.html
+		if logStatus, ok := record["log-status"]; ok && logStatus == VpcFlowLogStatusNoData {
+			slog.Debug("Skipping NODATA record", "log-status", logStatus)
+			continue
+		}
+
 		row := &types.DynamicRow{}
 		rowColumnMap := make(map[string]string)
 

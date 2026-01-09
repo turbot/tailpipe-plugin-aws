@@ -7,7 +7,9 @@ description: "AWS VPC flow logs capture information about IP traffic going to an
 
 The `aws_vpc_flow_log` table allows you to query data from [AWS VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html). This table provides detailed insights into network traffic within your VPC, including source and destination IP addresses, ports, protocols, and more.
 
-**Note**: For timestamp information, the `start` field will be used first, with the `end` field as a fallback. If neither field is available, then that log line will not be collected and Tailpipe will return an error.
+**Notes**:
+- For timestamp information, the `start` field will be used first, with the `end` field as a fallback.
+- Records with `log_status = 'NODATA'` are automatically skipped. These records indicate that no network traffic was recorded during the aggregation interval and don't contain timestamp data by design. See the [AWS VPC Flow Logs documentation](https://docs.aws.amazon.com/vpc/latest/userguide/flow-log-records.html) for more details on log status values.
 
 ## Configure
 
