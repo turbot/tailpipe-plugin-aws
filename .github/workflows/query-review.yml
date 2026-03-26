@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [labeled]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   evaluate-queries:
     if: github.event.label.name == 'review'
@@ -12,12 +16,12 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0  # Fetch all history so we can see changes
         
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
           python-version: '3.10'
           
@@ -240,7 +244,7 @@ jobs:
       
       - name: Post evaluation results as PR comments
         if: steps.run-evaluator.outputs.ANY_SUCCESS == 'true'
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
